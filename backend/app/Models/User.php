@@ -19,8 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'role', // user | owner | admin | superadmin
-        // 'onboarded_at',
+        'role',
     ];
 
     protected $hidden = [
@@ -34,19 +33,16 @@ class User extends Authenticatable implements MustVerifyEmail
         'onboarded_at' => 'datetime',
     ];
 
-    // Regular gym user profile
     public function userProfile()
     {
         return $this->hasOne(UserProfile::class, 'user_id', 'user_id');
     }
 
-    // Owner profile
     public function ownerProfile()
     {
         return $this->hasOne(OwnerProfile::class, 'user_id', 'user_id');
     }
 
-    // Admin profile
     public function adminProfile()
     {
         return $this->hasOne(AdminProfile::class, 'user_id', 'user_id');
@@ -122,5 +118,25 @@ class User extends Authenticatable implements MustVerifyEmail
             'user_id',
             'gym_id'
         )->withTimestamps();
+    }
+
+    public function gymMemberships()
+    {
+        return $this->hasMany(\App\Models\GymMembership::class, 'user_id', 'user_id');
+    }
+
+    public function gymFreeVisits()
+    {
+        return $this->hasMany(\App\Models\GymFreeVisit::class, 'user_id', 'user_id');
+    }
+
+    public function gymInquiries()
+    {
+        return $this->hasMany(\App\Models\GymInquiry::class, 'user_id', 'user_id');
+    }
+
+    public function gymRatings()
+    {
+        return $this->hasMany(\App\Models\GymRating::class, 'user_id', 'user_id');
     }
 }

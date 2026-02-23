@@ -47,6 +47,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\GymAnalyticsController;
 
+use App\Http\Controllers\GymMembershipController;
+use App\Http\Controllers\GymFreeVisitController;
+use App\Http\Controllers\GymInquiryController;
+use App\Http\Controllers\GymRatingController;
+
 Route::prefix('v1')->group(function () {
 
     Route::get('/settings/public', [AppSettingsPublicController::class, 'show']);
@@ -62,6 +67,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/gyms/{gym}/equipments/{equipment}', [GymController::class, 'equipmentDetail'])->whereNumber('gym')->whereNumber('equipment');
     Route::get('/gyms/{gym}/amenities', [GymController::class, 'amenities'])->whereNumber('gym');
     Route::get('/gyms/{gym}/amenities/{amenity}', [GymController::class, 'amenityDetail'])->whereNumber('gym')->whereNumber('amenity');
+
+    Route::get('/gyms/{gym}/ratings', [GymRatingController::class, 'gymRatings'])->whereNumber('gym');
 
     Route::get('/equipments', [EquipmentController::class, 'index']);
     Route::get('/equipments/{id}', [EquipmentController::class, 'show'])->whereNumber('id');
@@ -195,9 +202,29 @@ Route::prefix('v1')->group(function () {
             Route::match(['put', 'patch'], '/gyms/{gym}/amenities/{amenity}', [GymAmenityController::class, 'update'])->whereNumber('gym')->whereNumber('amenity');
             Route::delete('/gyms/{gym}/amenities/{amenity}', [GymAmenityController::class, 'destroy'])->whereNumber('gym')->whereNumber('amenity');
 
-            Route::get('/owner/profile', [OwnerProfileController::class, 'show']);
-            Route::post('/owner/profile', [OwnerProfileController::class, 'storeOrUpdate']);
-            Route::match(['put', 'patch'], '/owner/profile', [OwnerProfileController::class, 'update']);
+            Route::post('/gyms/{gymId}/membership/intent', [GymMembershipController::class, 'intent'])->whereNumber('gymId');
+            Route::get('/me/memberships', [GymMembershipController::class, 'myMemberships']);
+
+            Route::post('/gyms/{gymId}/free-visit/claim', [GymFreeVisitController::class, 'claim'])->whereNumber('gymId');
+            Route::get('/me/free-visits', [GymFreeVisitController::class, 'myFreeVisits']);
+
+            Route::post('/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ask'])->whereNumber('gymId');
+            Route::get('/me/inquiries', [GymInquiryController::class, 'myInquiries']);
+
+            Route::get('/me/ratings', [GymRatingController::class, 'myRatings']);
+            Route::get('/gyms/{gymId}/ratings/can-rate', [GymRatingController::class, 'canRate'])->whereNumber('gymId');
+            Route::post('/gyms/{gymId}/ratings', [GymRatingController::class, 'upsertMyRating'])->whereNumber('gymId');
+
+            Route::get('/owner/gyms/{gymId}/memberships', [GymMembershipController::class, 'ownerList'])->whereNumber('gymId');
+            Route::post('/owner/memberships/{membershipId}/activate', [GymMembershipController::class, 'ownerActivate'])->whereNumber('membershipId');
+            Route::patch('/owner/memberships/{membershipId}', [GymMembershipController::class, 'ownerUpdateStatus'])->whereNumber('membershipId');
+
+            Route::get('/owner/gyms/{gymId}/free-visits', [GymFreeVisitController::class, 'ownerList'])->whereNumber('gymId');
+            Route::post('/owner/free-visits/{freeVisitId}/use', [GymFreeVisitController::class, 'ownerMarkUsed'])->whereNumber('freeVisitId');
+            Route::patch('/owner/gyms/{gymId}/free-visit-enabled', [GymFreeVisitController::class, 'ownerToggleEnabled'])->whereNumber('gymId');
+
+            Route::get('/owner/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ownerList'])->whereNumber('gymId');
+            Route::post('/owner/inquiries/{inquiryId}/answer', [GymInquiryController::class, 'ownerAnswer'])->whereNumber('inquiryId');
 
             Route::middleware('admin')->group(function () {
 

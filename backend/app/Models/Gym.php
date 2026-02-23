@@ -7,9 +7,9 @@ use App\Models\User;
 
 class Gym extends Model
 {
- 
     protected $table = 'gyms';
     protected $primaryKey = 'gym_id';
+
     protected $fillable = [
         'name',
         'description',
@@ -34,8 +34,11 @@ class Gym extends Model
         'has_personal_trainers',
         'has_classes',
         'is_24_hours',
-        'is_airconditioned'
+        'is_airconditioned',
+        'free_first_visit_enabled',
+        'free_first_visit_enabled_at',
     ];
+
     protected $casts = [
         'latitude' => 'decimal:6',
         'longitude' => 'decimal:6',
@@ -43,12 +46,12 @@ class Gym extends Model
         'monthly_price' => 'decimal:2',
         'annual_price' => 'decimal:2',
         'gallery_urls' => 'array',
-
         'has_personal_trainers' => 'boolean',
         'has_classes' => 'boolean',
         'is_24_hours' => 'boolean',
         'is_airconditioned' => 'boolean',
-
+        'free_first_visit_enabled' => 'boolean',
+        'free_first_visit_enabled_at' => 'datetime',
         'opening_time' => 'datetime:H:i',
         'closing_time' => 'datetime:H:i',
     ];
@@ -56,17 +59,18 @@ class Gym extends Model
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id')
-                    ->where('role', 'owner'); // ensures only owner users
+            ->where('role', 'owner');
     }
+
     public function ownerProfile()
     {
         return $this->hasOneThrough(
             OwnerProfile::class,
             User::class,
-            'user_id', // Foreign key on User
-            'user_id', // Foreign key on OwnerProfile
-            'owner_id', // Local key on Gym
-            'user_id'   // Local key on User
+            'user_id',
+            'user_id',
+            'owner_id',
+            'user_id'
         );
     }
 
@@ -82,8 +86,7 @@ class Gym extends Model
             'gym_equipments',
             'gym_id',
             'equipment_id'
-        )
-        ->withPivot([
+        )->withPivot([
             'id',
             'quantity',
             'status',
@@ -93,13 +96,10 @@ class Gym extends Model
         ]);
     }
 
-
-
     public function gymAmenities()
     {
-        return $this->hasMany(GymAmenity::class, 'gym_id');
+        return $this->hasMany(GymAmenity::class, 'gym_id', 'gym_id');
     }
-
 
     public function amenities()
     {
@@ -108,8 +108,7 @@ class Gym extends Model
             'gym_amenities',
             'gym_id',
             'amenity_id'
-        )
-        ->withPivot([
+        )->withPivot([
             'id',
             'availability_status',
             'notes',
@@ -117,20 +116,12 @@ class Gym extends Model
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | BUSINESS LOGIC (FIT-RANK READY)
-    |--------------------------------------------------------------------------
-    */
-
-  
     public function withinBudget($budget)
     {
         return $this->daily_price <= $budget
             || $this->monthly_price <= $budget;
     }
 
-   
     public function equipmentMatchPercentage(array $requiredEquipmentIds)
     {
         if (count($requiredEquipmentIds) === 0) {
@@ -138,40 +129,54 @@ class Gym extends Model
         }
 
         $gymEquipmentIds = $this->equipments()->pluck('equipments.id')->toArray();
-
         $matched = array_intersect($requiredEquipmentIds, $gymEquipmentIds);
 
         return round((count($matched) / count($requiredEquipmentIds)) * 100);
     }
 
-    /**
-     * Simple FIT-Rank score (starter version)
-     */
     public function fitRankScore(array $userPreferences)
     {
         $score = 0;
 
-        // Budget
         if ($this->withinBudget($userPreferences['budget'] ?? 0)) {
             $score += 30;
         }
 
-        // Equipment match
         if (!empty($userPreferences['equipment_ids'])) {
             $score += $this->equipmentMatchPercentage(
                 $userPreferences['equipment_ids']
             ) * 0.5;
         }
 
-        // Extras
         if ($this->has_personal_trainers) $score += 5;
         if ($this->has_classes) $score += 5;
         if ($this->is_airconditioned) $score += 5;
 
         return min(100, round($score));
     }
+
     public function savedBy()
-{
-    return $this->hasMany(\App\Models\SavedGym::class, 'gym_id', 'gym_id');
-}
+    {
+        return $this->hasMany(\App\Models\SavedGym::class, 'gym_id', 'gym_id');
+    }
+
+    public function memberships()
+    {
+        return $this->hasMany(\App\Models\GymMembership::class, 'gym_id', 'gym_id');
+    }
+
+    public function freeVisits()
+    {
+        return $this->hasMany(\App\Models\GymFreeVisit::class, 'gym_id', 'gym_id');
+    }
+
+    public function inquiries()
+    {
+        return $this->hasMany(\App\Models\GymInquiry::class, 'gym_id', 'gym_id');
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(\App\Models\GymRating::class, 'gym_id', 'gym_id');
+    }
 }
