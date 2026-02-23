@@ -1,72 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import UserLoading from "./UserLoading";
-import HeaderUser from "./Header-user";
+import React, { useState, useEffect } from "react";
 import Footer from "./Footer";
-import { api } from "../../utils/apiClient";
+import Home from "./Home"; // Homepage WITHOUT any header
+import UserLoading from "./UserLoading";
 
-const ROLE_LEVEL = {
-  user: 1,
-  owner: 2,
-  admin: 3,
-  superadmin: 4,
+// =======================
+// DUMMY USER FOR TESTING
+// =======================
+const DUMMY_USER = {
+  id: 1,
+  name: "John",
+  email: "test@example.com",
+  role: "user",
 };
-
-function hasAtLeastRole(role, required) {
-  return (ROLE_LEVEL[role] || 0) >= (ROLE_LEVEL[required] || 0);
-}
 
 export default function UserLayout() {
   const [ready, setReady] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    let alive = true;
-
-    const run = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login", { replace: true });
-          return;
-        }
-
-        const minDelay = new Promise((r) => setTimeout(r, 800));
-        const meReq = api.get("/me");
-
-        const [meRes] = await Promise.all([meReq, minDelay]);
-        const fetchedUser = meRes.data.user || meRes.data;
-
-        if (!hasAtLeastRole(fetchedUser?.role, "user")) {
-          navigate("/login", { replace: true });
-          return;
-        }
-
-        if (!alive) return;
-        setReady(true);
-      } catch (err) {
-        if (err?.response?.status === 503) {
-          navigate("/maintenance", { replace: true });
-          return;
-        }
-
-        localStorage.removeItem("token");
-        navigate("/login", { replace: true });
-      }
-    };
-
-    run();
-    return () => {
-      alive = false;
-    };
-  }, [navigate]);
+    // Quick initialization
+    setReady(true);
+  }, []);
 
   if (!ready) return <UserLoading />;
 
   return (
     <>
-      <HeaderUser />
-      <Outlet />
+      {/* NO HEADER HERE - Home page handles its own hero/top section */}
+      
+      {/* Main Content - Homepage */}
+      <Home user={DUMMY_USER} />
+
+      {/* Footer */}
       <Footer />
     </>
   );

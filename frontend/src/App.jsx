@@ -4,7 +4,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Index from "./pages/index";
 import Login from "./pages/auth/login";
 import VerifyEmail from "./pages/auth/VerifyEmail";
-import UserHome from "./pages/user/Home";
+import UserHome from "./pages/user/Home"; // 
 import Profile from "./pages/user/Profile";
 import AdminDashboard from "./pages/admin/Dashboard";
 
@@ -80,7 +80,8 @@ function App() {
       <Route path="/profile" element={<Profile />} />
 
       <Route path="/home/*" element={<UserLayout />}>
-        <Route index element={<UserHome />} />
+      <Route index element={<UserHome />} /> 
+
         <Route path="becomeowner" element={<BecomeOwner />} />
         <Route path="applyowner" element={<OwnerApplication />} />
         <Route path="profile" element={<Profile />} />
