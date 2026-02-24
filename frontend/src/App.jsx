@@ -71,12 +71,13 @@ function App() {
       <Route path="/verify-email" element={<VerifyEmail />} />
 
       <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/meal-plan" element={<MealPlanGenerator/>} />
       <Route path="/become-an-owner" element={<BecomeOwner />} />
       <Route path="/owner-application" element={<OwnerApplication />} />
 
       <Route path="/home/*" element={<UserLayout />}>
         <Route index element={<UserHome />} />
+        <Route path="meal-plan" element={<MealPlanGenerator/>} />
+
         <Route path="becomeowner" element={<BecomeOwner />} />
         <Route path="applyowner" element={<OwnerApplication />} />
         <Route path="profile" element={<Profile />} />

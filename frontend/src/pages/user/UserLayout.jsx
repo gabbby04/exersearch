@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import HeaderUser from "./Header-user";
 import Footer from "./Footer";
 import UserLoading from "./UserLoading";
@@ -19,6 +19,7 @@ function hasAtLeastRole(role, required) {
 export default function UserLayout() {
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let alive = true;
@@ -59,12 +60,14 @@ export default function UserLayout() {
       alive = false;
     };
   }, [navigate]);
-
+  
   if (!ready) return <UserLoading />;
+
+  const hideHeader = location.pathname === "/home";
 
   return (
     <>
-      <HeaderUser />
+      {!hideHeader && <HeaderUser />}
       <Outlet />
       <Footer />
     </>
