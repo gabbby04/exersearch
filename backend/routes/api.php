@@ -53,6 +53,8 @@ use App\Http\Controllers\GymInquiryController;
 use App\Http\Controllers\GymRatingController;
 use App\Http\Controllers\OwnerManualMemberController;
 
+use App\Models\Meal;
+
 Route::prefix('v1')->group(function () {
 
     Route::get('/settings/public', [AppSettingsPublicController::class, 'show']);
@@ -80,6 +82,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/gym-equipments', [GymEquipmentController::class, 'index']);
     Route::get('/gym-amenities', [GymAmenityController::class, 'index']);
     Route::get('/gym-amenities/{id}', [GymAmenityController::class, 'show'])->whereNumber('id');
+
+    
+    Route::get('/meals', function () {
+            return Meal::where('is_active', true)->get();
+        });
 
     Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
 

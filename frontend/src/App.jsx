@@ -21,7 +21,7 @@ import WorkoutWeek from "./pages/user/WorkoutWeek";
 import WorkoutDayDetails from "./pages/user/WorkoutDayDetails";
 import BecomeOwner from "./pages/user/BecomeOwner";
 import OwnerApplication from "./pages/user/OwnerApplication";
-
+import MealPlanGenerator from "./pages/user/MealPlan";
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
 import OwnerMembers from "./pages/owner/OwnerMembers";
@@ -51,6 +51,7 @@ import AdminDatabaseBackup from "./pages/admin/AdminDatabaseBackup";
 
 import { getUserRole } from "./utils/auth";
 import "leaflet/dist/leaflet.css";
+import MealPlanGeneratorAI from "./pages/user/MealPlan";
 
 function RoleLanding() {
   const r = getUserRole();
@@ -70,7 +71,7 @@ function App() {
       <Route path="/verify-email" element={<VerifyEmail />} />
 
       <Route path="/onboarding" element={<Onboarding />} />
-
+      <Route path="/meal-plan" element={<MealPlanGenerator/>} />
       <Route path="/become-an-owner" element={<BecomeOwner />} />
       <Route path="/owner-application" element={<OwnerApplication />} />
 

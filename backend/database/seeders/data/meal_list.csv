@@ -1,0 +1,391 @@
+name,meal_type,calories,protein,carbs,fats,estimated_cost,diet_tags,allergens
+Boiled Itlog na Maalat with Kamote,breakfast,280,16,38,8,35,,eggs
+Scrambled Egg with Ampalaya,breakfast,260,20,12,14,40,vegetarian,eggs
+Tinapa with Brown Rice,breakfast,420,38,52,10,65,halal,fish
+Boiled Eggs with Sauteed Kangkong,breakfast,280,22,10,14,35,vegetarian,eggs
+Egg White Tortang Talong,breakfast,240,22,15,8,40,vegetarian,eggs
+Lugaw with Boiled Egg,breakfast,320,18,48,6,45,vegetarian,eggs
+Grilled Bangus with Kamote,breakfast,420,42,38,12,90,halal,fish
+Oatmeal with Coco Sugar and Saba,breakfast,360,10,62,6,40,"vegan,vegetarian",gluten
+Egg White Pandesal Sandwich,breakfast,300,24,35,5,45,vegetarian,"eggs,gluten"
+Low Fat Arroz Caldo,breakfast,320,28,48,4,65,halal,
+Boiled Kamote with Itlog Prito Low Oil,breakfast,310,14,48,8,38,vegetarian,eggs
+Tuna Sinangag Brown Rice,breakfast,440,40,52,8,65,halal,fish
+Ampalaya Omelette,breakfast,220,18,8,12,35,vegetarian,eggs
+Steamed Saba with Boiled Egg,breakfast,260,12,42,8,25,vegetarian,eggs
+Low Fat Champorado,breakfast,300,8,58,4,40,"vegan,vegetarian",
+Sinigang na Hipon Low Fat,lunch,320,38,22,5,125,halal,shellfish
+Tinolang Manok No Skin,lunch,300,42,15,4,90,halal,
+Grilled Bangus with Ensalada,lunch,380,48,8,14,115,halal,fish
+Chicken Breast Sinigang,lunch,360,48,22,5,110,halal,
+Ginisang Mongo No Pork,lunch,340,22,50,5,60,"vegan,vegetarian",
+Steamed Tilapia with Ginger,lunch,300,46,5,8,85,halal,fish
+Low Fat Chicken Adobo,lunch,380,50,12,10,100,halal,soy
+Grilled Chicken Inasal No Skin,lunch,380,55,8,10,115,halal,
+Pinakbet No Bagoong Low Oil,lunch,240,10,32,8,70,"vegan,vegetarian",
+Sinigang na Salmon Low Fat,lunch,400,48,20,12,155,halal,fish
+Steamed Chicken with Pechay,lunch,280,42,10,5,90,halal,
+Ginataang Sitaw at Kalabasa No Fatty Meat,lunch,300,12,38,10,75,vegetarian,dairy
+Tinolang Isda Low Oil,lunch,280,38,12,6,90,halal,fish
+Chicken Breast Kare-Kare Low Fat,lunch,380,46,22,12,140,halal,nuts
+Paksiw na Isda,lunch,300,38,10,12,85,halal,fish
+Nilagang Manok No Skin,lunch,280,42,14,4,90,halal,
+Grilled Pusit Low Oil,lunch,280,38,8,8,120,halal,shellfish
+Steamed Hipon with Calamansi,lunch,240,38,4,5,130,halal,shellfish
+Low Fat Mechado Chicken,lunch,360,46,22,8,120,halal,
+Boiled Pechay with Tuna,lunch,260,35,10,6,75,halal,fish
+Grilled Liempo Lean Cut,lunch,420,42,5,22,135,,
+Chicken Afritada Low Fat,lunch,360,44,25,8,110,halal,
+Steamed Labanos with Bangus,lunch,280,38,12,8,90,halal,fish
+Monggo with Malunggay,lunch,300,18,48,4,55,"vegan,vegetarian",
+Grilled Tanigue Steak,lunch,380,50,5,14,160,halal,fish
+Low Calorie Tortang Talong,lunch,240,16,18,10,50,vegetarian,eggs
+Lato Salad with Grilled Chicken,lunch,300,45,10,6,115,halal,
+Steamed Clams with Ginger,lunch,220,30,8,4,120,halal,shellfish
+Chicken Breast Tinola with Malunggay,lunch,320,44,14,5,90,halal,
+Sinigang na Bangus Low Fat,dinner,340,46,15,10,110,halal,fish
+Steamed Chicken Breast with Sayote,dinner,280,42,12,4,90,halal,
+Grilled Salmon Low Oil,dinner,420,50,5,20,175,halal,fish
+Tinolang Manok with Malunggay,dinner,300,42,14,5,90,halal,
+Boiled Pork Liempo Lean,dinner,380,38,5,22,125,,
+Grilled Tilapia with Ampalaya,dinner,300,46,12,8,88,halal,fish
+Low Fat Chicken Binakol,dinner,280,40,14,4,100,halal,
+Steamed Bangus with Tausi,dinner,360,46,10,14,115,halal,"fish,soy"
+Grilled Pork Tenderloin Low Oil,dinner,380,46,5,18,125,,
+Chicken Breast Paksiw,dinner,300,44,12,6,90,halal,
+Steamed Lapu-Lapu,dinner,300,48,5,8,180,halal,fish
+Low Fat Beef Sinigang,dinner,380,42,22,10,145,,
+Grilled Chicken Thigh No Skin,dinner,340,46,5,14,100,halal,
+Steamed Shrimp with Veggies,dinner,260,38,10,5,140,halal,shellfish
+Nilagang Baka Lean Cut,dinner,360,45,15,12,140,,
+Low Calorie Ginataang Isda,dinner,340,40,12,14,110,halal,"fish,dairy"
+Baked Bangus with Tomato Onion,dinner,360,46,12,14,110,halal,fish
+Chicken Breast with Ensaladang Talong,dinner,300,44,12,6,95,halal,
+Grilled Squid Low Oil,dinner,260,36,8,6,120,halal,shellfish
+Steamed Talaba,dinner,200,22,8,6,130,halal,shellfish
+Boiled Saging Saba,snack,120,1,28,0,12,"vegan,vegetarian",
+Taho Low Sugar,snack,140,10,18,2,22,vegetarian,soy
+Boiled Kamote Small,snack,120,2,28,0,15,"vegan,vegetarian",
+Steamed Mais,snack,150,4,32,1,18,"vegan,vegetarian",
+Boiled Mani Unsalted,snack,180,8,12,12,22,"vegan,vegetarian",nuts
+Buko Meat,snack,140,1,20,6,28,"vegan,vegetarian",
+Calamansi Juice No Sugar,snack,30,0,8,0,15,"vegan,vegetarian",
+Saging na Saba Boiled,snack,120,1,28,0,12,"vegan,vegetarian",
+Lato Seaweed Salad,snack,80,3,12,1,35,"vegan,vegetarian",
+Boiled Gabi,snack,140,2,32,0,18,"vegan,vegetarian",
+Itlog na Maalat Half,snack,110,7,1,8,14,,eggs
+Singkamas with Vinegar,snack,80,1,18,0,18,"vegan,vegetarian",
+Cucumber with Calamansi,snack,50,1,10,0,12,"vegan,vegetarian",
+Boiled Tokwa Low Oil,snack,150,14,4,8,30,"vegan,vegetarian",soy
+Banana Saba with Peanut Butter,snack,200,6,32,8,25,"vegan,vegetarian",nuts
+Malunggay Smoothie,snack,120,5,18,2,30,"vegan,vegetarian",
+Steamed Edamame,snack,160,12,14,6,42,"vegan,vegetarian",soy
+Grilled Corn No Butter,snack,130,4,28,1,18,"vegan,vegetarian",
+Canned Tuna No Oil,snack,120,26,0,1,38,halal,fish
+Hard Boiled Egg with Singkamas,snack,160,12,18,8,20,vegetarian,eggs
+Pinakbet Salad No Oil,snack,90,4,15,2,40,"vegan,vegetarian",
+Buko Juice Fresh,snack,90,1,20,0,28,"vegan,vegetarian",
+Steamed Sitaw,snack,70,4,12,0,18,"vegan,vegetarian",
+Boiled Bataw Beans,snack,150,10,24,1,22,"vegan,vegetarian",
+Ginisang Ampalaya No Oil,snack,80,4,10,2,22,"vegan,vegetarian",
+Boiled Green Papaya,snack,80,1,18,0,18,"vegan,vegetarian",
+Boiled Upo,snack,60,1,12,0,14,"vegan,vegetarian",
+Tuna Lettuce Wrap,snack,140,24,5,3,60,halal,fish
+Scrambled Egg White 3pcs,snack,100,18,1,0,18,vegetarian,eggs
+Boiled Monggo Small,snack,160,10,26,1,20,"vegan,vegetarian",
+Unsweetened Soy Milk,snack,80,7,4,4,28,"vegan,vegetarian",soy
+Steamed Pechay with Garlic,snack,60,3,8,2,15,"vegan,vegetarian",
+Boiled Taro Small,snack,130,2,28,0,18,"vegan,vegetarian",
+Fresh Buko Meat Strips,snack,120,1,18,5,25,"vegan,vegetarian",
+Grilled Eggplant with Egg,snack,140,10,12,6,28,vegetarian,eggs
+Boiled Labanos Strips,snack,50,1,10,0,12,"vegan,vegetarian",
+Boiled Itlog na Maalat with Kamote,breakfast,280,16,38,8,35,,eggs
+Scrambled Egg with Ampalaya,breakfast,260,20,12,14,40,vegetarian,eggs
+Tinapa with Brown Rice,breakfast,420,38,52,10,65,halal,fish
+Boiled Eggs with Sauteed Kangkong,breakfast,280,22,10,14,35,vegetarian,eggs
+Egg White Tortang Talong,breakfast,240,22,15,8,40,vegetarian,eggs
+Lugaw with Boiled Egg,breakfast,320,18,48,6,45,vegetarian,eggs
+Grilled Bangus with Kamote,breakfast,420,42,38,12,90,halal,fish
+Oatmeal with Coco Sugar and Saba,breakfast,360,10,62,6,40,"vegan,vegetarian",gluten
+Egg White Pandesal Sandwich,breakfast,300,24,35,5,45,vegetarian,"eggs,gluten"
+Low Fat Arroz Caldo,breakfast,320,28,48,4,65,halal,
+Boiled Kamote with Itlog Prito Low Oil,breakfast,310,14,48,8,38,vegetarian,eggs
+Tuna Sinangag Brown Rice,breakfast,440,40,52,8,65,halal,fish
+Ampalaya Omelette,breakfast,220,18,8,12,35,vegetarian,eggs
+Steamed Saba with Boiled Egg,breakfast,260,12,42,8,25,vegetarian,eggs
+Low Fat Champorado,breakfast,300,8,58,4,40,"vegan,vegetarian",
+Sinigang na Hipon Low Fat,lunch,320,38,22,5,125,halal,shellfish
+Tinolang Manok No Skin,lunch,300,42,15,4,90,halal,
+Grilled Bangus with Ensalada,lunch,380,48,8,14,115,halal,fish
+Chicken Breast Sinigang,lunch,360,48,22,5,110,halal,
+Ginisang Mongo No Pork,lunch,340,22,50,5,60,"vegan,vegetarian",
+Steamed Tilapia with Ginger,lunch,300,46,5,8,85,halal,fish
+Low Fat Chicken Adobo,lunch,380,50,12,10,100,halal,soy
+Grilled Chicken Inasal No Skin,lunch,380,55,8,10,115,halal,
+Pinakbet No Bagoong Low Oil,lunch,240,10,32,8,70,"vegan,vegetarian",
+Sinigang na Salmon Low Fat,lunch,400,48,20,12,155,halal,fish
+Steamed Chicken with Pechay,lunch,280,42,10,5,90,halal,
+Ginataang Sitaw at Kalabasa No Fatty Meat,lunch,300,12,38,10,75,vegetarian,dairy
+Tinolang Isda Low Oil,lunch,280,38,12,6,90,halal,fish
+Chicken Breast Kare-Kare Low Fat,lunch,380,46,22,12,140,halal,nuts
+Paksiw na Isda,lunch,300,38,10,12,85,halal,fish
+Nilagang Manok No Skin,lunch,280,42,14,4,90,halal,
+Grilled Pusit Low Oil,lunch,280,38,8,8,120,halal,shellfish
+Steamed Hipon with Calamansi,lunch,240,38,4,5,130,halal,shellfish
+Low Fat Mechado Chicken,lunch,360,46,22,8,120,halal,
+Boiled Pechay with Tuna,lunch,260,35,10,6,75,halal,fish
+Grilled Liempo Lean Cut,lunch,420,42,5,22,135,,
+Chicken Afritada Low Fat,lunch,360,44,25,8,110,halal,
+Steamed Labanos with Bangus,lunch,280,38,12,8,90,halal,fish
+Monggo with Malunggay,lunch,300,18,48,4,55,"vegan,vegetarian",
+Grilled Tanigue Steak,lunch,380,50,5,14,160,halal,fish
+Low Calorie Tortang Talong,lunch,240,16,18,10,50,vegetarian,eggs
+Lato Salad with Grilled Chicken,lunch,300,45,10,6,115,halal,
+Steamed Clams with Ginger,lunch,220,30,8,4,120,halal,shellfish
+Chicken Breast Tinola with Malunggay,lunch,320,44,14,5,90,halal,
+Sinigang na Bangus Low Fat,dinner,340,46,15,10,110,halal,fish
+Steamed Chicken Breast with Sayote,dinner,280,42,12,4,90,halal,
+Grilled Salmon Low Oil,dinner,420,50,5,20,175,halal,fish
+Tinolang Manok with Malunggay,dinner,300,42,14,5,90,halal,
+Boiled Pork Liempo Lean,dinner,380,38,5,22,125,,
+Grilled Tilapia with Ampalaya,dinner,300,46,12,8,88,halal,fish
+Low Fat Chicken Binakol,dinner,280,40,14,4,100,halal,
+Steamed Bangus with Tausi,dinner,360,46,10,14,115,halal,"fish,soy"
+Grilled Pork Tenderloin Low Oil,dinner,380,46,5,18,125,,
+Chicken Breast Paksiw,dinner,300,44,12,6,90,halal,
+Steamed Lapu-Lapu,dinner,300,48,5,8,180,halal,fish
+Low Fat Beef Sinigang,dinner,380,42,22,10,145,,
+Grilled Chicken Thigh No Skin,dinner,340,46,5,14,100,halal,
+Steamed Shrimp with Veggies,dinner,260,38,10,5,140,halal,shellfish
+Nilagang Baka Lean Cut,dinner,360,45,15,12,140,,
+Low Calorie Ginataang Isda,dinner,340,40,12,14,110,halal,"fish,dairy"
+Baked Bangus with Tomato Onion,dinner,360,46,12,14,110,halal,fish
+Chicken Breast with Ensaladang Talong,dinner,300,44,12,6,95,halal,
+Grilled Squid Low Oil,dinner,260,36,8,6,120,halal,shellfish
+Steamed Talaba,dinner,200,22,8,6,130,halal,shellfish
+Boiled Saging Saba,snack,120,1,28,0,12,"vegan,vegetarian",
+Taho Low Sugar,snack,140,10,18,2,22,vegetarian,soy
+Boiled Kamote Small,snack,120,2,28,0,15,"vegan,vegetarian",
+Steamed Mais,snack,150,4,32,1,18,"vegan,vegetarian",
+Boiled Mani Unsalted,snack,180,8,12,12,22,"vegan,vegetarian",nuts
+Buko Meat,snack,140,1,20,6,28,"vegan,vegetarian",
+Calamansi Juice No Sugar,snack,30,0,8,0,15,"vegan,vegetarian",
+Saging na Saba Boiled,snack,120,1,28,0,12,"vegan,vegetarian",
+Lato Seaweed Salad,snack,80,3,12,1,35,"vegan,vegetarian",
+Boiled Gabi,snack,140,2,32,0,18,"vegan,vegetarian",
+Itlog na Maalat Half,snack,110,7,1,8,14,,eggs
+Singkamas with Vinegar,snack,80,1,18,0,18,"vegan,vegetarian",
+Cucumber with Calamansi,snack,50,1,10,0,12,"vegan,vegetarian",
+Boiled Tokwa Low Oil,snack,150,14,4,8,30,"vegan,vegetarian",soy
+Banana Saba with Peanut Butter,snack,200,6,32,8,25,"vegan,vegetarian",nuts
+Malunggay Smoothie,snack,120,5,18,2,30,"vegan,vegetarian",
+Steamed Edamame,snack,160,12,14,6,42,"vegan,vegetarian",soy
+Grilled Corn No Butter,snack,130,4,28,1,18,"vegan,vegetarian",
+Canned Tuna No Oil,snack,120,26,0,1,38,halal,fish
+Hard Boiled Egg with Singkamas,snack,160,12,18,8,20,vegetarian,eggs
+Pinakbet Salad No Oil,snack,90,4,15,2,40,"vegan,vegetarian",
+Buko Juice Fresh,snack,90,1,20,0,28,"vegan,vegetarian",
+Steamed Sitaw,snack,70,4,12,0,18,"vegan,vegetarian",
+Boiled Bataw Beans,snack,150,10,24,1,22,"vegan,vegetarian",
+Ginisang Ampalaya No Oil,snack,80,4,10,2,22,"vegan,vegetarian",
+Boiled Green Papaya,snack,80,1,18,0,18,"vegan,vegetarian",
+Boiled Upo,snack,60,1,12,0,14,"vegan,vegetarian",
+Tuna Lettuce Wrap,snack,140,24,5,3,60,halal,fish
+Scrambled Egg White 3pcs,snack,100,18,1,0,18,vegetarian,eggs
+Boiled Monggo Small,snack,160,10,26,1,20,"vegan,vegetarian",
+Unsweetened Soy Milk,snack,80,7,4,4,28,"vegan,vegetarian",soy
+Steamed Pechay with Garlic,snack,60,3,8,2,15,"vegan,vegetarian",
+Boiled Taro Small,snack,130,2,28,0,18,"vegan,vegetarian",
+Fresh Buko Meat Strips,snack,120,1,18,5,25,"vegan,vegetarian",
+Grilled Eggplant with Egg,snack,140,10,12,6,28,vegetarian,eggs
+Boiled Labanos Strips,snack,50,1,10,0,12,"vegan,vegetarian",
+Chicken Arroz Caldo with Malunggay,breakfast,380,35,42,6,70,halal,
+3 Boiled Eggs with Sauteed Kangkong,breakfast,310,26,10,18,38,vegetarian,eggs
+Tuna Omelet with Brown Rice,breakfast,460,42,52,12,68,halal,"fish,eggs"
+Sinangag Brown Rice with Egg Whites,breakfast,380,28,55,5,42,vegetarian,eggs
+Grilled Tilapia with Kamote,breakfast,400,44,38,8,85,halal,fish
+Tokwa Scramble with Veggies,breakfast,300,24,18,14,45,"vegan,vegetarian",soy
+Champorado Low Sugar with Tablea,breakfast,340,10,58,8,42,"vegan,vegetarian",
+Egg White Sinangag with Sardines,breakfast,420,38,52,10,55,halal,"fish,eggs"
+Boiled Kamote and 2 Boiled Eggs,breakfast,320,18,45,10,35,vegetarian,eggs
+Monggo Soup with Boiled Egg,breakfast,350,22,48,6,48,vegetarian,eggs
+Pandesal with Tuna and Egg White,breakfast,360,32,42,6,52,halal,"fish,eggs,gluten"
+Grilled Chicken with Steamed Saba,breakfast,420,46,38,8,90,halal,
+Sardines with Kamote and Egg,breakfast,400,34,42,12,52,,"fish,eggs"
+High Protein Goto,breakfast,360,32,45,8,72,,
+Malunggay Omelette,breakfast,240,20,8,14,38,vegetarian,eggs
+Grilled Chicken Breast with Mongo Soup,lunch,480,55,40,8,105,halal,
+Sinigang na Hipon with Brown Rice,lunch,440,42,52,8,135,halal,shellfish
+Lechon Manok Breast No Skin Brown Rice,lunch,500,55,52,10,125,halal,
+Steamed Lapu-Lapu with Brown Rice,lunch,420,50,52,8,185,halal,fish
+Beef Tapa Lean with Brown Rice,lunch,520,46,52,14,130,,soy
+Grilled Tanigue with Ensalada,lunch,380,52,8,14,155,halal,fish
+Chicken Breast Sinigang sa Miso,lunch,380,48,22,8,110,halal,"soy,fish"
+Steamed Bangus with Brown Rice,lunch,440,48,52,12,110,halal,fish
+Ginisang Upo with Hipon,lunch,300,32,20,8,105,halal,shellfish
+Lean Kaldereta Manok,lunch,420,46,28,12,125,halal,
+Steamed Crabs with Calamansi,lunch,300,40,5,10,170,halal,shellfish
+Grilled Chicken Inasal with Atchara,lunch,440,55,18,12,120,halal,
+Pesang Isda,lunch,320,42,15,8,105,halal,fish
+Boiled Kambing with Veggies,lunch,440,48,12,20,150,,
+Chicken Sopas Low Fat,lunch,360,38,35,8,90,halal,"gluten,dairy"
+Ginisang Ampalaya with Egg and Hipon,lunch,320,30,18,14,110,halal,"eggs,shellfish"
+Pork Sinigang Lean Cut,lunch,420,40,22,14,125,,
+Steamed Mussels with Ginger,lunch,260,30,10,6,115,halal,shellfish
+Chicken Breast Afritada Low Oil,lunch,400,46,28,10,115,halal,
+Baked Bangus Belly Low Oil,lunch,460,46,10,22,115,halal,fish
+Ginataang Sitaw with Chicken Breast,lunch,400,40,30,14,100,halal,dairy
+Beef Mechado Lean,lunch,460,42,28,16,145,,
+Ensaladang Talong with Grilled Chicken,lunch,320,44,15,8,95,halal,
+Steamed Puso ng Saging with Tuna,lunch,300,35,20,8,80,halal,fish
+Ginisang Repolyo with Chicken,lunch,280,38,18,6,85,halal,
+Grilled Salmon Belly with Brown Rice,lunch,580,50,52,22,180,halal,fish
+Low Fat Chicken Caldereta,lunch,400,45,28,10,120,halal,
+Steamed Tahong with Calamansi,lunch,250,28,10,6,110,halal,shellfish
+Grilled Chicken Breast with Sauteed Pechay,dinner,350,52,12,8,105,halal,
+Steamed Lapu-Lapu with Kangkong,dinner,320,48,10,8,180,halal,fish
+Chicken Tinola Extra Malunggay,dinner,310,42,16,5,90,halal,
+Grilled Tuna Belly,dinner,480,52,5,26,170,halal,fish
+Beef Bulalo Lean No Marrow,dinner,400,46,15,16,160,,
+Steamed Chicken with Ginger and Onion,dinner,300,44,8,8,90,halal,
+Grilled Pusit with Ensalada,dinner,300,40,8,8,125,halal,shellfish
+Salmon Sinigang Low Fat,dinner,440,50,20,14,175,halal,fish
+Nilagang Manok Lean,dinner,300,42,14,6,90,halal,
+Baked Tilapia with Herbs,dinner,320,46,5,10,88,halal,fish
+Chicken Breast Paksiw Low Oil,dinner,300,44,14,6,90,halal,
+Steamed Alimasag,dinner,260,35,5,8,175,halal,shellfish
+Low Fat Dinuguan with Brown Rice,dinner,420,38,52,12,110,,
+Grilled Chicken Wings Low Oil,dinner,380,42,5,20,100,halal,
+Beef Nilaga Lean,dinner,380,44,18,12,140,,
+Steamed Hipon with Sitaw,dinner,260,36,14,4,135,halal,shellfish
+Oven Baked Chicken Thigh No Skin,dinner,340,46,5,14,100,halal,
+Pakbet with Grilled Bangus,dinner,360,40,22,12,115,halal,fish
+Chicken Breast Stew with Sayote,dinner,320,44,18,6,95,halal,
+Grilled Pork Loin Lean,dinner,380,44,5,18,130,,
+Boiled Mani with Banana,snack,250,10,32,12,28,"vegan,vegetarian",nuts
+Taho with Less Sugar,snack,130,10,16,2,22,vegetarian,soy
+Grilled Saba Banana,snack,140,1,32,1,14,"vegan,vegetarian",
+Boiled Tokwa with Calamansi Soy,snack,160,14,5,8,28,"vegan,vegetarian",soy
+Malunggay Salad,snack,80,5,10,2,18,"vegan,vegetarian",
+Fresh Buko with Meat,snack,160,2,24,6,30,"vegan,vegetarian",
+Roasted Kamote Chips,snack,160,2,35,1,20,"vegan,vegetarian",
+Boiled Saging with Peanut Butter,snack,220,6,35,10,24,"vegan,vegetarian",nuts
+Cucumber and Tomato Salad,snack,60,2,12,0,14,"vegan,vegetarian",
+Scrambled Egg White 4pcs,snack,120,20,1,0,18,vegetarian,eggs
+Dried Mangga No Sugar,snack,140,1,34,0,25,"vegan,vegetarian",
+Steamed Gabi with Calamansi,snack,130,2,28,0,16,"vegan,vegetarian",
+Low Fat Taho Protein,snack,160,15,12,3,28,vegetarian,soy
+Boiled Sitaw,snack,60,4,10,0,14,"vegan,vegetarian",
+Banana Kamote Smoothie No Sugar,snack,180,3,40,1,22,"vegan,vegetarian",
+Peanut Butter Brown Rice Cake,snack,210,7,28,9,32,"vegan,vegetarian",nuts
+Boiled Eggs with Calamansi Salt,snack,140,12,1,10,18,vegetarian,eggs
+Unsweetened Buko Juice,snack,80,1,18,0,28,"vegan,vegetarian",
+Ginataang Monggo Small Bowl,snack,200,10,28,6,35,"vegan,vegetarian",dairy
+Canned Tuna on Cucumber Boats,snack,130,24,5,2,42,halal,fish
+Steamed Pechay with Boiled Egg,snack,100,10,8,6,18,vegetarian,eggs
+Brown Rice Cake with Sardines,snack,190,20,20,6,38,halal,fish
+Boiled Monggo Small Cup,snack,140,10,22,1,18,"vegan,vegetarian",
+Steamed Kalabasa Small,snack,90,2,20,0,14,"vegan,vegetarian",
+Chicken Breast Tidbits,snack,160,32,0,3,72,halal,
+Boiled Peanuts with Sea Salt,snack,170,8,10,10,20,"vegan,vegetarian",nuts
+Low Sugar Gatas ng Kalabaw,snack,130,8,12,5,30,vegetarian,dairy
+Steamed Kamote Tops,snack,60,4,8,1,12,"vegan,vegetarian",
+Boiled Mais Small Cob,snack,120,4,26,1,15,"vegan,vegetarian",
+Tinolang Isda Small Bowl,lunch,260,36,12,5,85,halal,fish
+Chicken Arroz Caldo High Protein,lunch,420,42,45,8,75,halal,
+Grilled Hito Low Oil,lunch,340,42,5,14,80,halal,fish
+Steamed Clams Garlic Ginger,lunch,220,28,8,4,110,halal,shellfish
+Ginisang Sitaw with Egg,lunch,250,16,22,10,42,vegetarian,eggs
+Grilled Panga ng Tuna,dinner,460,52,5,24,165,halal,fish
+Steamed Chicken Breast with Tausi,dinner,320,44,10,8,95,halal,soy
+Boiled Hipon with Kangkong,dinner,240,34,10,4,130,halal,shellfish
+Sinangag with Itlog at Longganisa,breakfast,620,28,55,22,85,halal,
+Champorado with Tuyo,breakfast,480,18,72,14,60,,fish
+Tapsilog,breakfast,680,42,58,25,110,,
+Tocilog,breakfast,650,38,60,24,100,,
+Bangsilog,breakfast,590,44,52,18,95,,fish
+Arroz Caldo,breakfast,420,28,58,8,70,halal,
+Goto,breakfast,390,25,52,10,65,,
+Lugaw with Tokwa,breakfast,350,18,55,8,50,"vegan,vegetarian",soy
+Pandesal with Itlog,breakfast,380,18,48,10,45,vegetarian,"gluten,eggs"
+Sinangag with Sardines,breakfast,520,32,55,14,55,,fish
+Boiled Kamote with Itlog,breakfast,340,16,52,8,40,vegetarian,eggs
+Oatmeal with Saba Banana,breakfast,320,12,58,5,35,"vegan,vegetarian",gluten
+Maja Blanca with Itlog,breakfast,410,14,62,10,55,vegetarian,dairy
+Chicken Adobo with Brown Rice,lunch,580,48,52,16,110,halal,soy
+Sinigang na Hipon,lunch,420,38,28,10,130,halal,shellfish
+Tinolang Manok,lunch,380,42,18,8,95,halal,
+Beef Kaldereta,lunch,620,45,30,28,150,,
+Pork Sinigang,lunch,520,40,28,20,130,,
+Pinakbet with Tilapia,lunch,380,32,28,12,90,,fish
+Grilled Bangus,lunch,420,48,8,18,120,halal,fish
+Kare-Kare with Bagoong,lunch,580,42,30,24,160,,"shellfish,nuts"
+Chicken Tinola with Malunggay,lunch,360,40,18,8,90,halal,
+Grilled Liempo,lunch,650,40,5,40,140,,
+Laing,lunch,480,22,32,28,85,"vegan,vegetarian",
+Monggo with Pork,lunch,460,35,48,12,80,,
+Nilagang Baka,lunch,520,48,20,18,145,,
+Paksiw na Bangus,lunch,380,42,10,16,95,halal,fish
+Chicken Inasal with Brown Rice,lunch,560,52,50,14,120,halal,
+Sinigang na Salmon,lunch,480,48,20,18,160,halal,fish
+Beef Mechado,lunch,580,42,28,26,150,,
+Tinolang Isda,lunch,340,38,15,8,100,halal,fish
+Adobong Pusit,lunch,420,38,15,18,130,halal,shellfish
+Chicken Curry Filipino Style,lunch,560,46,35,22,115,halal,dairy
+Lumpiang Sariwa,lunch,380,18,42,14,70,vegetarian,"gluten,eggs"
+Ginisang Mongo,lunch,380,28,48,8,65,"vegan,vegetarian",
+Pakbet with Bagoong,lunch,320,14,35,10,75,vegetarian,shellfish
+Grilled Tilapia with Ensalada,lunch,380,48,12,10,90,halal,fish
+Chicken Afritada,lunch,520,44,32,18,115,halal,
+Bicol Express,lunch,580,30,20,38,120,,dairy
+Dinuguan,lunch,520,35,15,32,110,,
+Lechon Kawali with Atsara,lunch,680,38,22,42,140,,
+Chicken Pastel,lunch,540,42,38,20,130,,"dairy,gluten"
+Ginataang Kalabasa with Hipon,lunch,480,28,38,22,110,,"shellfish,dairy"
+Tortang Talong,lunch,320,18,22,16,55,vegetarian,eggs
+Beef Pares,lunch,560,40,45,18,130,,soy
+Kilawing Kambing,lunch,420,38,12,18,130,,
+Grilled Chicken Inasal,lunch,460,52,8,18,110,halal,
+Pork Adobo sa Gata,lunch,600,38,18,38,130,,dairy
+Beef Bulalo,dinner,620,52,15,32,180,,
+Lechon Manok with Brown Rice,dinner,580,52,52,18,130,halal,
+Seafood Sinigang,dinner,440,42,28,12,160,halal,"fish,shellfish"
+Chicken Tinola,dinner,360,40,18,8,95,halal,
+Pork Nilaga,dinner,480,38,22,22,120,,
+Beef Steak Filipino Style,dinner,580,48,15,28,160,,soy
+Grilled Pork Liempo,dinner,620,40,5,42,140,,
+Chicken Relleno,dinner,560,50,30,22,160,,"eggs,gluten"
+Fish Escabeche,dinner,420,40,28,14,120,halal,fish
+Pork Menudo,dinner,540,35,35,24,130,,
+Chicken Binakol,dinner,380,42,15,12,110,halal,
+Salmon Sinigang,dinner,500,50,22,20,180,halal,fish
+Beef Bulalo with Vegetables,dinner,580,50,22,28,175,,
+Crispy Pata,dinner,780,42,20,52,200,,
+Kinilaw na Tanigue,dinner,360,42,12,14,150,halal,fish
+Pinais na Isda,dinner,380,40,10,18,100,halal,fish
+Chicken Inasal Boneless,dinner,480,55,8,20,130,halal,
+Grilled Squid,dinner,320,38,10,10,130,halal,shellfish
+Boiled Kamote,snack,180,3,42,0,20,"vegan,vegetarian",
+Boiled Saba Banana,snack,150,2,38,0,15,"vegan,vegetarian",
+Itlog na Maalat,snack,210,14,2,16,25,,eggs
+Taho,snack,180,10,28,4,25,vegetarian,soy
+Ginataang Bilo-Bilo,snack,320,5,62,8,40,"vegan,vegetarian",
+Mais con Yelo,snack,280,5,58,5,30,vegetarian,dairy
+Buko Salad,snack,260,2,52,6,45,"vegan,vegetarian",dairy
+Peanut Boiled,snack,280,14,18,18,25,"vegan,vegetarian",nuts
+Kamote Cue,snack,220,2,48,4,20,"vegan,vegetarian",
+Banana Cue,snack,200,2,44,4,15,"vegan,vegetarian",
+Hard Boiled Egg,snack,140,12,1,10,10,vegetarian,eggs
+Tupig,snack,240,3,48,5,20,"vegan,vegetarian",
+Palitaw,snack,220,4,46,3,20,"vegan,vegetarian",
+Puto,snack,200,5,40,3,20,vegetarian,"gluten,dairy"
+Kutsinta,snack,180,3,40,2,18,"vegan,vegetarian",
+Biko,snack,280,3,58,6,25,"vegan,vegetarian",
+Bibingka,snack,320,8,52,10,35,vegetarian,"eggs,dairy,gluten"
+Kakanin Mixed,snack,260,4,54,5,30,vegetarian,
+Saging na Saba with Peanut Butter,snack,280,8,42,12,30,"vegan,vegetarian",nuts
+Buko Juice,snack,120,2,28,0,30,"vegan,vegetarian",
+Ginataang Mais,snack,300,5,58,8,35,"vegan,vegetarian",dairy
+Cassava Cake,snack,280,3,55,7,30,vegetarian,"eggs,dairy"
+Turon,snack,240,3,46,6,20,"vegan,vegetarian",gluten
+Espasol,snack,220,3,46,4,18,"vegan,vegetarian",

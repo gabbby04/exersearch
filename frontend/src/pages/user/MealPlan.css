@@ -1,0 +1,1071 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ══════════════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════════════ */
+.mpai-app {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #fafafa;
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+.mpai-app * {
+  box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════════════ */
+.mpai-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 2rem 1.5rem;
+}
+
+.mpai-header--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 1.25rem 1.5rem;
+}
+
+.mpai-header__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.mpai-header__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #d4660a;
+  margin-bottom: 0.5rem;
+}
+
+.mpai-header__title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.mpai-header__sub {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0.5rem 0 0;
+}
+
+.mpai-header__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ══════════════════════════════════════════════════════
+   FORM BODY
+══════════════════════════════════════════════════════ */
+.mpai-form-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mpai-result-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* ══════════════════════════════════════════════════════
+   CARD
+══════════════════════════════════════════════════════ */
+.mpai-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.mpai-section-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════════════
+   BUDGET CARD
+══════════════════════════════════════════════════════ */
+.mpai-budget-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 2rem;
+}
+
+.mpai-budget-card__amount {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #d4660a;
+  margin: 0;
+  line-height: 1;
+}
+
+.mpai-budget-card__quick {
+  text-align: right;
+}
+
+.mpai-budget-card__quick-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+}
+
+.mpai-budget-card__quick-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mpai-quick-btn {
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mpai-quick-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.mpai-quick-btn.active {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: white;
+}
+
+.mpai-quick-btn--orange.active {
+  background: #d4660a;
+  border-color: #d4660a;
+}
+
+.mpai-range-hints {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.mpai-range-hint {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  outline: none;
+  -webkit-appearance: none;
+  accent-color: #d4660a;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #d4660a;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(212,102,10,0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #d4660a;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(212,102,10,0.3);
+}
+
+/* ══════════════════════════════════════════════════════
+   CALORIES & MACROS CARD
+══════════════════════════════════════════════════════ */
+.mpai-cal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.mpai-cal-row__label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mpai-cal-row__controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mpai-cal-input-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.mpai-cal-input-box input {
+  width: 70px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+}
+
+.mpai-cal-input-box span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.mpai-macros-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.mpai-macro-box {
+  padding: 1.25rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+}
+
+.mpai-macro-box__label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.75rem;
+}
+
+.mpai-macro-box__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mpai-macro-box__value-row input {
+  width: 70px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 1.75rem;
+  font-weight: 900;
+  outline: none;
+}
+
+.mpai-macro-box__unit {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* ══════════════════════════════════════════════════════
+   GOAL CARDS
+══════════════════════════════════════════════════════ */
+.mpai-goals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.mpai-goal-btn {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mpai-goal-btn:hover {
+  background: white;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.mpai-goal-btn.active {
+  background: linear-gradient(135deg, #d4660a, #ff8533);
+  border-color: #d4660a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212,102,10,0.2);
+}
+
+.mpai-goal-btn__emoji {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.mpai-goal-btn__label {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+}
+
+.mpai-goal-btn.active .mpai-goal-btn__label,
+.mpai-goal-btn.active .mpai-goal-btn__hint {
+  color: white;
+}
+
+.mpai-goal-btn__hint {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   DIETARY CHIPS
+══════════════════════════════════════════════════════ */
+.mpai-dietary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.mpai-dietary-chip {
+  padding: 0.75rem 1.25rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mpai-dietary-chip:hover {
+  background: white;
+  border-color: #cbd5e1;
+}
+
+.mpai-dietary-chip.active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: white;
+}
+
+/* ══════════════════════════════════════════════════════
+   DAYS ROW
+══════════════════════════════════════════════════════ */
+.mpai-days-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.mpai-day-btn {
+  padding: 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mpai-day-btn:hover {
+  background: white;
+  border-color: #cbd5e1;
+}
+
+.mpai-day-btn.active {
+  background: #d4660a;
+  border-color: #d4660a;
+  color: white;
+}
+
+/* ══════════════════════════════════════════════════════
+   ERROR BOX
+══════════════════════════════════════════════════════ */
+.mpai-error-box {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  border: 2px solid #ef4444;
+  border-radius: 16px;
+}
+
+.mpai-error-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #991b1b;
+  margin: 0 0 0.5rem;
+}
+
+.mpai-error-text {
+  font-size: 0.875rem;
+  color: #7f1d1d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════════════
+   CTA BLOCK
+══════════════════════════════════════════════════════ */
+.mpai-cta-block {
+  text-align: center;
+}
+
+.mpai-cta-block__summary {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.mpai-cta-block__stat {
+  text-align: center;
+}
+
+.mpai-cta-block__stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mpai-cta-block__stat-value {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.mpai-btn-orange {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #d4660a, #ff8533);
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(212,102,10,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.mpai-btn-orange:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(212,102,10,0.3);
+}
+
+.mpai-btn-orange:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.mpai-btn-orange--full {
+  width: 100%;
+}
+
+.mpai-btn-orange--sm {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.mpai-btn-ghost {
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mpai-btn-ghost:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.mpai-cta-block__note {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin: 1rem 0 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   LOADING SPINNER
+══════════════════════════════════════════════════════ */
+.mpai-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════════════
+   TIPS
+══════════════════════════════════════════════════════ */
+.mpai-tips {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #fbbf24;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+.mpai-tips__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.mpai-tips__label {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #92400e;
+  margin: 0 0 0.75rem;
+}
+
+.mpai-tips__list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #78350f;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.mpai-tips__list li {
+  margin-bottom: 0.5rem;
+}
+
+/* ══════════════════════════════════════════════════════
+   DAY TABS
+══════════════════════════════════════════════════════ */
+.mpai-day-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.mpai-day-tab {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mpai-day-tab:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.mpai-day-tab.active {
+  background: #0f172a;
+  color: white;
+}
+
+/* ══════════════════════════════════════════════════════
+   DAY SUMMARY
+══════════════════════════════════════════════════════ */
+.mpai-day-summary {
+  margin-bottom: 2rem;
+}
+
+.mpai-day-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mpai-day-stat__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mpai-day-stat__value {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+  line-height: 1;
+}
+
+.mpai-day-stat__sub {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin: 0 0 0.75rem;
+}
+
+.mpai-progress-track {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mpai-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   MEAL CARDS
+══════════════════════════════════════════════════════ */
+.mpai-meals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.mpai-meal-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.mpai-meal-card__btn {
+  width: 100%;
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mpai-meal-card__icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.mpai-meal-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mpai-meal-card__type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.mpai-meal-card__type-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+}
+
+.mpai-meal-card__prep {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.mpai-meal-card__name {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.5rem;
+}
+
+.mpai-meal-card__desc {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mpai-meal-card__right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.mpai-meal-card__cost {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #d4660a;
+  margin: 0 0 0.25rem;
+}
+
+.mpai-meal-card__kcal {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+}
+
+.mpai-meal-card__chevron {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.mpai-meal-card__pills {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.5rem 1rem;
+}
+
+.mpai-pill {
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.mpai-meal-card__detail {
+  padding: 0 1.5rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1.5rem;
+}
+
+.mpai-ingredients-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mpai-ingredients-grid {
+  display: grid;
+  gap: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.mpai-ingredient-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.mpai-ingredient-item__name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+}
+
+.mpai-ingredient-item__amount {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+}
+
+.mpai-ingredient-item__cost {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #d4660a;
+}
+
+.mpai-instructions-box {
+  padding: 1.25rem;
+  background: #fffbeb;
+  border: 2px solid #fef3c7;
+  border-radius: 12px;
+}
+
+.mpai-instructions-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mpai-instructions-text {
+  font-size: 0.875rem;
+  color: #78350f;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════
+   SHOPPING LIST
+══════════════════════════════════════════════════════ */
+.mpai-shop-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+}
+
+.mpai-shop-toggle:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.mpai-shop-toggle.open {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mpai-shop-toggle__hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.mpai-shop-panel {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.mpai-shop-list {
+  padding: 1rem 1.5rem;
+}
+
+.mpai-shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mpai-shop-item:last-child {
+  border-bottom: none;
+}
+
+.mpai-shop-item__name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+}
+
+.mpai-shop-item__meta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.mpai-shop-item__cost {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #d4660a;
+}
+
+.mpai-shop-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: #fafafa;
+  border-top: 2px solid #e2e8f0;
+}
+
+.mpai-shop-total__label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mpai-shop-total__value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #d4660a;
+}
+
+/* ══════════════════════════════════════════════════════
+   FADE-UP ANIMATIONS
+══════════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mpai-fade-up {
+  animation: fadeUp 0.5s ease;
+}
+
+.mpai-fade-up-1 { animation-delay: 0.05s; }
+.mpai-fade-up-2 { animation-delay: 0.1s; }
+.mpai-fade-up-3 { animation-delay: 0.15s; }
+.mpai-fade-up-4 { animation-delay: 0.2s; }
+.mpai-fade-up-5 { animation-delay: 0.25s; }
+.mpai-fade-up-6 { animation-delay: 0.3s; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .mpai-header__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mpai-header__title {
+    font-size: 1.5rem;
+  }
+
+  .mpai-header__actions {
+    width: 100%;
+  }
+
+  .mpai-budget-card__top {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .mpai-budget-card__quick {
+    text-align: left;
+  }
+
+  .mpai-macros-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mpai-goals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mpai-cta-block__summary {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .mpai-day-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mpai-meal-card__btn {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mpai-meal-card__right {
+    text-align: left;
+    width: 100%;
+  }
+}
