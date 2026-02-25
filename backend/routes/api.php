@@ -72,6 +72,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/gyms/{gym}/amenities', [GymController::class, 'amenities'])->whereNumber('gym');
     Route::get('/gyms/{gym}/amenities/{amenity}', [GymController::class, 'amenityDetail'])->whereNumber('gym')->whereNumber('amenity');
 
+    // PUBLIC: list ratings (verified + unverified, labeled) and VERIFIED-only public score in summary
     Route::get('/gyms/{gym}/ratings', [GymRatingController::class, 'gymRatings'])->whereNumber('gym');
 
     Route::get('/equipments', [EquipmentController::class, 'index']);
@@ -84,13 +85,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/gym-amenities', [GymAmenityController::class, 'index']);
     Route::get('/gym-amenities/{id}', [GymAmenityController::class, 'show'])->whereNumber('id');
 
-
     Route::prefix('meals')->group(function () {
-    Route::get('/', [MealController::class, 'index']);
-    Route::get('/type/{type}', [MealController::class, 'getByType']);
-    Route::post('/filter', [MealController::class, 'filterByDiet']);
-    Route::get('/stats', [MealController::class, 'stats']);
-});
+        Route::get('/', [MealController::class, 'index']);
+        Route::get('/type/{type}', [MealController::class, 'getByType']);
+        Route::post('/filter', [MealController::class, 'filterByDiet']);
+        Route::get('/stats', [MealController::class, 'stats']);
+    });
 
     Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
 
@@ -213,6 +213,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/gyms/{gym}/amenities', [GymAmenityController::class, 'store'])->whereNumber('gym');
             Route::match(['put', 'patch'], '/gyms/{gym}/amenities/{amenity}', [GymAmenityController::class, 'update'])->whereNumber('gym')->whereNumber('amenity');
             Route::delete('/gyms/{gym}/amenities/{amenity}', [GymAmenityController::class, 'destroy'])->whereNumber('gym')->whereNumber('amenity');
+
             Route::get('/gyms/{gymId}/membership/me', [GymMembershipController::class, 'myForGym'])->whereNumber('gymId');
             Route::post('/gyms/{gymId}/membership/intent', [GymMembershipController::class, 'intent'])->whereNumber('gymId');
             Route::get('/me/memberships', [GymMembershipController::class, 'myMemberships']);
@@ -223,9 +224,11 @@ Route::prefix('v1')->group(function () {
             Route::post('/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ask'])->whereNumber('gymId');
             Route::get('/me/inquiries', [GymInquiryController::class, 'myInquiries']);
 
+            // RATINGS (AUTH)
             Route::get('/me/ratings', [GymRatingController::class, 'myRatings']);
             Route::get('/gyms/{gymId}/ratings/can-rate', [GymRatingController::class, 'canRate'])->whereNumber('gymId');
             Route::post('/gyms/{gymId}/ratings', [GymRatingController::class, 'upsertMyRating'])->whereNumber('gymId');
+
             Route::post('/owner/gyms/{gymId}/memberships/expire-check', [GymMembershipController::class, 'expireCheck']);
             Route::get('/owner/gyms/{gymId}/memberships', [GymMembershipController::class, 'ownerList'])->whereNumber('gymId');
             Route::post('/owner/memberships/{membershipId}/activate', [GymMembershipController::class, 'ownerActivate'])->whereNumber('membershipId');
@@ -245,7 +248,7 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/owner/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ownerList'])->whereNumber('gymId');
             Route::post('/owner/inquiries/{inquiryId}/answer', [GymInquiryController::class, 'ownerAnswer'])->whereNumber('inquiryId');
-                
+
             Route::middleware('admin')->group(function () {
 
                 Route::get('/admin/settings', [AdminAppSettingsController::class, 'show']);

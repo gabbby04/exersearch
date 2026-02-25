@@ -312,4 +312,112 @@
   .rm-title { font-size: 1.35rem; }
   .rm-form { padding: 1.5rem; }
   .rm-actions { padding: 1.5rem; }
+}/* ===========================
+   RateGymModal additions
+   (append at bottom)
+   =========================== */
+
+.rm-topRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+.rm-miniHint{
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.55);
+}
+
+/* tags */
+.rm-tag{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #f8fafc;
+  color: #111;
+}
+
+.rm-tag-member{
+  background: rgba(255,140,0,0.14);
+  color: #a84d00;
+  border-color: rgba(255,140,0,0.28);
+}
+.rm-tag-visited{
+  background: rgba(16,185,129,0.14);
+  color: #065f46;
+  border-color: rgba(16,185,129,0.26);
+}
+.rm-tag-unverified{
+  background: rgba(100,116,139,0.12);
+  color: #334155;
+  border-color: rgba(100,116,139,0.22);
+}
+
+.rm-tagInfo{
+  border:none;
+  background: transparent;
+  color: currentColor;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  display:grid;
+  place-items:center;
+  padding: 0;
+}
+.rm-tagInfo:hover{
+  background: rgba(0,0,0,0.07);
+}
+
+/* stars */
+.rm-stars{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.rm-star{
+  border:none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 34px;
+  line-height: 1;
+  padding: 0;
+  color: #e5e7eb; /* empty */
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.rm-star.filled{
+  color: #ff8c00; /* orange filled */
+}
+
+.rm-star:hover{
+  transform: translateY(-1px) scale(1.03);
+}
+
+.rm-stars--disabled .rm-star{
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* textarea tweaks */
+.rm-textarea{
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+.rm-counter{
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.55);
+  text-align: right;
 }

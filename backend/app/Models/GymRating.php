@@ -14,15 +14,20 @@ class GymRating extends Model
         'user_id',
         'stars',
         'review',
+        'verified',
         'verified_via',
         'verified_ref_id',
     ];
 
     protected $casts = [
-        'stars'         => 'integer',
+        'rating_id'       => 'integer',
+        'gym_id'          => 'integer',
+        'user_id'         => 'integer',
+        'stars'           => 'integer',
+        'verified'        => 'boolean',
         'verified_ref_id' => 'integer',
-        'created_at'    => 'datetime',
-        'updated_at'    => 'datetime',
+        'created_at'      => 'datetime',
+        'updated_at'      => 'datetime',
     ];
 
     public function gym()

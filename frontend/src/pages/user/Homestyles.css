@@ -2801,4 +2801,256 @@
 
 .fg-apply-btn--compact {
   min-width: 110px;
+}/* =========================
+   Reviews Card (clean orange)
+========================= */
+.gym-details-page .reviews-card .reviews-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 14px;
+}
+
+.gym-details-page .reviews-showall{
+  border: 2px solid #ff8c00;
+  background: #fff;
+  color: #ff8c00;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor:pointer;
+  font-weight: 900;
+}
+.gym-details-page .reviews-showall:hover{
+  background: #fff5e6;
+}
+
+.gym-details-page .reviews-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid #ff8c00;
+  background: linear-gradient(135deg, #fff 0%, #fff5e6 100%);
+  margin-bottom: 14px;
+}
+
+.gym-details-page .reviews-score-num{
+  font-size: 34px;
+  font-weight: 950;
+  line-height: 1;
+  color: #ff8c00;
+  margin-bottom: 6px;
+}
+
+.gym-details-page .reviews-score-sub{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  opacity: 0.85;
+}
+
+.gym-details-page .reviews-ratebtn{
+  border:none;
+  background:#ff8c00;
+  color:#fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor:pointer;
+  font-weight: 950;
+}
+.gym-details-page .reviews-ratebtn:hover{
+  background:#e67e00;
+}
+
+.gym-details-page .reviews-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.gym-details-page .reviews-empty{
+  font-weight: 850;
+  opacity: 0.75;
+  padding: 8px 0;
+}
+
+.gym-details-page .review-item{
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  background:#fff;
+}
+
+.gym-details-page .review-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 8px;
+}
+
+.gym-details-page .review-name{
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.gym-details-page .review-tag{
+  margin-top: 6px;
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  border: 1px solid #e5e7eb;
+  width: fit-content;
+}
+
+.gym-details-page .review-tag.tag-member{
+  background:#fff5e6;
+  color:#9a3412;
+  border-color:#fed7aa;
+}
+
+.gym-details-page .review-tag.tag-visited{
+  background:#ecfdf5;
+  color:#065f46;
+  border-color:#a7f3d0;
+}
+
+.gym-details-page .review-tag.tag-unverified{
+  background:#f3f4f6;
+  color:#374151;
+  border-color:#e5e7eb;
+}
+
+.gym-details-page .review-text{
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.gym-details-page .review-text.empty{
+  opacity: 0.6;
+  font-weight: 800;
+}/* highlight my review */
+.gym-details-page .review-item.mine{
+  border: 2px solid #ff8c00;
+  background: #fff7ed; /* light orange */
+  box-shadow: 0 8px 18px rgba(255, 140, 0, 0.18);
+}
+
+/* Base star */
+.gym-details-page .star{
+  font-size: 18px;
+  color: #ddd; /* empty stars */
+  transition: 0.2s ease;
+}
+
+/* Filled star */
+.gym-details-page .star.filled{
+  color: #ff8c00; /* orange */
+}
+
+/* Compact version (for review rows) */
+.gym-details-page .starrow-compact .star{
+  font-size: 14px;
+}/* ✅ ADD these to Homestyles.css (or merge with your existing styles) */
+
+.muted-empty {
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+/* Amenities */
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 820px) {
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.amenity-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.amenity-unavailable {
+  opacity: 0.6;
+}
+
+.amenity-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  flex: 0 0 auto;
+}
+
+.amenity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.05);
+  font-size: 16px;
+  flex: 0 0 auto;
+}
+
+.amenity-text {
+  display: grid;
+  gap: 2px;
+  line-height: 1.15;
+}
+
+.amenity-name {
+  font-weight: 900;
+}
+
+.amenity-sub {
+  font-weight: 800;
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+/* Equipments */
+.equipment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.equipment-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.7);
+  font-weight: 800;
+}
+
+.equipment-item svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.equipment-name {
+  text-transform: capitalize;
 }
