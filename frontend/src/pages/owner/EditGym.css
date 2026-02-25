@@ -978,3 +978,6 @@
     flex-direction: column;
   }
 }
+.eg-freevisit-card {
+  margin-bottom: 24px;
+}

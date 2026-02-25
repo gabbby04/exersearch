@@ -25,6 +25,7 @@ import MealPlanGenerator from "./pages/user/MealPlan";
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
 import OwnerMembers from "./pages/owner/OwnerMembers";
+import OwnerFreeVisits from "./pages/owner/OwnerFreeVisits";
 import ViewGym from "./pages/owner/ViewGym";
 import EditGym from "./pages/owner/EditGym";
 import ViewStats from "./pages/owner/ViewStats";
@@ -76,7 +77,7 @@ function App() {
 
       <Route path="/home/*" element={<UserLayout />}>
         <Route index element={<UserHome />} />
-        <Route path="meal-plan" element={<MealPlanGenerator/>} />
+        <Route path="meal-plan" element={<MealPlanGenerator />} />
 
         <Route path="becomeowner" element={<BecomeOwner />} />
         <Route path="applyowner" element={<OwnerApplication />} />
@@ -94,6 +95,7 @@ function App() {
       <Route path="/owner/*" element={<OwnerLayout />}>
         <Route path="home" element={<OwnerHome />} />
         <Route path="members/:id" element={<OwnerMembers />} />
+        <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
         <Route path="view-gym/:id" element={<ViewGym />} />
         <Route path="edit-gym/:id" element={<EditGym />} />
         <Route path="view-stats/:id" element={<ViewStats />} />

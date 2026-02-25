@@ -26,6 +26,7 @@ import {
   BadgeCheck,
   Plus,
   Download,
+  Flame,
 } from "lucide-react";
 
 import AddEquipment from "./AddEquip";
@@ -33,6 +34,7 @@ import UpdateEquipment from "./UpdateEquip";
 import UpdateAmenities from "./UpdateAmenities";
 import "./Modals.css";
 
+import Swal from "sweetalert2";
 import { api } from "../../utils/apiClient";
 import {
   getGym,
@@ -42,6 +44,10 @@ import {
 } from "../../utils/ownerGymApi";
 
 import { normalizeGymResponse } from "../../utils/gymViewUtils";
+import {
+  ownerListGymMembersCombined,
+  normalizeCombinedMembersResponse,
+} from "../../utils/gymMembershipApi";
 
 async function fetchMeSafe() {
   const candidates = ["/me", "/auth/me", "/users/me"];
@@ -87,6 +93,21 @@ function getGymOwnerId(normalizedGym) {
   return Number.isFinite(n) ? n : null;
 }
 
+function initials(nameOrEmail) {
+  const s = String(nameOrEmail || "").trim();
+  if (!s) return "?";
+  const parts = s.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function fmtDate(value) {
+  if (!value) return "-";
+  const d = new Date(String(value));
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString();
+}
+
 export default function ViewGym() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -97,6 +118,9 @@ export default function ViewGym() {
   const [loading, setLoading] = useState(true);
   const [currentPhoto, setCurrentPhoto] = useState(0);
   const [visibility, setVisibility] = useState(true);
+
+  const [recentMembers, setRecentMembers] = useState([]);
+  const [recentMembersLoading, setRecentMembersLoading] = useState(false);
 
   const [showAddEquipment, setShowAddEquipment] = useState(false);
   const [showUpdateEquipment, setShowUpdateEquipment] = useState(false);
@@ -142,6 +166,51 @@ export default function ViewGym() {
     return false;
   };
 
+  const refreshRecentMembers = async () => {
+    if (!id) return;
+    setRecentMembersLoading(true);
+    try {
+      const res = await ownerListGymMembersCombined(id, { per_page: 3, page: 1 });
+      const norm = normalizeCombinedMembersResponse(res);
+
+      const rows = Array.isArray(norm?.rows)
+        ? norm.rows
+        : Array.isArray(res?.data?.data)
+          ? res.data.data
+          : Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(res)
+              ? res
+              : [];
+
+      const top3 = rows.slice(0, 3).map((m) => {
+        const source = m?.source || "app_user";
+        const isManual = source === "manual";
+        const name = isManual ? m?.display_name : m?.user?.name;
+        const email = isManual ? m?.email : m?.user?.email;
+        const createdAt = m?.created_at;
+
+        return {
+          source,
+          name: name || email || "-",
+          email: email || "-",
+          joined: fmtDate(createdAt),
+          avatar: initials(name || email),
+          plan:
+            (m?.plan_type && String(m.plan_type)) ||
+            (m?.status && String(m.status)) ||
+            (isManual ? "Manual" : "App"),
+        };
+      });
+
+      setRecentMembers(top3);
+    } catch (e) {
+      setRecentMembers([]);
+    } finally {
+      setRecentMembersLoading(false);
+    }
+  };
+
   const refreshGym = async (meObj) => {
     const res = await getGym(id);
     const normalized = normalizeGymResponse(res);
@@ -150,6 +219,7 @@ export default function ViewGym() {
       setGym(null);
       setVisibility(true);
       setCurrentPhoto(0);
+      setRecentMembers([]);
       return { allowed: false, normalized: null };
     }
 
@@ -165,6 +235,9 @@ export default function ViewGym() {
     setGym(merged);
     setVisibility(Boolean(merged.visibility));
     setCurrentPhoto(0);
+
+    // load recent members (3)
+    refreshRecentMembers();
 
     return { allowed: true, normalized: merged };
   };
@@ -339,6 +412,11 @@ export default function ViewGym() {
               <Link to={`/owner/members/${gym.gym_id}`} className="vg-action-btn-primary">
                 <Users size={18} />
                 Manage Members
+              </Link>
+
+              <Link to={`/owner/free-visits/${gym.gym_id}`} className="vg-action-btn-primary">
+                <Flame size={18} />
+                Manage Visits
               </Link>
 
               <Link to={`/owner/view-stats/${gym.gym_id}`} className="vg-action-btn-primary">
@@ -565,14 +643,16 @@ export default function ViewGym() {
                   <Users size={20} />
                   Recent Members
                 </h2>
-                <Link to="/members" className="vg-view-all">
+                <Link to={`/owner/members/${gym.gym_id}`} className="vg-view-all">
                   View all
                 </Link>
               </div>
 
               <div className="vg-members-compact">
-                {Array.isArray(gym.recent_members) && gym.recent_members.length > 0 ? (
-                  gym.recent_members.map((member, i) => (
+                {recentMembersLoading ? (
+                  <div className="vg-empty-state">Loading recent members...</div>
+                ) : Array.isArray(recentMembers) && recentMembers.length > 0 ? (
+                  recentMembers.map((member, i) => (
                     <div key={i} className="vg-member-compact">
                       <div className="vg-member-avatar-small">{member.avatar}</div>
                       <div className="vg-member-details">
@@ -689,4 +769,4 @@ export default function ViewGym() {
       )}
     </div>
   );
-}
+} 

@@ -245,7 +245,7 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/owner/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ownerList'])->whereNumber('gymId');
             Route::post('/owner/inquiries/{inquiryId}/answer', [GymInquiryController::class, 'ownerAnswer'])->whereNumber('inquiryId');
-
+                
             Route::middleware('admin')->group(function () {
 
                 Route::get('/admin/settings', [AdminAppSettingsController::class, 'show']);

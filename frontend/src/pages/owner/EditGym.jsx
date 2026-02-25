@@ -24,6 +24,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { getGym, updateGym, uploadMedia, getMyGyms } from "../../utils/ownerGymApi";
+import { ownerSetFreeVisitEnabled } from "../../utils/gymFreeVisitApi";
 
 const API_BASE = "https://exersearch.test";
 
@@ -82,7 +83,7 @@ function normalizeUrlNullable(value) {
 
 function isValidUrlNullable(value) {
   const raw = String(value ?? "").trim();
-  if (!raw) return true; // nullable
+  if (!raw) return true;
   try {
     const u = new URL(normalizeUrlNullable(raw));
     return Boolean(u.hostname);
@@ -140,6 +141,8 @@ export default function EditGym() {
   const [activeTab, setActiveTab] = useState("basic");
   const [errors, setErrors] = useState({});
 
+  const [freeVisitSaving, setFreeVisitSaving] = useState(false);
+
   const [form, setForm] = useState({
     gym_id: null,
     name: "",
@@ -165,6 +168,7 @@ export default function EditGym() {
     has_classes: false,
     is_24_hours: false,
     is_airconditioned: false,
+    free_first_visit_enabled: false,
   });
 
   const [mapCenter, setMapCenter] = useState({ lat: 14.5764, lng: 121.0851 });
@@ -255,13 +259,7 @@ export default function EditGym() {
             const lng = Number(x.lon);
             if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
 
-            const city =
-              x.address?.city ||
-              x.address?.town ||
-              x.address?.village ||
-              x.address?.municipality ||
-              x.address?.state ||
-              "";
+            const city = x.address?.city || x.address?.town || x.address?.village || x.address?.municipality || x.address?.state || "";
 
             return {
               key: `geo-${x.place_id}-${lat}-${lng}`,
@@ -396,6 +394,7 @@ export default function EditGym() {
           has_classes: Boolean(g?.has_classes),
           is_24_hours: Boolean(g?.is_24_hours),
           is_airconditioned: Boolean(g?.is_airconditioned),
+          free_first_visit_enabled: Boolean(g?.free_first_visit_enabled),
         };
 
         if (!alive) return;
@@ -443,7 +442,6 @@ export default function EditGym() {
 
     if (!isValidEmail(form.email)) newErrors.email = "Please enter a valid email (e.g., gym@email.com)";
 
-    // nullable but must be valid if provided
     if (!isValidUrlNullable(form.website)) newErrors.website = "Please enter a valid website URL (e.g., www.site.com)";
     if (!isValidUrlNullable(form.facebook_page)) newErrors.facebook_page = "Please enter a valid Facebook page URL";
     if (!isValidUrlNullable(form.instagram_page)) newErrors.instagram_page = "Please enter a valid Instagram page URL";
@@ -455,15 +453,7 @@ export default function EditGym() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      if (
-        newErrors.name ||
-        newErrors.contact_number ||
-        newErrors.email ||
-        newErrors.website ||
-        newErrors.facebook_page ||
-        newErrors.instagram_page
-      )
-        setActiveTab("basic");
+      if (newErrors.name || newErrors.contact_number || newErrors.email || newErrors.website || newErrors.facebook_page || newErrors.instagram_page) setActiveTab("basic");
       else if (newErrors.address || newErrors.location) setActiveTab("location");
       Swal.fire({ icon: "warning", title: "Fix highlighted fields", text: "Some inputs are invalid." });
       return false;
@@ -484,25 +474,18 @@ export default function EditGym() {
         city: form.city,
         contact_number: form.contact_number,
         email: String(form.email || "").trim() || null,
-
-        // nullable, but normalized to https:// if provided
         website: normalizeUrlNullable(form.website),
         facebook_page: normalizeUrlNullable(form.facebook_page),
         instagram_page: normalizeUrlNullable(form.instagram_page),
-
         gym_type: String(form.gym_type || "").trim() || null,
-
         opening_time: hhmm(form.opening_time, "06:00"),
         closing_time: hhmm(form.closing_time, "22:00"),
-
         has_personal_trainers: !!form.has_personal_trainers,
         has_classes: !!form.has_classes,
         is_24_hours: !!form.is_24_hours,
         is_airconditioned: !!form.is_airconditioned,
-
         monthly_price: toNumberOrNull(form.monthly_price),
         annual_price: toNumberOrNull(form.annual_price),
-
         main_image_url: form.main_image_url || null,
         gallery_urls: Array.isArray(form.gallery_urls) ? form.gallery_urls : [],
         latitude: toFloatOrNull(form.latitude),
@@ -533,6 +516,31 @@ export default function EditGym() {
       return;
     }
     goBackToView();
+  };
+
+  const handleToggleFreeVisit = async (enabled) => {
+    if (!id) return;
+    const next = Boolean(enabled);
+    setFreeVisitSaving(true);
+
+    const prev = Boolean(form.free_first_visit_enabled);
+    setForm((p) => ({ ...p, free_first_visit_enabled: next }));
+
+    try {
+      await ownerSetFreeVisitEnabled(id, next);
+      Swal.fire({
+        icon: "success",
+        title: "Updated",
+        text: next ? "Free first visit is enabled." : "Free first visit is disabled.",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    } catch (e) {
+      setForm((p) => ({ ...p, free_first_visit_enabled: prev }));
+      Swal.fire({ icon: "error", title: "Failed to update", text: extractCause(e) });
+    } finally {
+      setFreeVisitSaving(false);
+    }
   };
 
   const removePhotoAt = (idx) => {
@@ -684,7 +692,7 @@ export default function EditGym() {
               <div className="eg-section">
                 <h2>Gym Information</h2>
 
-                <div className="eg-field">
+                <div className="eg-field" style={{ marginTop: 14 }}>
                   <label>Gym Name *</label>
                   <input
                     type="text"
@@ -864,7 +872,6 @@ export default function EditGym() {
                   </div>
                 )}
 
-                {/* ✅ SEARCH ABOVE MAP + dropdown with zIndex 999 */}
                 <div className="eg-field" style={{ position: "relative", marginBottom: 12, zIndex: 999 }}>
                   <label>Address *</label>
 
@@ -1034,13 +1041,73 @@ export default function EditGym() {
                   <DollarSign size={20} /> Membership Pricing
                 </h2>
 
+                <div
+                  style={{
+                    marginTop: 12,
+                       marginBottom: 24,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 14,
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    border: "1px solid rgba(210,63,11,0.18)",
+                    background: "rgba(210,63,11,0.08)",
+                  }}
+                >
+                  <div style={{ lineHeight: 1.15 }}>
+                    <div style={{ fontWeight: 950, color: "#111" }}>Free First Visit</div>
+                    <div style={{ fontSize: 12, fontWeight: 750, opacity: 0.85 }}>
+                      {form.free_first_visit_enabled ? "Enabled" : "Disabled"}
+                      {freeVisitSaving ? " • Saving..." : ""}
+                    </div>
+                  </div>
+
+                  <label style={{ position: "relative", width: 56, height: 32, display: "inline-block" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!form.free_first_visit_enabled}
+                      disabled={freeVisitSaving}
+                      onChange={(e) => handleToggleFreeVisit(e.target.checked)}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: 999,
+                        background: form.free_first_visit_enabled ? "linear-gradient(180deg,#ff6b35,#d23f0b)" : "rgba(0,0,0,0.18)",
+                        transition: "all 180ms ease",
+                        boxShadow: form.free_first_visit_enabled ? "0 10px 18px rgba(210,63,11,0.22)" : "none",
+                      }}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 4,
+                        left: form.free_first_visit_enabled ? 28 : 4,
+                        width: 24,
+                        height: 24,
+                        borderRadius: 999,
+                        background: "#fff",
+                        transition: "all 180ms ease",
+                        boxShadow: "0 8px 16px rgba(0,0,0,0.18)",
+                      }}
+                    />
+                  </label>
+                </div>
+
                 <div className="eg-pricing-grid">
                   <div className="eg-price-card">
                     <label>Daily Price</label>
                     <div className="eg-price-input">
                       <span className="eg-currency">₱</span>
-                      <input type="number" value={form.daily_price} disabled placeholder="150" />
-                    </div>
+                    <input
+                      type="number"
+                      value={form.daily_price}
+                      onChange={(e) => setField("daily_price", e.target.value)}
+                      placeholder="150"
+                    />                    </div>
                     <div className="eg-media-helper" style={{ marginTop: 6 }}>
                       Disabled for now
                     </div>
@@ -1106,12 +1173,7 @@ export default function EditGym() {
 
                   <div className="eg-field">
                     <label>Main Image URL</label>
-                    <input
-                      type="text"
-                      value={form.main_image_url || ""}
-                      readOnly
-                      placeholder="/storage/... or https://..."
-                    />
+                    <input type="text" value={form.main_image_url || ""} readOnly placeholder="/storage/... or https://..." />
                     <div className="eg-media-helper" style={{ marginTop: 6 }}>
                       Read-only. Upload photos above to update.
                     </div>
@@ -1119,17 +1181,11 @@ export default function EditGym() {
 
                   <div className="eg-field">
                     <label>Gallery URLs (one per line)</label>
-                    <textarea
-                      rows={5}
-                      value={(Array.isArray(form.gallery_urls) ? form.gallery_urls : []).join("\n")}
-                      readOnly
-                      placeholder={"/storage/...\nhttps://...\nhttps://..."}
-                    />
+                    <textarea rows={5} value={(Array.isArray(form.gallery_urls) ? form.gallery_urls : []).join("\n")} readOnly placeholder={"/storage/...\nhttps://...\nhttps://..."} />
                     <div className="eg-media-helper" style={{ marginTop: 6 }}>
                       Read-only. Upload photos above to update.
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
