@@ -500,8 +500,7 @@
   transform: translateY(-1px);
 }
 
-/* ✅ PATCH: this was overriding your fixed header above.
-   Rename it so it only affects your UHV header layout blocks. */
+
 .uhv-header {
   display: flex;
   align-items: center;

@@ -30,6 +30,7 @@ import ViewGym from "./pages/owner/ViewGym";
 import EditGym from "./pages/owner/EditGym";
 import ViewStats from "./pages/owner/ViewStats";
 import OwnerGymApplication from "./pages/owner/OwnerGymApplication";
+import OwnerInbox from "./pages/owner/OwnerInbox";
 
 import GymInquiryHistory from "./pages/user/GymInquiryHistory";
 
@@ -101,6 +102,7 @@ function App() {
 
       <Route path="/owner/*" element={<OwnerLayout />}>
         <Route path="home" element={<OwnerHome />} />
+        <Route path="inbox" element={<OwnerInbox />} />
         <Route path="members/:id" element={<OwnerMembers />} />
         <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
         <Route path="view-gym/:id" element={<ViewGym />} />

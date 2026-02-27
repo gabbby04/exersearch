@@ -6,10 +6,14 @@ import {
   normalizeInquiryListResponse,
 } from "../../utils/gymInquiriesApi";
 import InquiryComposeModal from "./InquiryComposeModal";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
 /* ---------------- helpers ---------------- */
 const PH_TZ = "Asia/Manila";
+
+// ✅ change this to your real backend base (prod)
+const API_BASE = "https://exersearch.test";
 
 function safeStr(v) {
   return v == null ? "" : String(v);
@@ -22,12 +26,12 @@ function toDateSafe(value) {
   let s = String(value).trim();
   if (!s) return null;
 
-  // Laravel common: "YYYY-MM-DD HH:mm:ss" (no timezone) → treat as UTC to avoid ambiguous parsing
+  // Laravel common: "YYYY-MM-DD HH:mm:ss" (no timezone) → treat as UTC
   if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s)) {
     s = s.replace(" ", "T") + "Z";
   }
 
-  // ISO without timezone: "YYYY-MM-DDTHH:mm:ss" → force UTC
+  // ISO without timezone → force UTC
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(s)) {
     s = s + "Z";
   }
@@ -35,6 +39,10 @@ function toDateSafe(value) {
   const d = new Date(s);
   if (Number.isNaN(d.getTime())) return null;
   return d;
+}
+
+function timeMs(v) {
+  return toDateSafe(v)?.getTime?.() ?? 0;
 }
 
 function fmtTimeAgo(d) {
@@ -57,19 +65,6 @@ function fmtPHDateTime(d) {
   return dt.toLocaleString("en-PH", { timeZone: PH_TZ });
 }
 
-function pickGymTitle(inq) {
-  const g = inq?.gym || inq?.Gym || null;
-  return (
-    safeStr(g?.gym_name || g?.name || g?.title || "").trim() ||
-    `Gym #${inq?.gym_id ?? inq?.gymId ?? "—"}`
-  );
-}
-
-function pickGymMeta(inq) {
-  const g = inq?.gym || inq?.Gym || null;
-  return safeStr(g?.address || g?.location || g?.city || g?.barangay || "").trim();
-}
-
 function statusLabel(s) {
   const x = safeStr(s).toLowerCase();
   if (x === "open") return "Open";
@@ -78,29 +73,30 @@ function statusLabel(s) {
   return x || "—";
 }
 
-function buildThreadFromInquiry(inq) {
-  const items = [];
-  const idBase = inq?.inquiry_id ?? inq?.id ?? "x";
+/* ====== URL helper that supports:
+   - full urls (https://...)
+   - escaped Laravel paths like "\/storage\/gyms\/gallery\/x.png"
+   - normal relative "/storage/..."
+   - normalizes double slashes so:
+     https://exersearch.test/storage/gyms/gallery/x.png
+*/
+function absUrl(u) {
+  if (!u) return "";
+  let s = String(u).trim();
+  if (!s) return "";
 
-  if (inq?.question) {
-    items.push({
-      id: `q-${idBase}`,
-      who: "me",
-      text: safeStr(inq.question),
-      at: inq?.created_at,
-    });
-  }
+  // unescape "\/" -> "/"
+  s = s.replace(/\\\//g, "/");
 
-  if (inq?.answer) {
-    items.push({
-      id: `a-${idBase}`,
-      who: "owner",
-      text: safeStr(inq.answer),
-      at: inq?.answered_at || inq?.updated_at || inq?.created_at,
-    });
-  }
+  // already absolute
+  if (/^https?:\/\//i.test(s)) return s;
 
-  return items;
+  // ensure leading slash for relative paths
+  if (!s.startsWith("/")) s = "/" + s;
+
+  // join with API_BASE, normalize doubles (but keep https://)
+  const joined = `${API_BASE}${s}`;
+  return joined.replace(/([^:]\/)\/+/g, "$1");
 }
 
 function fmtMoney(v) {
@@ -117,13 +113,6 @@ function fmtHHMM(v) {
 
 function truthy(v) {
   return v === true || v === 1 || v === "1" || v === "true";
-}
-
-function absUrl(u) {
-  if (!u) return "";
-  const s = String(u);
-  if (/^https?:\/\//i.test(s)) return s;
-  return s.startsWith("/") ? `${window.location.origin}${s}` : s;
 }
 
 function getGymIdFromInquiry(r) {
@@ -148,14 +137,90 @@ function pickGymMetaFromGym(gym) {
   return safeStr(g?.address || g?.location || g?.city || g?.barangay || "").trim();
 }
 
-function convStatus(conv) {
-  if (!conv?.items?.length) return "—";
-  const hasOpen = conv.items.some((i) => safeStr(i?.status).toLowerCase() === "open");
-  if (hasOpen) return "Open";
-  const hasAnswered = conv.items.some((i) => safeStr(i?.status).toLowerCase() === "answered");
-  if (hasAnswered) return "Answered";
-  const last = conv.items[conv.items.length - 1];
-  return statusLabel(last?.status);
+/* ====== split appended owner answers into separate bubbles ====== */
+const OWNER_DELIM = "\n\n---o---\n\n";
+
+function splitOwnerAnswer(answer) {
+  let raw = safeStr(answer).trim();
+  if (!raw) return [];
+
+  raw = raw.replace(/\n— Follow-up \([^)]+\)\n/g, "\n\n");
+  raw = raw.replace(/— Follow-up \([^)]+\)\n/g, "\n\n");
+
+  if (!raw.includes(OWNER_DELIM)) return [raw].filter(Boolean);
+
+  return raw
+    .split(OWNER_DELIM)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function lastOwnerPart(answer) {
+  const parts = splitOwnerAnswer(answer);
+  return parts.length ? parts[parts.length - 1] : "";
+}
+
+/* ====== Build thread events per inquiry, keeping chronological order ====== */
+function buildThreadEventsFromInquiry(inq) {
+  const events = [];
+  const idBase = inq?.inquiry_id ?? inq?.id ?? "x";
+
+  const qText = safeStr(inq?.question).trim();
+  const qAt =
+    inq?.created_at || inq?.createdAt || inq?.created || inq?.asked_at || inq?.askedAt || null;
+
+  if (qText) {
+    events.push({
+      id: `q-${idBase}`,
+      who: "me",
+      text: qText,
+      at: qAt,
+      ms: timeMs(qAt),
+      status: inq?.status,
+      _k: 0,
+    });
+  }
+
+  const parts = splitOwnerAnswer(inq?.answer);
+  if (parts.length) {
+    const aAt =
+      inq?.answered_at || inq?.answeredAt || inq?.updated_at || inq?.updatedAt || qAt || null;
+
+    parts.forEach((part, idx) => {
+      const bump = idx * 0.001;
+      events.push({
+        id: `a-${idBase}-${idx}`,
+        who: "owner",
+        text: part,
+        at: aAt,
+        ms: timeMs(aAt) + bump,
+        status: inq?.status,
+        _k: 1,
+        _isPart: idx > 0,
+      });
+    });
+  }
+
+  return events;
+}
+
+/* ====== Gym avatar (main_image_url) with defaulticon.png fallback ====== */
+function pickGymAvatarFromGym(gym) {
+  const g = gym || null;
+  const raw = safeStr(
+    g?.main_image_url ??
+      g?.mainImageUrl ??
+      g?.main_image ??
+      g?.mainImage ??
+      g?.image_url ??
+      g?.imageUrl ??
+      g?.photo_url ??
+      g?.photoUrl ??
+      ""
+  ).trim();
+
+  if (raw) return absUrl(raw);
+  return "/defaulticon.png";
 }
 
 /* ---------------- Right panel (FB-style) ---------------- */
@@ -187,7 +252,8 @@ export default function GymInquiryHistory() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
-const navigate = useNavigate();
+  const navigate = useNavigate();
+
   // ✅ Active conversation is gym-based
   const [activeGymId, setActiveGymId] = useState(null);
 
@@ -266,8 +332,8 @@ const navigate = useNavigate();
     const list = Array.from(map.values()).map((c) => {
       // oldest -> newest by created
       c.items.sort((a, b) => {
-        const ta = toDateSafe(a?.created_at || a?.updated_at || 0)?.getTime() ?? 0;
-        const tb = toDateSafe(b?.created_at || b?.updated_at || 0)?.getTime() ?? 0;
+        const ta = timeMs(a?.created_at || a?.updated_at || 0);
+        const tb = timeMs(b?.created_at || b?.updated_at || 0);
         return ta - tb;
       });
 
@@ -279,8 +345,8 @@ const navigate = useNavigate();
 
     // newest first by last activity
     list.sort((a, b) => {
-      const ta = toDateSafe(a.lastAt || 0)?.getTime() ?? 0;
-      const tb = toDateSafe(b.lastAt || 0)?.getTime() ?? 0;
+      const ta = timeMs(a.lastAt || 0);
+      const tb = timeMs(b.lastAt || 0);
       return tb - ta;
     });
 
@@ -310,14 +376,22 @@ const navigate = useNavigate();
   const thread = useMemo(() => {
     if (!activeConv) return [];
 
-    const items = [];
-    for (const inq of activeConv.items) {
-      items.push(...buildThreadFromInquiry(inq));
+    const events = [];
+    for (const inq of activeConv.items || []) {
+      events.push(...buildThreadEventsFromInquiry(inq));
     }
 
     const q = searchRight.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((m) => safeStr(m.text).toLowerCase().includes(q));
+    let out = events;
+    if (q) out = out.filter((m) => safeStr(m.text).toLowerCase().includes(q));
+
+    out.sort((a, b) => {
+      if (a.ms !== b.ms) return a.ms - b.ms;
+      if (a._k !== b._k) return a._k - b._k;
+      return String(a.id).localeCompare(String(b.id));
+    });
+
+    return out;
   }, [activeConv, searchRight]);
 
   useEffect(() => {
@@ -377,6 +451,8 @@ const navigate = useNavigate();
     return arr;
   }, [gym]);
 
+  const detailAvatar = useMemo(() => pickGymAvatarFromGym(gym), [gym]);
+
   return (
     <div className="ih-page">
       <div className="ih-bg" aria-hidden="true">
@@ -407,10 +483,29 @@ const navigate = useNavigate();
             />
           </div>
 
-          <div className="user-settings">
-            <div className="header-pill">
-              {meta?.total != null ? `${meta.total} inquiries` : "Inquiries"}
-            </div>
+          <div className="user-settings" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={refresh}
+              disabled={loading}
+              title="Refresh"
+              aria-label="Refresh"
+              style={{
+                height: 36,
+                width: 36,
+                borderRadius: 12,
+                border: "none",
+                cursor: loading ? "not-allowed" : "pointer",
+                display: "grid",
+                placeItems: "center",
+                background: "rgba(255,255,255,0.18)",
+                boxShadow: "0 10px 22px rgba(0,0,0,0.10)",
+              }}
+            >
+              <RefreshCw size={18} />
+            </button>
+
+            <div className="header-pill">{meta?.total != null ? `${meta.total} inquiries` : "Inquiries"}</div>
           </div>
         </div>
 
@@ -448,9 +543,13 @@ const navigate = useNavigate();
                 const isActive = c.gymId === activeGymId;
                 const gymTitle = pickGymTitleFromGym(c.gym, c.gymId);
                 const last = c.last;
-                const snippet = safeStr(last?.answer || last?.question || "").trim() || "—";
+
+                const lastPart = lastOwnerPart(last?.answer);
+                const snippet = safeStr(lastPart || last?.question || "").trim() || "—";
                 const t = fmtTimeAgo(c.lastAt);
                 const online = safeStr(last?.status).toLowerCase() === "answered";
+
+                const avatar = pickGymAvatarFromGym(c.gym);
 
                 return (
                   <div
@@ -460,20 +559,16 @@ const navigate = useNavigate();
                     role="button"
                     tabIndex={0}
                   >
-                    <div className="msg-profile group">
-                      <svg
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 2l10 6.5v7L12 22 2 15.5v-7L12 2zM12 22v-6.5" />
-                        <path d="M22 8.5l-10 7-10-7" />
-                        <path d="M2 15.5l10-7 10 7M12 2v6.5" />
-                      </svg>
-                    </div>
+                    <div
+                      className="msg-profile group"
+                      style={{
+                        backgroundImage: `url(${avatar})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }}
+                      aria-hidden="true"
+                    />
 
                     <div className="msg-detail">
                       <div className="msg-username">{gymTitle}</div>
@@ -497,19 +592,31 @@ const navigate = useNavigate();
               <div className="chat-area-title">
                 {activeConv ? pickGymTitleFromGym(gym, activeConv.gymId) : "Select an inquiry"}
               </div>
-<div className="chat-area-group">
-    {activeConv && (
-      <button
-        type="button"
-        className="ih-open-gym-btn"
-        onClick={() => navigate(`/home/gym/${activeConv.gymId}`)}
-        title="Open gym page"
-        aria-label="Open gym page"
-      >
-        <ExternalLink size={18} />
-      </button>
-    )}
-  </div>
+
+              <div className="chat-area-group">
+                <button
+                  type="button"
+                  className="ih-open-gym-btn"
+                  onClick={refresh}
+                  title="Refresh"
+                  aria-label="Refresh"
+                  disabled={loading}
+                >
+                  <RefreshCw size={18} />
+                </button>
+
+                {activeConv && (
+                  <button
+                    type="button"
+                    className="ih-open-gym-btn"
+                    onClick={() => navigate(`/home/gym/${activeConv.gymId}`)}
+                    title="Open gym page"
+                    aria-label="Open gym page"
+                  >
+                    <ExternalLink size={18} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="chat-area-main" ref={chatRef}>
@@ -525,13 +632,35 @@ const navigate = useNavigate();
                 </div>
               ) : (
                 thread.map((m) => {
-                  const isOwner = m.who === "owner";
+                  const isMe = m.who === "me";
+                  const gymAvatar = pickGymAvatarFromGym(gym);
+
                   return (
-                    <div key={m.id} className={`chat-msg ${isOwner ? "owner" : ""}`}>
+                    <div key={m.id} className={`chat-msg ${isMe ? "owner" : ""}`}>
                       <div className="chat-msg-profile">
-                        <div className="ih-avatar">{isOwner ? "G" : "You"}</div>
-                        <div className="chat-msg-date">{fmtPHDateTime(m.at)}</div>
+                        {isMe ? (
+                          <div className="ih-avatar">You</div>
+                        ) : (
+                          <div
+                            className="ih-avatar"
+                            style={{
+                              backgroundImage: `url(${gymAvatar})`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                              backgroundRepeat: "no-repeat",
+                              color: "transparent",
+                            }}
+                            aria-label="Gym"
+                          >
+                            G
+                          </div>
+                        )}
+
+                        <div className="chat-msg-date">
+                          {m.who === "owner" && m._isPart ? "" : fmtPHDateTime(m.at)}
+                        </div>
                       </div>
+
                       <div className="chat-msg-content">
                         <div className="chat-msg-text">{m.text}</div>
                       </div>
@@ -572,12 +701,20 @@ const navigate = useNavigate();
           {/* RIGHT DETAILS */}
           <div className="detail-area">
             <div className="detail-area-header">
-              <div className="detail-title">
-                {activeConv ? pickGymTitleFromGym(gym, activeConv.gymId) : "Select a gym"}
-              </div>
-              <div className="detail-subtitle">
-                {activeConv ? pickGymMetaFromGym(gym) : "Select an inquiry"}
-              </div>
+              {/* ✅ circular profile photo ABOVE gym name */}
+              <div
+                className="ih-detail-avatar"
+                style={{
+                  backgroundImage: `url(${detailAvatar})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                }}
+                aria-hidden="true"
+              />
+
+              <div className="detail-title">{activeConv ? pickGymTitleFromGym(gym, activeConv.gymId) : "Select a gym"}</div>
+              <div className="detail-subtitle">{activeConv ? pickGymMetaFromGym(gym) : "Select an inquiry"}</div>
             </div>
 
             <div className="detail-changes">
@@ -619,6 +756,7 @@ const navigate = useNavigate();
               </div>
 
               <div className="fb-info">
+                {/* ✅ removed Type + Pricing; moved Phone/Email into Gym Details; removed CONTACT section */}
                 <FbSection title="GYM DETAILS">
                   <FbRow
                     icon="🕒"
@@ -631,40 +769,30 @@ const navigate = useNavigate();
                         : ""
                     }
                   />
-                  <FbRow
-                    icon="💳"
-                    label="Pricing"
-                    value={
-                      gym
-                        ? `${fmtMoney(gym?.daily_price)} • ${fmtMoney(gym?.monthly_price)}${
-                            gym?.annual_price ? ` • ${fmtMoney(gym?.annual_price)}` : ""
-                          }`
-                        : ""
-                    }
-                  />
-                  <FbRow icon="🏷️" label="Type" value={safeStr(gym?.gym_type)} />
-                </FbSection>
-
-                <FbSection title="CONTACT">
                   <FbRow icon="📞" label="Phone" value={safeStr(gym?.contact_number)} />
                   <FbRow icon="✉️" label="Email" value={safeStr(gym?.email)} />
-
-                  {socials.map((s) => (
-                    <div className="fb-row" key={s.label}>
-                      <div className="fb-left">
-                        <div className="fb-ico" aria-hidden="true">
-                          🔗
-                        </div>
-                        <div className="fb-k">{s.label}</div>
-                      </div>
-                      <div className="fb-v">
-                        <a className="fb-link" href={absUrl(s.value)} target="_blank" rel="noreferrer">
-                          {s.value}
-                        </a>
-                      </div>
-                    </div>
-                  ))}
                 </FbSection>
+
+                {/* keep socials if you still want them */}
+                {socials.length > 0 && (
+                  <FbSection title="LINKS">
+                    {socials.map((s) => (
+                      <div className="fb-row" key={s.label}>
+                        <div className="fb-left">
+                          <div className="fb-ico" aria-hidden="true">
+                            🔗
+                          </div>
+                          <div className="fb-k">{s.label}</div>
+                        </div>
+                        <div className="fb-v">
+                          <a className="fb-link" href={absUrl(s.value)} target="_blank" rel="noreferrer">
+                            {s.value}
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </FbSection>
+                )}
               </div>
             </div>
 

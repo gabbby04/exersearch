@@ -55,7 +55,6 @@ use App\Http\Controllers\OwnerManualMemberController;
 
 use App\Models\Meal;
 use App\Http\Controllers\MealController;
-use App\Http\Controllers\MealController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MacroPresetController;
 use App\Http\Controllers\MealPlanController;
@@ -88,7 +87,6 @@ Route::prefix('v1')->group(function () {
     Route::get('/gym-amenities', [GymAmenityController::class, 'index']);
     Route::get('/gym-amenities/{id}', [GymAmenityController::class, 'show'])->whereNumber('id');
 
-    // ── Meals ──────────────────────────────────────────────────────────────────
     Route::prefix('meals')->group(function () {
         Route::get('/',              [MealController::class, 'index']);
         Route::get('/stats',         [MealController::class, 'stats']);
@@ -97,21 +95,18 @@ Route::prefix('v1')->group(function () {
         Route::get('/{id}',          [MealController::class, 'show']);
     });
 
-    // ── Ingredients ────────────────────────────────────────────────────────────
     Route::prefix('ingredients')->group(function () {
         Route::get('/',              [IngredientController::class, 'index']);
         Route::get('/categories',    [IngredientController::class, 'categories']);
         Route::get('/{id}',          [IngredientController::class, 'show']);
     });
 
-    // ── Macro Presets ──────────────────────────────────────────────────────────
     Route::prefix('macro-presets')->group(function () {
         Route::get('/',              [MacroPresetController::class, 'index']);
         Route::get('/{id}',          [MacroPresetController::class, 'show']);
         Route::post('/{id}/calculate', [MacroPresetController::class, 'calculate']);
     });
 
-    // ── Meal Plan Generator ────────────────────────────────────────────────────
     Route::prefix('meal-plan')->group(function () {
         Route::post('/generate',     [MealPlanController::class, 'generate']);
     });
@@ -164,6 +159,12 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/gyms/{gym}/analytics', [GymAnalyticsController::class, 'show'])->whereNumber('gym');
             Route::get('/owner/activities', [GymAnalyticsController::class, 'activities']);
+
+            Route::post('/me/avatar/{type}', [ProfilePhotoController::class, 'upload'])
+                ->whereIn('type', ['user', 'owner', 'admin']);
+
+            Route::delete('/me/avatar/{type}', [ProfilePhotoController::class, 'remove'])
+                ->whereIn('type', ['user', 'owner', 'admin']);
 
             Route::post('/me/avatar', [ProfilePhotoController::class, 'upload']);
             Route::delete('/me/avatar', [ProfilePhotoController::class, 'remove']);
@@ -248,7 +249,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ask'])->whereNumber('gymId');
             Route::get('/me/inquiries', [GymInquiryController::class, 'myInquiries']);
             Route::post('/me/inquiries/{inquiryId}/read', [GymInquiryController::class, 'userMarkRead'])->whereNumber('inquiryId');
-
+            Route::get('/owner/inquiries/summary', [GymInquiryController::class, 'ownerSummary']);
             Route::get('/me/ratings', [GymRatingController::class, 'myRatings']);
             Route::get('/gyms/{gymId}/ratings/can-rate', [GymRatingController::class, 'canRate'])->whereNumber('gymId');
             Route::post('/gyms/{gymId}/ratings', [GymRatingController::class, 'upsertMyRating'])->whereNumber('gymId');

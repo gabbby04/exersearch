@@ -19,7 +19,6 @@ class UserProfile extends Model
         'latitude',
         'longitude',
 
-        // ✅ NEW
         'gender',
 
         'profile_photo_url',

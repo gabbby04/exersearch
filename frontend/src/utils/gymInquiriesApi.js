@@ -73,6 +73,16 @@ export async function ownerMarkInquiryRead(inquiryId) {
   return res.data;
 }
 
+/**
+ * ✅ NEW: Summary for all owned gyms
+ * GET /owner/inquiries/summary
+ * Returns: { data: [{ gym_id, gym_name, open_count, total_count, latest_at }, ...] }
+ */
+export async function ownerInquiriesSummary() {
+  const res = await api.get(`/owner/inquiries/summary`);
+  return res.data;
+}
+
 export function normalizeInquiryListResponse(resData) {
   if (!resData) return { rows: [], meta: null };
 
@@ -97,6 +107,7 @@ export function normalizeInquiryListResponse(resData) {
 
   return { rows: [], meta: resData.meta || null };
 }
+
 export async function listSavedGyms() {
   const res = await api.get("/user/saved-gyms");
   return res.data;

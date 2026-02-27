@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 import OwnerLoading from "./OwnerLoading";
-import HeaderOwner from "./Header-owner"; 
+import HeaderOwner from "./Header-owner";
+import Footer from "../user/Footer"; // ✅ added
 
 export default function OwnerLayout() {
   const [ready, setReady] = useState(false);
@@ -53,6 +54,7 @@ export default function OwnerLayout() {
     <>
       <HeaderOwner />
       <Outlet />
+      <Footer /> 
     </>
   );
 }

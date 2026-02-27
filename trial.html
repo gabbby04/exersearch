@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym Inbox Layout</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        padding: 5%;
+        background-color: #f5f5f5;
+        font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      }
+
+      .container {
+        padding: 0;
+        background-color: #fff;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+        height: 700px;
+        border-radius: 18px;
+        overflow: hidden;
+      }
+
+      .row {
+        height: 700px;
+        display: flex;
+        width: 100%;
+      }
+
+      .menu {
+        width: 280px;
+        min-width: 280px;
+        height: 700px;
+        background: linear-gradient(#4768b5, #35488e);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .menu-header {
+        padding: 16px 14px 12px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .brand {
+        color: #fff;
+        font-weight: 900;
+        letter-spacing: 0.3px;
+        font-size: 14pt;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .brand .pill {
+        font-size: 9pt;
+        font-weight: 900;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .menu-search {
+        height: 40px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .menu-search input {
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 100%;
+        height: 38px;
+        color: #fff;
+        font-size: 10.5pt;
+      }
+
+      .menu-search input::placeholder {
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      .gym-items {
+        list-style: none;
+        margin: 0;
+        padding: 10px;
+        overflow: auto;
+        flex: 1;
+      }
+
+      .gym-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.92);
+        cursor: pointer;
+        position: relative;
+      }
+
+      .gym-item:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .gym-item-active {
+        background: rgba(255, 255, 255, 0.18);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+      }
+
+      .gym-photo {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        flex: 0 0 auto;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+      }
+
+      .gym-meta {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .gym-name {
+        font-weight: 900;
+        font-size: 10.5pt;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .gym-sub {
+        margin-top: 4px;
+        font-size: 9pt;
+        opacity: 0.9;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .badge {
+        background: rgba(255, 255, 255, 0.92);
+        color: #2d3b7a;
+        font-weight: 900;
+        font-size: 9pt;
+        padding: 3px 8px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+      }
+
+      .discussions {
+        width: 360px;
+        min-width: 360px;
+        height: 700px;
+        box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        background-color: #87a3ec;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .discussions .discussion {
+        width: 100%;
+        height: 90px;
+        background-color: #fafafa;
+        border-bottom: solid 1px #e0e0e0;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .discussions .search {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e0e0e0;
+        background: transparent;
+        border-bottom: none;
+        height: 84px;
+      }
+
+      .discussions .search .searchbar {
+        height: 40px;
+        background-color: #fff;
+        width: calc(100% - 44px);
+        padding: 0 16px;
+        border-radius: 50px;
+        border: 1px solid #eeeeee;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .discussions .search .searchbar input {
+        height: 38px;
+        width: 100%;
+        border: none;
+        outline: none;
+        font-size: 10.5pt;
+        font-family: inherit;
+      }
+
+      .discussions .message-active {
+        width: 98.5%;
+        height: 90px;
+        background-color: #fff;
+        border-bottom: solid 1px #e0e0e0;
+      }
+
+      .discussions .discussion .photo {
+        margin-left: 20px;
+        display: block;
+        width: 45px;
+        height: 45px;
+        background: #e6e7ed;
+        border-radius: 50px;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        flex: 0 0 auto;
+      }
+
+      .desc-contact {
+        height: 43px;
+        width: 55%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .discussions .discussion .name {
+        margin: 0 0 0 20px;
+        font-size: 11pt;
+        color: #515151;
+        font-weight: 900;
+      }
+
+      .discussions .discussion .message {
+        margin: 6px 0 0 20px;
+        font-size: 9pt;
+        color: #515151;
+        opacity: 0.9;
+      }
+
+      .timer {
+        margin-left: auto;
+        margin-right: 18px;
+        font-size: 11px;
+        padding: 3px 8px;
+        color: #888;
+        background-color: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 15px;
+        flex: 0 0 auto;
+      }
+
+      .chat {
+        height: 700px;
+        flex: 1;
+        position: relative;
+        background: #fff;
+      }
+
+      .header-chat {
+        background-color: #fff;
+        height: 90px;
+        box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        padding: 0 22px;
+      }
+
+      .hc-left {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .hc-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .header-chat .icon {
+        color: #515151;
+        font-size: 14pt;
+      }
+
+      .hc-titles {
+        min-width: 0;
+      }
+
+      .header-chat .name {
+        margin: 0;
+        text-transform: uppercase;
+        font-size: 13pt;
+        color: #515151;
+        font-weight: 900;
+      }
+
+      .header-chat .sub {
+        margin: 4px 0 0 0;
+        font-size: 9.5pt;
+        color: #7a7a7a;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .header-chat .right {
+        margin-left: auto;
+      }
+
+      .messages-chat {
+        padding: 25px 35px;
+        height: calc(700px - 90px - 80px);
+        overflow: auto;
+      }
+
+      .messages-chat .message {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .messages-chat .message .photo {
+        display: block;
+        width: 45px;
+        height: 45px;
+        background: #e6e7ed;
+        border-radius: 50px;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        flex: 0 0 auto;
+      }
+
+      .messages-chat .text {
+        margin: 0 14px;
+        background-color: #f6f6f6;
+        padding: 15px;
+        border-radius: 12px;
+        max-width: 72%;
+      }
+
+      .text-only {
+        margin-left: 45px;
+      }
+
+      .time {
+        font-size: 10px;
+        color: lightgrey;
+        margin-bottom: 10px;
+        margin-left: 85px;
+      }
+
+      .response-time {
+        float: right;
+        margin-right: 40px !important;
+      }
+
+      .response {
+        margin-left: auto;
+      }
+
+      .response .text {
+        background-color: #e3effd !important;
+      }
+
+      .footer-chat {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #fff;
+        border-top: 2px solid #eee;
+        padding: 0 18px;
+        gap: 12px;
+      }
+
+      .write-message {
+        border: none !important;
+        outline: none;
+        width: 100%;
+        height: 50px;
+        padding: 10px 12px;
+        font-size: 11pt;
+        background: transparent;
+        font-family: inherit;
+      }
+
+      .footer-chat .send {
+        color: #fff;
+        background-color: #4f6ebd;
+        padding: 12px;
+        border-radius: 50px;
+        font-size: 14pt;
+        flex: 0 0 auto;
+      }
+
+      .clickable {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <aside class="menu">
+          <div class="menu-header">
+            <div class="brand">
+              <span>Gyms</span>
+              <span class="pill">Owner Inbox</span>
+            </div>
+            <div class="menu-search">
+              <i class="fa fa-search" aria-hidden="true"></i>
+              <input type="text" placeholder="Search gyms..." />
+            </div>
+          </div>
+
+          <ul class="gym-items">
+            <li class="gym-item gym-item-active">
+              <div
+                class="gym-photo"
+                style="background-image:url(https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <div class="gym-meta">
+                <div class="gym-name">IronForge Gym</div>
+                <div class="gym-sub">3 open inquiries</div>
+              </div>
+              <div class="badge">3</div>
+            </li>
+
+            <li class="gym-item">
+              <div
+                class="gym-photo"
+                style="background-image:url(https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <div class="gym-meta">
+                <div class="gym-name">Pulse Fitness</div>
+                <div class="gym-sub">No pending</div>
+              </div>
+            </li>
+
+            <li class="gym-item">
+              <div
+                class="gym-photo"
+                style="background-image:url(https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <div class="gym-meta">
+                <div class="gym-name">Titan Strength</div>
+                <div class="gym-sub">1 open inquiry</div>
+              </div>
+              <div class="badge">1</div>
+            </li>
+
+            <li class="gym-item">
+              <div
+                class="gym-photo"
+                style="background-image:url(https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <div class="gym-meta">
+                <div class="gym-name">Urban Core</div>
+                <div class="gym-sub">2 answered today</div>
+              </div>
+            </li>
+
+            <li class="gym-item">
+              <div
+                class="gym-photo"
+                style="background-image:url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <div class="gym-meta">
+                <div class="gym-name">Flex District</div>
+                <div class="gym-sub">No pending</div>
+              </div>
+            </li>
+          </ul>
+        </aside>
+
+        <section class="discussions">
+          <div class="discussion search">
+            <div class="searchbar">
+              <i class="fa fa-search" aria-hidden="true"></i>
+              <input type="text" placeholder="Search inquiries..." />
+            </div>
+          </div>
+
+          <div class="discussion message-active">
+            <div
+              class="photo"
+              style="background-image:url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=800&q=60)"
+            ></div>
+            <div class="desc-contact">
+              <p class="name">Megan Leib</p>
+              <p class="message">Do you have student discounts?</p>
+            </div>
+            <div class="timer">12 sec</div>
+          </div>
+
+          <div class="discussion">
+            <div
+              class="photo"
+              style="background-image:url(https://i.pinimg.com/originals/a9/26/52/a926525d966c9479c18d3b4f8e64b434.jpg)"
+            ></div>
+            <div class="desc-contact">
+              <p class="name">Dave Corlew</p>
+              <p class="message">Is free first visit available?</p>
+            </div>
+            <div class="timer">3 min</div>
+          </div>
+
+          <div class="discussion">
+            <div
+              class="photo"
+              style="background-image:url(https://images.unsplash.com/photo-1497551060073-4c5ab6435f12?auto=format&fit=crop&w=800&q=60)"
+            ></div>
+            <div class="desc-contact">
+              <p class="name">Jerome Seiber</p>
+              <p class="message">What time do you close on Sundays?</p>
+            </div>
+            <div class="timer">42 min</div>
+          </div>
+
+          <div class="discussion">
+            <div
+              class="photo"
+              style="background-image:url(https://images.unsplash.com/photo-1541747157478-3222166cf342?auto=format&fit=crop&w=800&q=60)"
+            ></div>
+            <div class="desc-contact">
+              <p class="name">Billy Southard</p>
+              <p class="message">Can I bring a guest?</p>
+            </div>
+            <div class="timer">1 day</div>
+          </div>
+
+          <div class="discussion">
+            <div
+              class="photo"
+              style="background-image:url(https://images.unsplash.com/photo-1553514029-1318c9127859?auto=format&fit=crop&w=800&q=60)"
+            ></div>
+            <div class="desc-contact">
+              <p class="name">Elsie Amador</p>
+              <p class="message">Do you have lockers?</p>
+            </div>
+            <div class="timer">4 days</div>
+          </div>
+        </section>
+
+        <section class="chat">
+          <div class="header-chat">
+            <div class="hc-left">
+              <div class="hc-user">
+                <i class="icon fa fa-user-o" aria-hidden="true"></i>
+                <div class="hc-titles">
+                  <p class="name">Megan Leib</p>
+                  <p class="sub">IronForge Gym • Open</p>
+                </div>
+              </div>
+            </div>
+            <i class="icon clickable fa fa-ellipsis-h right" aria-hidden="true"></i>
+          </div>
+
+          <div class="messages-chat">
+            <div class="message">
+              <div
+                class="photo"
+                style="background-image:url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <p class="text">Hi! Do you have student discounts?</p>
+            </div>
+
+            <p class="time">14h58</p>
+
+            <div class="message text-only">
+              <div class="response">
+                <p class="text">Yes, we offer a student rate with valid ID.</p>
+              </div>
+            </div>
+
+            <p class="response-time time">15h04</p>
+
+            <div class="message">
+              <div
+                class="photo"
+                style="background-image:url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=800&q=60)"
+              ></div>
+              <p class="text">Nice! How much is it per month?</p>
+            </div>
+
+            <p class="time">15h09</p>
+          </div>
+
+          <div class="footer-chat">
+            <input type="text" class="write-message" placeholder="Type your reply..." />
+            <i class="icon send fa fa-paper-plane-o clickable" aria-hidden="true"></i>
+          </div>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

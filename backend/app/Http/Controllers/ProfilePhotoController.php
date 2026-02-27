@@ -4,79 +4,102 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Schema;
 
 class ProfilePhotoController extends Controller
 {
-    public function upload(Request $request)
+    public function upload(Request $request, string $type = 'user')
     {
         $request->validate([
-            'photo' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'], // 2MB
+            'photo' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $user = $request->user();
+        $type = strtolower($type);
 
-        // keep files organized by role
-        $folder = match ($user->role) {
-            'admin', 'superadmin' => 'avatars/admins',
-            'owner'              => 'avatars/owners',
-            default              => 'avatars/users',
+        if (!in_array($type, ['user', 'owner', 'admin'], true)) {
+            return response()->json(['message' => 'Invalid profile type.'], 422);
+        }
+
+        if ($type === 'admin' && !in_array($user->role, ['admin', 'superadmin'], true)) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if ($type === 'owner' && !in_array($user->role, ['owner', 'superadmin'], true)) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        $folder = match ($type) {
+            'admin' => 'avatars/admins',
+            'owner' => 'avatars/owners',
+            default => 'avatars/users',
         };
 
-        // store file on the "public" disk
         $path = $request->file('photo')->store($folder, 'public');
-
-        // public URL via storage:link (e.g. /storage/avatars/admins/xxx.webp)
         $url = Storage::url($path);
 
-        // save URL into the correct profile column
-        if (in_array($user->role, ['admin', 'superadmin'])) {
+        if ($type === 'admin') {
             $profile = $user->adminProfile()->firstOrCreate(['user_id' => $user->user_id]);
             $profile->avatar_url = $url;
             $profile->save();
-        } elseif ($user->role === 'owner') {
+        } elseif ($type === 'owner') {
             $profile = $user->ownerProfile()->firstOrCreate(['user_id' => $user->user_id]);
             $profile->profile_photo_url = $url;
             $profile->save();
         } else {
-            // only save if your user_profiles has profile_photo_url
             $profile = $user->userProfile()->firstOrCreate(['user_id' => $user->user_id]);
-
-            if (Schema::hasColumn('user_profiles', 'profile_photo_url')) {
-                $profile->profile_photo_url = $url;
-                $profile->save();
-            }
+            $profile->profile_photo_url = $url;
+            $profile->save();
         }
 
         return response()->json([
             'message' => 'Profile photo updated.',
             'avatar_url' => $url,
+            'type' => $type,
         ]);
     }
 
-    public function remove(Request $request)
+    public function remove(Request $request, string $type = 'user')
     {
         $user = $request->user();
+        $type = strtolower($type);
+
+        if (!in_array($type, ['user', 'owner', 'admin'], true)) {
+            return response()->json(['message' => 'Invalid profile type.'], 422);
+        }
+
+        if ($type === 'admin' && !in_array($user->role, ['admin', 'superadmin'], true)) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if ($type === 'owner' && !in_array($user->role, ['owner', 'superadmin'], true)) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
 
         $currentUrl = null;
 
-        if (in_array($user->role, ['admin', 'superadmin'])) {
-            $currentUrl = optional($user->adminProfile)->avatar_url;
-
-            if ($user->adminProfile) {
-                $user->adminProfile->avatar_url = null;
-                $user->adminProfile->save();
+        if ($type === 'admin') {
+            $profile = $user->adminProfile;
+            $currentUrl = $profile?->avatar_url;
+            if ($profile) {
+                $profile->avatar_url = null;
+                $profile->save();
             }
-        } elseif ($user->role === 'owner') {
-            $currentUrl = optional($user->ownerProfile)->profile_photo_url;
-
-            if ($user->ownerProfile) {
-                $user->ownerProfile->profile_photo_url = null;
-                $user->ownerProfile->save();
+        } elseif ($type === 'owner') {
+            $profile = $user->ownerProfile;
+            $currentUrl = $profile?->profile_photo_url;
+            if ($profile) {
+                $profile->profile_photo_url = null;
+                $profile->save();
+            }
+        } else {
+            $profile = $user->userProfile;
+            $currentUrl = $profile?->profile_photo_url;
+            if ($profile) {
+                $profile->profile_photo_url = null;
+                $profile->save();
             }
         }
 
-        // delete file from disk if it was local /storage/*
         if ($currentUrl && str_starts_with($currentUrl, '/storage/')) {
             $relative = str_replace('/storage/', '', $currentUrl);
             Storage::disk('public')->delete($relative);
@@ -84,6 +107,7 @@ class ProfilePhotoController extends Controller
 
         return response()->json([
             'message' => 'Profile photo removed.',
+            'type' => $type,
         ]);
     }
 }
