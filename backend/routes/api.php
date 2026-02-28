@@ -166,8 +166,7 @@ Route::prefix('v1')->group(function () {
             Route::delete('/me/avatar/{type}', [ProfilePhotoController::class, 'remove'])
                 ->whereIn('type', ['user', 'owner', 'admin']);
 
-            Route::post('/me/avatar', [ProfilePhotoController::class, 'upload']);
-            Route::delete('/me/avatar', [ProfilePhotoController::class, 'remove']);
+
 
             Route::post('/media/upload', [MediaUploadController::class, 'upload']);
             Route::delete('/media/delete', [MediaUploadController::class, 'delete']);
@@ -189,6 +188,19 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/user/profile', [UserProfileController::class, 'show']);
             Route::put('/user/profile', [UserProfileController::class, 'update']);
+
+            /*
+            |--------------------------------------------------------------------------
+            | OWNER PROFILE ROUTES (added)
+            |--------------------------------------------------------------------------
+            | These match your OwnerProfileController:
+            | - GET  /api/v1/owner/profile   -> show()
+            | - PUT  /api/v1/owner/profile   -> update() (storeOrUpdate)
+            | (Optional) POST /api/v1/owner/profile -> storeOrUpdate
+            */
+            Route::get('/owner/profile', [OwnerProfileController::class, 'show']);
+            Route::put('/owner/profile', [OwnerProfileController::class, 'update']);
+            Route::post('/owner/profile', [OwnerProfileController::class, 'storeOrUpdate']);
 
             Route::post('/user/onboarding/complete', [UserController::class, 'markOnboarded']);
 

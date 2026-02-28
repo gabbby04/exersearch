@@ -3,14 +3,13 @@ import axios from "axios";
 import "./ProfileStyle.css";
 import { useOutletContext } from "react-router-dom";
 import { MAIN, adminThemes } from "./AdminLayout";
-
 import { alertSuccess, alertError, alertInfo } from "../../utils/adminAlert";
 
 const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "/arellano.png";
 
 export default function Profile() {
-  const { theme } = useOutletContext(); // ✅ get theme from AdminLayout
+  const { theme } = useOutletContext();
   const t = adminThemes[theme]?.app || adminThemes.light.app;
   const isDark = theme === "dark";
 
@@ -21,7 +20,6 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // backend data
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -34,8 +32,6 @@ export default function Profile() {
   });
 
   const [formData, setFormData] = useState({ ...userData });
-
-  // local preview for selected file (before upload)
   const [localPreview, setLocalPreview] = useState("");
 
   const token = localStorage.getItem("token");
@@ -49,7 +45,6 @@ export default function Profile() {
     return `${API_BASE}${raw}`;
   }, [localPreview, isEditing, formData.avatar_url, userData.avatar_url]);
 
-  // themed wrapper to avoid "bleak" look (no CSS changes)
   const pageWrapStyle = useMemo(
     () => ({
       width: "100%",
@@ -99,14 +94,12 @@ export default function Profile() {
     [t]
   );
 
-  // Cleanup local preview blob URL
   useEffect(() => {
     return () => {
       if (localPreview) URL.revokeObjectURL(localPreview);
     };
   }, [localPreview]);
 
-  // Load from backend
   useEffect(() => {
     let mounted = true;
 
@@ -170,7 +163,6 @@ export default function Profile() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Image file select (preview only)
   const onPickFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -185,7 +177,6 @@ export default function Profile() {
       return;
     }
 
-    // quick size guard
     if (file.size > 6 * 1024 * 1024) {
       alertInfo({
         title: "File too large",
@@ -196,14 +187,14 @@ export default function Profile() {
       return;
     }
 
-    // Replace old preview URL
     if (localPreview) URL.revokeObjectURL(localPreview);
 
     const url = URL.createObjectURL(file);
     setLocalPreview(url);
   };
 
-  // ✅ Upload selected file to backend (ProfilePhotoController expects 'photo')
+  // ✅ uploads ONLY to admin profile via /me/avatar/admin
+  // ✅ does NOT call /me/avatar (user) and does NOT call /admin/profile after upload
   const uploadAvatar = async () => {
     const file = fileRef.current?.files?.[0];
     if (!file) {
@@ -219,9 +210,9 @@ export default function Profile() {
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append("photo", file); // ✅ MUST be "photo" for your ProfilePhotoController
+      fd.append("photo", file);
 
-      const res = await axios.post(`${API_BASE}/api/v1/me/avatar`, fd, {
+      const res = await axios.post(`${API_BASE}/api/v1/me/avatar/admin`, fd, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -231,7 +222,7 @@ export default function Profile() {
 
       const newUrl = res.data?.avatar_url;
       if (!newUrl) {
-        console.log("[AVATAR UPLOAD] response:", res.data);
+        console.log("[ADMIN AVATAR UPLOAD] response:", res.data);
         alertError({
           title: "Upload incomplete",
           text: "Upload succeeded but server did not return an avatar_url.",
@@ -241,25 +232,23 @@ export default function Profile() {
         return;
       }
 
-      // Update both view + form data
+      // Update view + form immediately
       setUserData((p) => ({ ...p, avatar_url: newUrl }));
       setFormData((p) => ({ ...p, avatar_url: newUrl }));
 
-      // Clear local preview (server is now source of truth)
+      // clear preview and file input
       if (localPreview) URL.revokeObjectURL(localPreview);
       setLocalPreview("");
-
-      // Clear file input
       if (fileRef.current) fileRef.current.value = "";
 
       alertSuccess({
         title: "Profile photo updated",
-        text: res.data?.message || "Your avatar has been successfully updated.",
+        text: res.data?.message || "Your admin avatar has been successfully updated.",
         theme,
         mainColor: MAIN,
       });
     } catch (err) {
-      console.log("[AVATAR UPLOAD] error:", err?.response?.status, err?.response?.data);
+      console.log("[ADMIN AVATAR UPLOAD] error:", err?.response?.status, err?.response?.data);
 
       if (err.response?.data?.errors) {
         alertError({
@@ -284,11 +273,11 @@ export default function Profile() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // ✅ Do NOT send avatar_url here (prevents any controller logic that syncs elsewhere)
       const payload = {
         name: formData.name,
         permission_level: formData.permission_level,
         notes: formData.notes,
-        avatar_url: formData.avatar_url,
       };
 
       const res = await axios.put(`${API_BASE}/api/v1/admin/profile`, payload, {
@@ -296,7 +285,13 @@ export default function Profile() {
         withCredentials: true,
       });
 
-      setUserData({ ...formData });
+      // keep local state consistent (avatar_url stays whatever we have locally)
+      setUserData((prev) => ({
+        ...prev,
+        name: formData.name,
+        permission_level: formData.permission_level,
+        notes: formData.notes,
+      }));
       setIsEditing(false);
 
       alertSuccess({
@@ -351,7 +346,6 @@ export default function Profile() {
 
   return (
     <div style={pageWrapStyle}>
-      {/* top mini header (matches admin vibe) */}
       <div
         style={{
           display: "flex",
@@ -364,9 +358,7 @@ export default function Profile() {
       >
         <div>
           <div style={{ fontWeight: 950, fontSize: 22 }}>Profile</div>
-          <div style={subtleText}>
-            {isDark ? "Dark mode" : "Light mode"} • Admin Panel
-          </div>
+          <div style={subtleText}>{isDark ? "Dark mode" : "Light mode"} • Admin Panel</div>
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -395,10 +387,8 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* keep your existing CSS layout */}
       <div className="profile-page" style={{ background: "transparent", padding: 0 }}>
         <div className="profile-container" style={{ margin: 0 }}>
-          {/* Left Column */}
           <div className="profile-left">
             <div className="avatar-wrapper">
               <img src={avatarSrc} alt="Profile" className="avatar-img" />
@@ -411,7 +401,6 @@ export default function Profile() {
               {(isEditing ? formData.notes : userData.notes) || "No notes yet."}
             </p>
 
-            {/* ✅ Image upload area (only while editing) */}
             {isEditing && (
               <div style={{ marginTop: 14, width: "100%" }}>
                 <div style={{ ...subtleText, marginBottom: 8 }}>Update avatar</div>
@@ -458,7 +447,6 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Right Column */}
           <div className="profile-right">
             {isEditing ? (
               <div className="edit-form">
@@ -481,21 +469,20 @@ export default function Profile() {
                   <option value="readonly">readonly</option>
                 </select>
 
-                <label>Avatar URL</label>
+                {/* keep this field if you want to VIEW it, but it is no longer sent to /admin/profile */}
+                <label>Avatar URL (read-only)</label>
                 <input
                   type="text"
                   name="avatar_url"
                   value={formData.avatar_url}
                   onChange={handleInputChange}
                   placeholder="/storage/avatars/admins/..."
+                  readOnly
+                  style={{ opacity: 0.85, cursor: "not-allowed" }}
                 />
 
                 <label>Notes</label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                />
+                <textarea name="notes" value={formData.notes} onChange={handleInputChange} />
 
                 <div className="edit-actions">
                   <button

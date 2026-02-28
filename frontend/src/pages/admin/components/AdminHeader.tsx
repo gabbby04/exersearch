@@ -2,7 +2,7 @@ import React from "react";
 import type { Theme } from "../admin.types";
 import { Switch } from "./components/Switch";
 import { MAIN, adminThemes } from "../AdminLayout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const FALLBACK_AVATAR = "/arellano.png";
 const API_BASE = "https://exersearch.test";
@@ -13,6 +13,7 @@ type Me = {
   name: string;
   email: string;
   role: string; // "user" | "owner" | "superadmin"
+
   admin_profile?: {
     admin_profile_id: number;
     permission_level: string;
@@ -21,6 +22,30 @@ type Me = {
     created_at?: string;
     updated_at?: string;
   } | null;
+
+  owner_profile?: {
+    owner_profile_id?: number;
+    profile_photo_url?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  } | null;
+
+  user_profile?: {
+    user_profile_id?: number;
+    profile_photo_url?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  } | null;
+
+  // (optional camelCase fallbacks if your API sometimes returns these)
+  adminProfile?: { avatar_url?: string | null } | null;
+  ownerProfile?: { profile_photo_url?: string | null } | null;
+  userProfile?: { profile_photo_url?: string | null } | null;
+
+  avatar_url?: string | null;
+  profile_photo_url?: string | null;
+  photoURL?: string | null;
+  avatar?: string | null;
 };
 
 type Props = {
@@ -46,8 +71,21 @@ function roleLevel(role?: string | null) {
   return ROLE_LEVEL[String(role || "")] ?? 0;
 }
 
-function hasAtLeastRole(role: string | undefined | null, required: "user" | "owner" | "superadmin") {
+function hasAtLeastRole(
+  role: string | undefined | null,
+  required: "user" | "owner" | "superadmin"
+) {
   return roleLevel(role) >= roleLevel(required);
+}
+
+function toAbsUrl(u: string | null | undefined) {
+  if (!u) return "";
+  const s = String(u).trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  const base = String(API_BASE || "").replace(/\/$/, "");
+  const path = s.startsWith("/") ? s : `/${s}`;
+  return `${base}${path}`;
 }
 
 export default function AdminHeader({
@@ -62,9 +100,18 @@ export default function AdminHeader({
   const isDark = theme === "dark";
   const t = adminThemes[theme].app;
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [menuOpen, setMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
+
+  // ✅ detect active UI by route prefix
+  const currentUi = React.useMemo<"user" | "owner" | "superadmin">(() => {
+    const p = String(location.pathname || "");
+    if (p.startsWith("/owner")) return "owner";
+    if (p.startsWith("/admin") || p.startsWith("/superadmin")) return "superadmin";
+    return "user";
+  }, [location.pathname]);
 
   React.useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -100,8 +147,8 @@ export default function AdminHeader({
     localStorage.setItem(UI_MODE_KEY, mode);
     setMenuOpen(false);
     if (mode === "user") return navigate("/home");
-    if (mode === "owner") return navigate("/owner/dashboard");
-    return navigate("/superadmin/dashboard");
+    if (mode === "owner") return navigate("/owner/home");
+    return navigate("/admin/dashboard");
   };
 
   const itemStyle: React.CSSProperties = {
@@ -135,12 +182,57 @@ export default function AdminHeader({
   const displayName = me?.name || "Admin";
   const displayEmail = me?.email || "";
 
-  const avatarSrc =
-    me?.admin_profile?.avatar_url
-      ? me.admin_profile.avatar_url.startsWith("http")
-        ? me.admin_profile.avatar_url
-        : `${API_BASE}${me.admin_profile.avatar_url}`
-      : FALLBACK_AVATAR;
+
+  const avatarSrc = React.useMemo(() => {
+    const u = me;
+    if (!u) return FALLBACK_AVATAR;
+
+    let raw = "";
+
+    if (currentUi === "superadmin") {
+      raw =
+        u?.admin_profile?.avatar_url ||
+        u?.adminProfile?.avatar_url ||
+        u?.owner_profile?.profile_photo_url ||
+        u?.ownerProfile?.profile_photo_url ||
+        u?.user_profile?.profile_photo_url ||
+        u?.userProfile?.profile_photo_url ||
+        u?.avatar_url ||
+        u?.profile_photo_url ||
+        u?.photoURL ||
+        u?.avatar ||
+        "";
+    } else if (currentUi === "owner") {
+      raw =
+        u?.owner_profile?.profile_photo_url ||
+        u?.ownerProfile?.profile_photo_url ||
+        u?.admin_profile?.avatar_url ||
+        u?.adminProfile?.avatar_url ||
+        u?.user_profile?.profile_photo_url ||
+        u?.userProfile?.profile_photo_url ||
+        u?.avatar_url ||
+        u?.profile_photo_url ||
+        u?.photoURL ||
+        u?.avatar ||
+        "";
+    } else {
+      raw =
+        u?.user_profile?.profile_photo_url ||
+        u?.userProfile?.profile_photo_url ||
+        u?.owner_profile?.profile_photo_url ||
+        u?.ownerProfile?.profile_photo_url ||
+        u?.admin_profile?.avatar_url ||
+        u?.adminProfile?.avatar_url ||
+        u?.avatar_url ||
+        u?.profile_photo_url ||
+        u?.photoURL ||
+        u?.avatar ||
+        "";
+    }
+
+    const abs = toAbsUrl(raw);
+    return abs || FALLBACK_AVATAR;
+  }, [me, currentUi]);
 
   const canSwitchToUser = hasAtLeastRole(me?.role, "user");
   const canSwitchToOwner = hasAtLeastRole(me?.role, "owner");
@@ -284,13 +376,7 @@ export default function AdminHeader({
             </div>
 
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ opacity: 0.9 }}>
-              <path
-                d="M6 8l4 4 4-4"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
@@ -326,12 +412,7 @@ export default function AdminHeader({
                   <span style={iconWrap}>
                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                       <path d="M10 10a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="1.6" />
-                      <path
-                        d="M3.5 18a6.5 6.5 0 0 1 13 0"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
+                      <path d="M3.5 18a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                     </svg>
                   </span>
                   Switch to User
@@ -348,12 +429,7 @@ export default function AdminHeader({
                   <span style={iconWrap}>
                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                       <path d="M10 10a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="1.6" />
-                      <path
-                        d="M3.5 18a6.5 6.5 0 0 1 13 0"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
+                      <path d="M3.5 18a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                     </svg>
                   </span>
                   Switch to Owner
@@ -369,12 +445,7 @@ export default function AdminHeader({
                 <span style={iconWrap}>
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                     <path d="M10 10a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="1.6" />
-                    <path
-                      d="M3.5 18a6.5 6.5 0 0 1 13 0"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
+                    <path d="M3.5 18a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                   </svg>
                 </span>
                 Profile

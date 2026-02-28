@@ -1,0 +1,459 @@
+/* OwnerHeaderStatic.css */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+:root {
+  --oh-accent: #d23f0b;
+  --oh-ink: #111827;
+  --oh-muted: rgba(17, 24, 39, 0.62);
+  --oh-bg: #ffffff;
+  --oh-border: rgba(17, 24, 39, 0.12);
+  --oh-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+  --oh-shadow2: 0 16px 42px rgba(0, 0, 0, 0.16);
+  --oh-radius: 16px;
+}
+
+.oh-topLogo {
+  position: fixed;
+  top: 10px;
+  left: 24px;
+  z-index: 1101;
+}
+
+.oh-topLogo img {
+  height: 50px;
+  width: auto;
+  cursor: pointer;
+  filter: none;
+}
+
+.oh-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: var(--oh-bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.oh-header__spacer {
+  width: 56px;
+  flex: 0 0 56px;
+}
+
+.oh-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.oh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  user-select: none;
+}
+
+.oh-chip:hover {
+  transform: translateY(-1px);
+}
+
+.oh-chip--home {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+.oh-chip--home:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.oh-chip--inbox {
+  background: #ecfdf5;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+.oh-chip--inbox:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.oh-chip--gyms {
+  background: #fff7ed;
+  color: var(--oh-accent);
+  border-color: #fed7aa;
+}
+.oh-chip--gyms:hover {
+  background: var(--oh-accent);
+  color: #ffffff;
+  border-color: var(--oh-accent);
+}
+
+.oh-notifWrap {
+  position: relative;
+}
+
+.oh-notifBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--oh-border);
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.oh-notifBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.oh-notifDot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--oh-accent);
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.oh-pop {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 330px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 18px;
+  box-shadow: var(--oh-shadow2);
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.oh-pop__hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.oh-pop__title {
+  font-weight: 900;
+  color: var(--oh-ink);
+}
+
+.oh-pop__hdrBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oh-pop__textBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--oh-muted);
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.oh-pop__iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.oh-pop__list {
+  max-height: 360px;
+  overflow: auto;
+}
+
+.oh-pop__empty {
+  padding: 18px 14px;
+  color: var(--oh-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.oh-popItem {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 12px 12px;
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.oh-popItem:hover {
+  background: rgba(210, 63, 11, 0.06);
+}
+
+.oh-popItem--unread {
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.oh-popItem__body p {
+  margin: 0;
+  font-weight: 900;
+  color: var(--oh-ink);
+  font-size: 0.92rem;
+}
+
+.oh-popItem__body span {
+  display: block;
+  margin-top: 2px;
+  color: var(--oh-muted);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.oh-profileWrap {
+  position: relative;
+}
+
+.oh-profileBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: #ffffff;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.oh-profileBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.oh-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: rgba(17, 24, 39, 0.06);
+  border: 1px solid rgba(17, 24, 39, 0.1);
+}
+
+.oh-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oh-avatarFallback {
+  font-weight: 900;
+  color: var(--oh-ink);
+  font-size: 0.95rem;
+}
+
+.oh-chevron {
+  margin-right: 2px;
+  transition: transform 0.18s ease;
+  color: rgba(17, 24, 39, 0.7);
+}
+
+.oh-chevron.open {
+  transform: rotate(180deg);
+}
+
+.oh-profilePop {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 18px;
+  box-shadow: var(--oh-shadow2);
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.oh-profileTop {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.oh-bigAvatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  display: grid;
+  place-items: center;
+  background: rgba(17, 24, 39, 0.06);
+  flex: 0 0 46px;
+}
+
+.oh-bigAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oh-name {
+  margin: 0;
+  font-weight: 950;
+  color: var(--oh-ink);
+  font-size: 0.98rem;
+}
+
+.oh-email {
+  margin: 2px 0 0;
+  font-weight: 700;
+  color: var(--oh-muted);
+  font-size: 0.82rem;
+}
+
+.oh-menu {
+  padding: 8px;
+}
+
+.oh-menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--oh-ink);
+  font-weight: 850;
+  font-size: 0.9rem;
+}
+
+.oh-menuItem:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+
+.oh-miIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+}
+
+.oh-divider {
+  height: 1px;
+  background: rgba(17, 24, 39, 0.1);
+  margin: 8px 0;
+}
+
+.oh-logout {
+  color: #ef4444;
+}
+
+.oh-hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  gap: 5px;
+  margin-left: 6px;
+}
+
+.oh-hamburger span {
+  width: 25px;
+  height: 3px;
+  background: #333;
+  transition: all 0.3s;
+}
+
+.oh-mobileMenu {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.12);
+  flex-direction: column;
+  padding: 12px 0;
+  z-index: 1099;
+}
+
+.oh-mobileMenu.open {
+  display: flex;
+}
+
+.oh-mobileLink,
+.oh-mobileBtn {
+  padding: 12px 18px;
+  text-decoration: none;
+  color: #111827;
+  font-weight: 850;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.oh-mobileLink:hover,
+.oh-mobileBtn:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+
+@media (max-width: 900px) {
+  .oh-actions .oh-chip {
+    display: none;
+  }
+  .oh-hamburger {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .oh-topLogo {
+    top: 14px;
+    left: 16px;
+  }
+  .oh-topLogo img {
+    height: 42px;
+  }
+}

@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import OwnerLoading from "./OwnerLoading";
-import HeaderOwner from "./Header-owner";
-import Footer from "../user/Footer"; // ✅ added
+import HeaderOwner from "./Header-owner"; 
+import HeaderOwnerStatic from "./Header2"; 
+import Footer from "../user/Footer";
 
 export default function OwnerLayout() {
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let alive = true;
@@ -48,13 +50,18 @@ export default function OwnerLayout() {
     };
   }, [navigate]);
 
+  const useHeader2 = useMemo(() => {
+    const p = String(location.pathname || "");
+    return p === "/owner/home" || p === "/owner/inbox";
+  }, [location.pathname]);
+
   if (!ready) return <OwnerLoading />;
 
   return (
     <>
-      <HeaderOwner />
+      {useHeader2 ? <HeaderOwnerStatic /> : <HeaderOwner />}
       <Outlet />
-      <Footer /> 
+      <Footer />
     </>
   );
 }

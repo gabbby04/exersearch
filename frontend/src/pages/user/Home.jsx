@@ -56,9 +56,9 @@ import {
   Percent,
   Utensils,
   UserCircle,
-  Settings,
   LogOut,
-  
+  MessageCircle, // ✅ for Inquiries
+  Settings, // (optional) you can remove if unused after this change
 } from "lucide-react";
 
 const API_BASE = "https://exersearch.test";
@@ -481,27 +481,72 @@ export default function Home() {
     return () => (mounted = false);
   }, []);
 
+  // ✅ detect active UI (so avatar prefers the right profile)
+  const currentUi = useMemo(() => {
+    const p = String(location.pathname || "");
+    if (p.startsWith("/owner")) return "owner";
+    if (p.startsWith("/admin")) return "superadmin";
+    return "user";
+  }, [location.pathname]);
+
+  // ✅ better image fallback (won’t “stick” as display:none)
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [effectiveUser, currentUi]); // resets when user/ui changes
+
+  // ✅ IMPORTANT FIX: in /home UI, ALWAYS prefer user_profile first
   const avatarSrc = useMemo(() => {
     const u = effectiveUser;
     if (!u) return FALLBACK_AVATAR;
 
-    const raw =
-      u?.admin_profile?.avatar_url ||
-      u?.owner_profile?.profile_photo_url ||
-      u?.user_profile?.profile_photo_url ||
-      u?.adminProfile?.avatar_url ||
-      u?.ownerProfile?.profile_photo_url ||
-      u?.userProfile?.profile_photo_url ||
-      u?.avatar_url ||
-      u?.profile_photo_url ||
-      u?.photoURL ||
-      u?.avatar ||
-      "";
+    let raw = "";
+
+    if (currentUi === "user") {
+      raw =
+        u?.user_profile?.profile_photo_url ||
+        u?.userProfile?.profile_photo_url ||
+        u?.owner_profile?.profile_photo_url ||
+        u?.ownerProfile?.profile_photo_url ||
+        u?.admin_profile?.avatar_url ||
+        u?.adminProfile?.avatar_url ||
+        u?.avatar_url ||
+        u?.profile_photo_url ||
+        u?.photoURL ||
+        u?.avatar ||
+        "";
+    } else if (currentUi === "owner") {
+      raw =
+        u?.owner_profile?.profile_photo_url ||
+        u?.ownerProfile?.profile_photo_url ||
+        u?.user_profile?.profile_photo_url ||
+        u?.userProfile?.profile_photo_url ||
+        u?.admin_profile?.avatar_url ||
+        u?.adminProfile?.avatar_url ||
+        u?.avatar_url ||
+        u?.profile_photo_url ||
+        u?.photoURL ||
+        u?.avatar ||
+        "";
+    } else {
+      raw =
+        u?.admin_profile?.avatar_url ||
+        u?.adminProfile?.avatar_url ||
+        u?.user_profile?.profile_photo_url ||
+        u?.userProfile?.profile_photo_url ||
+        u?.owner_profile?.profile_photo_url ||
+        u?.ownerProfile?.profile_photo_url ||
+        u?.avatar_url ||
+        u?.profile_photo_url ||
+        u?.photoURL ||
+        u?.avatar ||
+        "";
+    }
 
     if (!raw) return FALLBACK_AVATAR;
-    if (raw.startsWith("http")) return raw;
+    if (/^https?:\/\//i.test(String(raw))) return String(raw);
     return toAbsUrl(raw);
-  }, [effectiveUser]);
+  }, [effectiveUser, currentUi]);
 
   const handleSwitchUi = useCallback(
     (mode) => {
@@ -879,19 +924,14 @@ export default function Home() {
                     </div>
                     Meal Plan
                   </Link>
-                      <Link
-                    to="/home/memberships"
-                    className="uhv-profile-menu-item"
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    <div
-                      className="uhv-pmi-icon"
-                      style={{ background: "#fff7ed", color: "#f59e0b" }}
-                    >
+
+                  <Link to="/home/memberships" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                    <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#f59e0b" }}>
                       <Trophy size={15} />
                     </div>
                     Memberships
-                  </Link>  
+                  </Link>
+
                   <Link to="/home/saved-gyms" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
                     <div className="uhv-pmi-icon" style={{ background: "#fef2f2", color: "#ef4444" }}>
                       <Heart size={15} />
@@ -899,11 +939,12 @@ export default function Home() {
                     Saved Gyms
                   </Link>
 
-                  <Link to="/home/settings" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                  {/* ✅ REPLACED: Settings -> Inquiries */}
+                  <Link to="/home/inquiries" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
                     <div className="uhv-pmi-icon" style={{ background: "#f5f3ff", color: "#8b5cf6" }}>
-                      <Settings size={15} />
+                      <MessageCircle size={15} />
                     </div>
-                    Settings
+                    Inquiries
                   </Link>
 
                   {isOwnerPlus && switchModes.length > 0 && (
@@ -964,8 +1005,10 @@ export default function Home() {
         <Link to="/home/profile" onClick={() => setMobileMenuOpen(false)}>
           MY PROFILE
         </Link>
-        <Link to="/home/settings" onClick={() => setMobileMenuOpen(false)}>
-          SETTINGS
+
+        {/* ✅ REPLACED: SETTINGS -> INQUIRIES */}
+        <Link to="/home/inquiries" onClick={() => setMobileMenuOpen(false)}>
+          INQUIRIES
         </Link>
 
         {isOwnerPlus &&
@@ -992,7 +1035,8 @@ export default function Home() {
         </Link>
       </div>
 
-      <section className="uhv-hero">
+  
+    <section className="uhv-hero">
         <div className="uhv-hero__inner">
           <div className="uhv-hero__left">
             <p className="uhv-hero__greet">Good morning, {userName} 👋</p>
@@ -1566,4 +1610,5 @@ export default function Home() {
       )}
     </div>
   );
+
 }

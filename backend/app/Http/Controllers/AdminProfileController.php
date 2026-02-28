@@ -14,7 +14,7 @@ class AdminProfileController extends Controller
         $user = $request->user();
         if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
 
-        if (!in_array($user->role, ['admin', 'superadmin'])) {
+        if (!in_array($user->role, ['admin', 'superadmin'], true)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -43,12 +43,14 @@ class AdminProfileController extends Controller
     }
 
     // PUT /api/v1/admin/profile
+    // ✅ Updates ONLY: name, permission_level, notes
+    // ❌ Does NOT accept avatar_url (avatar is handled ONLY by POST /me/avatar/admin)
     public function update(Request $request)
     {
         $user = $request->user();
         if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
 
-        if (!in_array($user->role, ['admin', 'superadmin'])) {
+        if (!in_array($user->role, ['admin', 'superadmin'], true)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -56,7 +58,7 @@ class AdminProfileController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'permission_level' => ['sometimes', 'in:full,limited,readonly'],
             'notes' => ['nullable', 'string'],
-            'avatar_url' => ['nullable', 'string'],
+            // ✅ avatar_url removed on purpose
         ]);
 
         if ($validator->fails()) {
@@ -68,7 +70,7 @@ class AdminProfileController extends Controller
             ['permission_level' => 'full']
         );
 
-        // update base user name if provided
+        // Update base user name if provided
         if ($request->has('name')) {
             $user->name = $request->input('name');
             $user->save();
@@ -78,12 +80,9 @@ class AdminProfileController extends Controller
             $profile->permission_level = $request->input('permission_level');
         }
 
-        if ($request->has('notes')) {
+        // Use exists so notes can be set to null to clear it
+        if ($request->exists('notes')) {
             $profile->notes = $request->input('notes');
-        }
-
-        if ($request->has('avatar_url')) {
-            $profile->avatar_url = $request->input('avatar_url');
         }
 
         $profile->save();
@@ -101,7 +100,7 @@ class AdminProfileController extends Controller
                 'user_id' => $profile->user_id,
                 'permission_level' => $profile->permission_level,
                 'notes' => $profile->notes,
-                'avatar_url' => $profile->avatar_url,
+                'avatar_url' => $profile->avatar_url, // still returned for display
                 'created_at' => $profile->created_at,
                 'updated_at' => $profile->updated_at,
             ],

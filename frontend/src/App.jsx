@@ -22,6 +22,9 @@ import WorkoutDayDetails from "./pages/user/WorkoutDayDetails";
 import BecomeOwner from "./pages/user/BecomeOwner";
 import OwnerApplication from "./pages/user/OwnerApplication";
 import MealPlanGenerator from "./pages/user/MealPlan";
+import GymInquiryHistory from "./pages/user/GymInquiryHistory";
+import TestLogin from "./pages/user/testLogin";
+
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
 import OwnerMembers from "./pages/owner/OwnerMembers";
@@ -31,10 +34,7 @@ import EditGym from "./pages/owner/EditGym";
 import ViewStats from "./pages/owner/ViewStats";
 import OwnerGymApplication from "./pages/owner/OwnerGymApplication";
 import OwnerInbox from "./pages/owner/OwnerInbox";
-
-import GymInquiryHistory from "./pages/user/GymInquiryHistory";
-
-import TestLogin from "./pages/user/testLogin";
+import OwnerProfile from "./pages/owner/OwnerProfile";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -58,7 +58,6 @@ import AdminDatabaseBackup from "./pages/admin/AdminDatabaseBackup";
 import { getUserRole } from "./utils/auth";
 import "leaflet/dist/leaflet.css";
 
-
 function RoleLanding() {
   const r = getUserRole();
   if (r === "user") return <Navigate to="/home" replace />;
@@ -75,17 +74,16 @@ function App() {
       <Route path="/" element={<RoleLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
-
       <Route path="/test-login" element={<TestLogin />} />
 
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/become-an-owner" element={<BecomeOwner />} />
       <Route path="/owner-application" element={<OwnerApplication />} />
 
+      {/* USER ROUTES */}
       <Route path="/home/*" element={<UserLayout />}>
         <Route index element={<UserHome />} />
         <Route path="meal-plan" element={<MealPlanGenerator />} />
-
         <Route path="becomeowner" element={<BecomeOwner />} />
         <Route path="applyowner" element={<OwnerApplication />} />
         <Route path="profile" element={<Profile />} />
@@ -100,8 +98,10 @@ function App() {
         <Route path="inquiries" element={<GymInquiryHistory />} />
       </Route>
 
+      {/* OWNER ROUTES */}
       <Route path="/owner/*" element={<OwnerLayout />}>
         <Route path="home" element={<OwnerHome />} />
+        <Route path="profile" element={<OwnerProfile />} />
         <Route path="inbox" element={<OwnerInbox />} />
         <Route path="members/:id" element={<OwnerMembers />} />
         <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
@@ -109,8 +109,10 @@ function App() {
         <Route path="edit-gym/:id" element={<EditGym />} />
         <Route path="view-stats/:id" element={<ViewStats />} />
         <Route path="gym-application" element={<OwnerGymApplication />} />
+        <Route index element={<Navigate to="home" replace />} />
       </Route>
 
+      {/* ADMIN ROUTES */}
       <Route path="/admin/*" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="equipments" element={<AdminEquipments />} />
