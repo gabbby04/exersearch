@@ -57,12 +57,12 @@ import {
   Utensils,
   UserCircle,
   LogOut,
-  MessageCircle, // ✅ for Inquiries
-  Settings, // (optional) you can remove if unused after this change
+  MessageCircle,
+  Settings, 
 } from "lucide-react";
 
 const API_BASE = "https://exersearch.test";
-const FALLBACK_AVATAR = "https://i.pravatar.cc/60?img=12";
+const FALLBACK_AVATAR = "/defaulticon.png";
 const TOKEN_KEY = "token";
 const UI_MODE_KEY = "ui_mode";
 

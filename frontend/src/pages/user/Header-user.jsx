@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 const API_BASE = "https://exersearch.test";
-const FALLBACK_AVATAR = "https://i.pravatar.cc/60?img=12";
+const FALLBACK_AVATAR = "/defaulticon.png";
 const TOKEN_KEY = "token";
 const UI_MODE_KEY = "ui_mode";
 
@@ -85,7 +85,6 @@ export default function HeaderUser() {
   const token = localStorage.getItem(TOKEN_KEY);
   const effectiveUser = user || me;
 
-  // ✅ detect active UI (so avatar prefers the right profile)
   const currentUi = useMemo(() => {
     const p = String(location.pathname || "");
     if (p.startsWith("/owner")) return "owner";
