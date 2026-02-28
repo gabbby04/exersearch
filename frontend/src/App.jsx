@@ -24,6 +24,7 @@ import OwnerApplication from "./pages/user/OwnerApplication";
 import MealPlanGenerator from "./pages/user/MealPlan";
 import GymInquiryHistory from "./pages/user/GymInquiryHistory";
 
+
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
 import OwnerMembers from "./pages/owner/OwnerMembers";
@@ -73,15 +74,16 @@ function App() {
       <Route path="/" element={<RoleLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+   
 
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/become-an-owner" element={<BecomeOwner />} />
       <Route path="/owner-application" element={<OwnerApplication />} />
-
+      <Route path="meal-plan" element={<MealPlanGenerator />} />
       {/* USER ROUTES */}
       <Route path="/home/*" element={<UserLayout />}>
         <Route index element={<UserHome />} />
-        <Route path="meal-plan" element={<MealPlanGenerator />} />
+        
         <Route path="becomeowner" element={<BecomeOwner />} />
         <Route path="applyowner" element={<OwnerApplication />} />
         <Route path="profile" element={<Profile />} />
