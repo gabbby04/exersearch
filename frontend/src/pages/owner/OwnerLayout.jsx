@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import OwnerLoading from "./OwnerLoading";
-import HeaderOwner from "./Header-owner"; 
-import HeaderOwnerStatic from "./Header2"; 
+import HeaderOwner from "./Header-owner";
+import HeaderOwnerStatic from "./Header2";
 import Footer from "../user/Footer";
 
 export default function OwnerLayout() {
@@ -18,7 +18,7 @@ export default function OwnerLayout() {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          navigate("/login");
+          navigate("/login", { replace: true });
           return;
         }
 
@@ -32,7 +32,7 @@ export default function OwnerLayout() {
         const fetchedUser = meRes.data.user || meRes.data;
 
         if (!["owner", "superadmin"].includes(fetchedUser?.role)) {
-          navigate("/login");
+          navigate("/login", { replace: true });
           return;
         }
 
@@ -40,7 +40,7 @@ export default function OwnerLayout() {
         setReady(true);
       } catch {
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/login", { replace: true });
       }
     };
 
@@ -52,7 +52,11 @@ export default function OwnerLayout() {
 
   const useHeader2 = useMemo(() => {
     const p = String(location.pathname || "");
-    return p === "/owner/home" || p === "/owner/inbox";
+    return (
+      p.startsWith("/owner/home") ||
+      p.startsWith("/owner/inbox") ||
+      p.startsWith("/owner/view-stats")
+    );
   }, [location.pathname]);
 
   if (!ready) return <OwnerLoading />;

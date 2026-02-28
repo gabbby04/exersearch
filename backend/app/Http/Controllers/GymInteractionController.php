@@ -5,15 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Gym;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class GymInteractionController extends Controller
 {
     public function store(Request $request)
     {
-        $user = $request->user();
-        if (!$user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
+        $user = $request->user(); // may be null now
 
         $validated = $request->validate([
             'gym_id' => ['required', 'integer'],
@@ -32,26 +30,31 @@ class GymInteractionController extends Controller
             ->where('status', 'approved')
             ->first();
 
-        if (!$gym) {
-            return response()->json(['message' => 'Gym not found'], 404);
+        if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
+
+        // Require session_id for guests
+        $sessionId = $validated['session_id'] ?? null;
+        if (!$user && !$sessionId) {
+            // auto-generate so it still logs (client should store it)
+            $sessionId = Str::uuid()->toString();
         }
 
         $meta = $validated['meta'] ?? null;
-        if (is_array($meta)) $meta = json_encode($meta);
-        if (is_object($meta)) $meta = json_encode($meta);
-        if (is_string($meta) && $meta !== '') {
-        }
+        if (is_array($meta) || is_object($meta)) $meta = json_encode($meta);
 
         DB::table('gym_interactions')->insert([
-            'user_id' => $user->user_id,
-            'gym_id' => (int) $validated['gym_id'],
+            'user_id' => $user?->user_id, // null for guests
+            'gym_id' => (int)$validated['gym_id'],
             'event' => $validated['event'],
             'source' => $validated['source'] ?? null,
-            'session_id' => $validated['session_id'] ?? null,
+            'session_id' => $sessionId,
             'meta' => $meta,
             'created_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Logged'], 201);
+        return response()->json([
+            'message' => 'Logged',
+            'session_id' => $sessionId, // helpful so frontend can store it
+        ], 201);
     }
 }

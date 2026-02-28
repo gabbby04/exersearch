@@ -23,7 +23,6 @@ import BecomeOwner from "./pages/user/BecomeOwner";
 import OwnerApplication from "./pages/user/OwnerApplication";
 import MealPlanGenerator from "./pages/user/MealPlan";
 import GymInquiryHistory from "./pages/user/GymInquiryHistory";
-import TestLogin from "./pages/user/testLogin";
 
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
@@ -74,7 +73,6 @@ function App() {
       <Route path="/" element={<RoleLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/test-login" element={<TestLogin />} />
 
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/become-an-owner" element={<BecomeOwner />} />

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Header from "../user/Header-user";
 import Footer from "../user/Footer";
 import "./ViewStats.css";
 import {
@@ -25,134 +24,41 @@ import {
   XCircle,
   ArrowRight,
   Info,
+  MapPin,
+  Settings,
+  Inbox,
+  BarChart3,
 } from "lucide-react";
-import { getGymRatings, normalizeGymRatingsResponse } from "../../utils/gymRatingApi";
 
-const STOPWORDS = new Set([
-  "a","an","and","are","as","at","be","but","by","for","from","has","have","he",
-  "her","hers","him","his","i","if","in","is","it","its","just","me","my","no",
-  "not","of","on","or","our","ours","so","that","the","their","them","then",
-  "there","they","this","to","too","us","was","we","were","what","when","where",
-  "which","who","will","with","you","your","yours",
-  "gym","place","nice","good","great","okay","very","super","really"
-]);
-
-function tokenizeReview(text) {
-  if (!text) return [];
-  return String(text)
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .map((w) => w.trim())
-    .filter(Boolean)
-    .filter((w) => w.length >= 3)
-    .filter((w) => !STOPWORDS.has(w));
-}
-
-function buildKeywordTable(ratings, { topN = 8 } = {}) {
-  const total = new Map();
-  const verified = new Map();
-
-  for (const r of ratings || []) {
-    const uniqueWords = Array.from(new Set(tokenizeReview(r?.review)));
-    for (const w of uniqueWords) {
-      total.set(w, (total.get(w) || 0) + 1);
-      if (r?.verified) verified.set(w, (verified.get(w) || 0) + 1);
-    }
-  }
-
-  return Array.from(total.entries())
-    .map(([word, mentions]) => {
-      const v = verified.get(word) || 0;
-      const share = mentions > 0 ? (v / mentions) * 100 : 0;
-      return {
-        name: word,
-        visits: mentions,
-        conversions: v,
-        ctr: Number(share.toFixed(1)),
-        cost: 0,
-      };
-    })
-    .sort((a, b) => b.visits - a.visits)
-    .slice(0, topN);
-}
-
-function buildStarDistribution(ratings, { verifiedOnly = false } = {}) {
-  const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  for (const r of ratings || []) {
-    if (verifiedOnly && !r?.verified) continue;
-    const s = Number(r?.stars);
-    if (s >= 1 && s <= 5) dist[s] += 1;
-  }
-  return dist;
-}
-
-async function fetchAllGymRatings(gymId) {
-  const per_page = 100;
-  let page = 1;
-  let all = [];
-  let summary = null;
-
-  while (true) {
-    const raw = await getGymRatings(gymId, { per_page, page });
-    const norm = normalizeGymRatingsResponse(raw);
-
-    summary = norm.summary;
-    all = all.concat(norm.ratings || []);
-
-    const last = Number(norm.pagination?.last_page || 1);
-    if (page >= last) break;
-    page += 1;
-    if (page > 20) break;
-  }
-
-  return { summary, ratings: all };
-}
+import { loadViewStats } from "../../utils/viewStatsApi";
 
 const MOCK_STATS = {
   gym_name: "IronForge Fitness",
   gym_id: 1,
-  last_updated: "2 minutes ago",
-
+  last_updated: "just now",
   hero_metrics: {
-    views: { current: 1247, previous: 1108, change: 12.5, trend: "up", prediction: 1380, status: "excellent" },
-    members: { current: 156, previous: 144, change: 8.3, trend: "up", prediction: 168, status: "good" },
-    engagement: { current: 410, previous: 372, change: 10.2, trend: "up", prediction: 450, status: "good" },
-    rating: { current: 0, previous: 0, change: 0, trend: "up", prediction: 4.9, status: "excellent" },
+    views: { current: 0, previous: 0, change: 0, trend: "up", prediction: 0, status: "excellent" },
+    members: { current: 0, previous: 0, change: 0, trend: "up", prediction: 0, status: "good" },
+    engagement: { current: 0, previous: 0, change: 0, trend: "up", prediction: 0, status: "good" },
+    rating: { current: 0, previous: 0, change: 0, trend: "up", prediction: 0, status: "excellent" },
   },
-
-  performance_score: { overall: 87, visibility: 92, engagement: 78, satisfaction: 94, growth: 85 },
-
-  timeline_data: [
-    { date: "Feb 1", views: 42, members: 8, engagement: 10, rating: 4.7 },
-    { date: "Feb 2", views: 38, members: 6, engagement: 9, rating: 4.7 },
-    { date: "Feb 3", views: 51, members: 10, engagement: 13, rating: 4.8 },
-    { date: "Feb 4", views: 45, members: 7, engagement: 11, rating: 4.7 },
-    { date: "Feb 5", views: 48, members: 9, engagement: 12, rating: 4.8 },
-    { date: "Feb 6", views: 55, members: 11, engagement: 15, rating: 4.8 },
-    { date: "Feb 7", views: 39, members: 6, engagement: 9, rating: 4.7 },
-    { date: "Feb 8", views: 44, members: 8, engagement: 10, rating: 4.8 },
-    { date: "Feb 9", views: 52, members: 10, engagement: 14, rating: 4.8 },
-    { date: "Feb 10", views: 47, members: 9, engagement: 13, rating: 4.8 },
-  ],
-
+  performance_score: { overall: 0, visibility: 0, engagement: 0, satisfaction: 0, growth: 0 },
+  timeline_data: [],
   conversion_funnel: [
-    { stage: "Profile Views", count: 1247, percentage: 100, drop: 0 },
-    { stage: "Saved", count: 312, percentage: 25.0, drop: 75.0 },
-    { stage: "Inquiries", count: 98, percentage: 7.9, drop: 17.1 },
-    { stage: "Membership Intents", count: 44, percentage: 3.5, drop: 4.4 },
-    { stage: "Sign-ups", count: 156, percentage: 12.5, drop: 0 },
+    { stage: "Profile Views", count: 0, percentage: 100, drop: 0 },
+    { stage: "Saved", count: 0, percentage: 0, drop: 0 },
+    { stage: "Inquiries", count: 0, percentage: 0, drop: 0 },
+    { stage: "Membership Intents", count: 0, percentage: 0, drop: 0 },
+    { stage: "Active Members", count: 0, percentage: 0, drop: 0 },
   ],
-
   engagement_details: {
     by_action: [
-      { name: "Saves", value: 312, members: 312, avg: 10.4, growth: 6.1 },
-      { name: "Inquiries", value: 98, members: 98, avg: 3.3, growth: 12.8 },
-      { name: "Verified Reviews", value: 0, members: 0, avg: 1.3, growth: 9.7 },
-      { name: "Free Visits Used", value: 21, members: 21, avg: 0.7, growth: -4.2 },
+      { name: "Saves", value: 0, members: 0, avg: 0, growth: 0 },
+      { name: "Inquiries", value: 0, members: 0, avg: 0, growth: 0 },
+      { name: "Verified Reviews", value: 0, members: 0, avg: 0, growth: 0 },
+      { name: "Free Visits Used", value: 0, members: 0, avg: 0, growth: 0 },
     ],
   },
-
   reviews_analytics: {
     total: 0,
     average_verified: null,
@@ -163,76 +69,56 @@ const MOCK_STATS = {
     recent_trend: 0,
     top_keywords: [],
   },
-
   rating_keywords_table: [],
-
-  inquiry_keywords_table: [
-    { name: "membership", visits: 29, conversions: 18, ctr: 62.1, cost: 0 },
-    { name: "schedule", visits: 22, conversions: 14, ctr: 63.6, cost: 0 },
-    { name: "rates", visits: 20, conversions: 12, ctr: 60.0, cost: 0 },
-    { name: "promos", visits: 15, conversions: 9, ctr: 60.0, cost: 0 },
-    { name: "amenities", visits: 12, conversions: 7, ctr: 58.3, cost: 0 },
-  ],
-
+  inquiry_keywords_table: [],
   demographics: {
     age: [
-      { range: "18-24", count: 34, percentage: 22 },
-      { range: "25-34", count: 59, percentage: 38 },
-      { range: "35-44", count: 37, percentage: 24 },
-      { range: "45-54", count: 19, percentage: 12 },
-      { range: "55+", count: 7, percentage: 4 },
+      { range: "18-24", count: 0, percentage: 0 },
+      { range: "25-34", count: 0, percentage: 0 },
+      { range: "35-44", count: 0, percentage: 0 },
+      { range: "45-54", count: 0, percentage: 0 },
+      { range: "55+", count: 0, percentage: 0 },
     ],
-    gender: { male: 91, female: 62, other: 3 },
+    gender: { male: 0, female: 0, other: 0 },
   },
-
-  competitor_comparison: {
-    your_gym: { rating: 0, members: 156, price: 2500 },
-    area_average: { rating: 4.3, members: 98, price: 2800 },
-    top_competitor: { rating: 4.6, members: 203, price: 2400 },
-  },
-
+  competitor_comparison: null,
   executive_summary: [
-    {
-      type: "success",
-      icon: "rating",
-      title: "Rating Health",
-      message: "No verified reviews yet. Unverified reviews are visible but don’t affect the score.",
-      action: "View reviews",
-    },
     {
       type: "info",
       icon: "visibility",
-      title: "Visibility Up",
-      message: "Profile views increased by 12.5% this period. Saves are also trending upward.",
-      action: "See timeline",
-    },
-    {
-      type: "success",
-      icon: "growth",
-      title: "Member Growth",
-      message: "Active members grew by 8.3%. Push renewals to keep momentum.",
-      action: "View members",
-    },
-    {
-      type: "warning",
-      icon: "engagement",
-      title: "Engagement Opportunity",
-      message: "Inquiries are rising. Add clearer pricing/schedule details to reduce repeated questions.",
-      action: "See inquiries",
+      title: "Loading Live Metrics",
+      message: "We’re pulling your gym’s latest analytics.",
+      action: "Refresh",
     },
   ],
-
   goals: [
-    { name: "Monthly Sign-ups", current: 12, target: 15, percentage: 80 },
-    { name: "Rating Target", current: 4.8, target: 4.9, percentage: 98 },
-    { name: "Engagement Goal", current: 410, target: 450, percentage: 91 },
-    { name: "Visibility Goal", current: 1247, target: 1500, percentage: 83 },
+    { name: "Monthly Sign-ups", current: 0, target: 15, percentage: 0 },
+    { name: "Rating Target", current: 0, target: 4.9, percentage: 0 },
+    { name: "Engagement Goal", current: 0, target: 450, percentage: 0 },
+    { name: "Visibility Goal", current: 0, target: 1500, percentage: 0 },
   ],
 };
+
+function safeNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function fmtTimelineLabel(x) {
+  const s = String(x || "");
+  if (!s) return "-";
+  if (s.includes("–")) return s; // bucket label like "02-01–02-07"
+  if (/^\d{4}-\d{2}$/.test(s)) return s; // "YYYY-MM"
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s.slice(5, 10); // "MM-DD"
+  return s.length > 12 ? s.slice(0, 12) : s;
+}
 
 export default function ViewStats() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const timelineRef = useRef(null);
+  const marketRef = useRef(null);
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -240,79 +126,25 @@ export default function ViewStats() {
   const [selectedMetric, setSelectedMetric] = useState("views");
   const [showInsights, setShowInsights] = useState(true);
 
+  // NEW: performance info modal
+  const [showPerfInfo, setShowPerfInfo] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") setShowPerfInfo(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   useEffect(() => {
     let alive = true;
 
     (async () => {
+      setLoading(true);
       try {
         const gymId = Number(id || MOCK_STATS.gym_id);
-        const base = { ...MOCK_STATS, gym_id: gymId };
-
-        const { summary, ratings } = await fetchAllGymRatings(gymId);
-
-        const verifiedAvg = typeof summary?.public_avg_stars === "number" ? summary.public_avg_stars : null;
-        const verifiedCount = Number(summary?.verified_count || 0);
-        const unverifiedCount = Number(summary?.unverified_count || 0);
-        const totalCount = Number(summary?.total_count || ratings.length);
-
-        const distVerified = buildStarDistribution(ratings, { verifiedOnly: true });
-        const distAll = buildStarDistribution(ratings, { verifiedOnly: false });
-
-        const keywordTable = buildKeywordTable(ratings, { topN: 8 });
-
-        const next = {
-          ...base,
-          hero_metrics: {
-            ...base.hero_metrics,
-            rating: {
-              ...base.hero_metrics.rating,
-              current: verifiedAvg ?? 0,
-              previous: base.hero_metrics.rating.previous ?? 0,
-              change: base.hero_metrics.rating.change ?? 0,
-            },
-          },
-          competitor_comparison: {
-            ...base.competitor_comparison,
-            your_gym: {
-              ...base.competitor_comparison.your_gym,
-              rating: verifiedAvg ?? 0,
-            },
-          },
-          reviews_analytics: {
-            ...base.reviews_analytics,
-            total: totalCount,
-            verified_total: verifiedCount,
-            unverified_total: unverifiedCount,
-            average_verified: verifiedAvg,
-            distribution_verified: distVerified,
-            distribution_all: distAll,
-          },
-          rating_keywords_table: keywordTable,
-          engagement_details: {
-            ...base.engagement_details,
-            by_action: Array.isArray(base.engagement_details?.by_action)
-              ? base.engagement_details.by_action.map((row) => {
-                  if (String(row?.name || "").toLowerCase().includes("verified reviews")) {
-                    return { ...row, value: verifiedCount, members: verifiedCount };
-                  }
-                  return row;
-                })
-              : [],
-          },
-          executive_summary: Array.isArray(base.executive_summary)
-            ? base.executive_summary.map((c) => {
-                if (c.icon !== "rating") return c;
-                return {
-                  ...c,
-                  message:
-                    verifiedAvg !== null
-                      ? `Public score is ${verifiedAvg} from ${verifiedCount} verified reviews. Unverified reviews are visible but don’t affect the score.`
-                      : `No verified reviews yet. Unverified reviews are visible but don’t affect the score.`,
-                };
-              })
-            : base.executive_summary,
-        };
-
+        const next = await loadViewStats(gymId, { baseStats: MOCK_STATS, range: timeRange });
         if (alive) setStats(next);
       } catch (e) {
         console.error(e);
@@ -325,16 +157,90 @@ export default function ViewStats() {
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [id, timeRange]);
+
+  const getStatusColor = (status) => {
+    const colors = { excellent: "#10b981", good: "#3b82f6", warning: "#f59e0b", danger: "#ef4444" };
+    return colors[status] || "#666";
+  };
+
+  const gymId = Number(id || stats?.gym_id || MOCK_STATS.gym_id || 0);
+
+  const executiveSummary = Array.isArray(stats?.executive_summary) ? stats.executive_summary : [];
+  const goals = Array.isArray(stats?.goals) ? stats.goals : [];
+  const timeline = Array.isArray(stats?.timeline_data) ? stats.timeline_data : [];
+  const funnel = Array.isArray(stats?.conversion_funnel) ? stats.conversion_funnel : [];
+  const engagementByAction = Array.isArray(stats?.engagement_details?.by_action)
+    ? stats.engagement_details.by_action
+    : [];
+  const ratingKeywords = Array.isArray(stats?.rating_keywords_table) ? stats.rating_keywords_table : [];
+  const inquiryKeywords = Array.isArray(stats?.inquiry_keywords_table) ? stats.inquiry_keywords_table : [];
+  const ageGroups = Array.isArray(stats?.demographics?.age) ? stats.demographics.age : [];
+
+  // Soft max (95th percentile) so one spike doesn't flatten everything
+  const metricMax = useMemo(() => {
+    if (!timeline.length) return 1;
+    const arr = timeline
+      .map((d) => safeNum(d?.[selectedMetric]))
+      .filter((n) => Number.isFinite(n) && n > 0)
+      .sort((a, b) => a - b);
+
+    if (!arr.length) return 1;
+
+    const idx = Math.floor(arr.length * 0.95);
+    const p95 = arr[idx] ?? arr[arr.length - 1] ?? 1;
+    return Math.max(p95, 1);
+  }, [timeline, selectedMetric]);
+
+  const trendBadge = useMemo(() => {
+    const m = stats?.hero_metrics?.[selectedMetric];
+    const ch = safeNum(m?.change);
+    const up = ch >= 0;
+    return {
+      label: up ? `+${Math.abs(ch)}%` : `-${Math.abs(ch)}%`,
+      icon: up ? <TrendingUp size={14} /> : <TrendingDown size={14} />,
+      cls: up ? "up" : "down",
+    };
+  }, [stats, selectedMetric]);
+
+  const handleInsightAction = (item) => {
+    const action = String(item?.action || "").toLowerCase();
+
+    if (action.includes("refresh")) {
+      setTimeRange((r) => String(r));
+      return;
+    }
+
+    if (action.includes("timeline")) {
+      timelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (action.includes("inbox")) {
+      navigate("/owner/inbox");
+      return;
+    }
+
+    if (action.includes("competitor") || action.includes("market")) {
+      marketRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (action.includes("fix") || action.includes("location")) {
+      navigate(`/owner/edit-gym/${gymId}`);
+      return;
+    }
+
+    navigate(`/owner/view-gym/${gymId}`);
+  };
 
   if (loading) {
     return (
       <div className="ultimate-stats">
-        <Header />
         <div className="ultimate-loading">
           <div className="ultimate-spinner"></div>
           <p className="loading-text">Crunching the numbers...</p>
-          <span className="loading-subtext">Analyzing your gym's performance</span>
+          <span className="loading-subtext">Analyzing your gym&apos;s performance</span>
         </div>
         <Footer />
       </div>
@@ -344,7 +250,6 @@ export default function ViewStats() {
   if (!stats) {
     return (
       <div className="ultimate-stats">
-        <Header />
         <div className="ultimate-error">
           <AlertCircle size={48} />
           <p>Unable to load analytics</p>
@@ -354,24 +259,8 @@ export default function ViewStats() {
     );
   }
 
-  const executiveSummary = Array.isArray(stats?.executive_summary) ? stats.executive_summary : [];
-  const goals = Array.isArray(stats?.goals) ? stats.goals : [];
-  const timeline = Array.isArray(stats?.timeline_data) ? stats.timeline_data : [];
-  const funnel = Array.isArray(stats?.conversion_funnel) ? stats.conversion_funnel : [];
-  const engagementByAction = Array.isArray(stats?.engagement_details?.by_action) ? stats.engagement_details.by_action : [];
-  const ratingKeywords = Array.isArray(stats?.rating_keywords_table) ? stats.rating_keywords_table : [];
-  const inquiryKeywords = Array.isArray(stats?.inquiry_keywords_table) ? stats.inquiry_keywords_table : [];
-  const ageGroups = Array.isArray(stats?.demographics?.age) ? stats.demographics.age : [];
-
-  const getStatusColor = (status) => {
-    const colors = { excellent: "#10b981", good: "#3b82f6", warning: "#f59e0b", danger: "#ef4444" };
-    return colors[status] || "#666";
-  };
-
   return (
     <div className="ultimate-stats">
-      <Header />
-
       <div className="ultimate-container">
         <div className="ultimate-header">
           <div className="header-left">
@@ -424,9 +313,30 @@ export default function ViewStats() {
                 <h3>Executive Summary</h3>
                 <span className="insights-badge">{executiveSummary.length} New</span>
               </div>
-              <button className="close-insights" onClick={() => setShowInsights(false)}>
-                <XCircle size={18} />
-              </button>
+
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <button
+                  className="action-btn secondary"
+                  style={{ padding: "8px 12px" }}
+                  onClick={() => navigate(`/owner/edit-gym/${gymId}`)}
+                  title="Edit Gym"
+                >
+                  <Settings size={16} />
+                  Manage Gym
+                </button>
+                <button
+                  className="action-btn secondary"
+                  style={{ padding: "8px 12px" }}
+                  onClick={() => navigate("/owner/inbox")}
+                  title="Open Inbox"
+                >
+                  <Inbox size={16} />
+                  Inbox
+                </button>
+                <button className="close-insights" onClick={() => setShowInsights(false)} title="Hide">
+                  <XCircle size={18} />
+                </button>
+              </div>
             </div>
 
             <div className="insights-grid">
@@ -437,16 +347,36 @@ export default function ViewStats() {
                     {item.icon === "visibility" && <Eye size={20} />}
                     {item.icon === "growth" && <Users size={20} />}
                     {item.icon === "engagement" && <MessageSquare size={20} />}
+                    {item.icon === "location" && <MapPin size={20} />}
+                    {!item.icon && <BarChart3 size={20} />}
                   </div>
                   <div className="insight-content">
                     <strong>{item.title}</strong>
                     <p>{item.message}</p>
-                    <button className="insight-action">
+                    <button className="insight-action" onClick={() => handleInsightAction(item)}>
                       {item.action} <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
               ))}
+
+              {!executiveSummary.length && (
+                <div className="insight-card info">
+                  <div className="insight-icon">
+                    <Sparkles size={20} />
+                  </div>
+                  <div className="insight-content">
+                    <strong>All quiet (for now)</strong>
+                    <p>No new insights yet. Once you get more views, saves, and inquiries, this area will highlight wins + quick fixes.</p>
+                    <button
+                      className="insight-action"
+                      onClick={() => timelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    >
+                      View timeline <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -455,41 +385,67 @@ export default function ViewStats() {
           <div className="score-card main-score">
             <div className="score-header">
               <h3>Overall Performance</h3>
-              <Info size={16} />
+
+              {/* NEW: clickable Info icon opens modal */}
+              <button
+                type="button"
+                className="score-info-btn"
+                onClick={() => setShowPerfInfo(true)}
+                aria-label="How is the performance score computed?"
+                title="How is this computed?"
+              >
+                <Info size={16} />
+              </button>
             </div>
-            <div className="score-display">
-              <div className="score-circle">
-                <svg viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="#f0f0f0" strokeWidth="8"></circle>
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="54"
-                    fill="none"
-                    stroke="url(#gradient)"
-                    strokeWidth="8"
-                    strokeDasharray={`${stats.performance_score.overall * 3.39} 339`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 60 60)"
-                  ></circle>
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#3b82f6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="score-value">{stats.performance_score.overall}</div>
-              </div>
-              <div className="score-label">
-                <span>Excellent</span>
-                <p>Top 10% in Pasig</p>
-              </div>
-            </div>
+
+<div className="score-display">
+  <div className="score-circle">
+    <svg viewBox="0 0 120 120">
+      <circle
+        cx="60"
+        cy="60"
+        r="54"
+        fill="none"
+        stroke="#f5f5f5"
+        strokeWidth="8"
+      ></circle>
+
+      <circle
+        cx="60"
+        cy="60"
+        r="54"
+        fill="none"
+        stroke="url(#perfGradient)"
+        strokeWidth="8"
+        strokeDasharray={`${(stats.performance_score?.overall ?? 0) * 3.39} 339`}
+        strokeLinecap="round"
+        transform="rotate(-90 60 60)"
+      ></circle>
+
+      <defs>
+        <linearGradient id="perfGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="35%" stopColor="#f59e0b" />
+          <stop offset="70%" stopColor="#ff6b35" />
+          <stop offset="100%" stopColor="#d23f0b" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div className="score-value">{stats.performance_score?.overall ?? 0}</div>
+  </div>
+
+  <div className="score-label">
+    <span>Performance Score</span>
+    <p className="muted" style={{ opacity: 0.8 }}>
+      Based on visibility, engagement, satisfaction, and growth for the selected range.
+    </p>
+  </div>
+</div>
           </div>
 
           <div className="score-breakdown">
-            {Object.entries(stats.performance_score)
+            {Object.entries(stats.performance_score || {})
               .filter(([key]) => key !== "overall")
               .map(([key, value]) => (
                 <div key={key} className="score-item">
@@ -506,7 +462,7 @@ export default function ViewStats() {
         </div>
 
         <div className="ultimate-hero-grid">
-          {Object.entries(stats.hero_metrics).map(([key, data]) => (
+          {Object.entries(stats.hero_metrics || {}).map(([key, data]) => (
             <div key={key} className={`ultimate-hero-card ${data.status}`}>
               <div className="hero-card-header">
                 <div className="hero-icon" style={{ background: getStatusColor(data.status) }}>
@@ -517,7 +473,7 @@ export default function ViewStats() {
                 </div>
                 <div className={`hero-change ${data.trend}`}>
                   {data.trend === "up" ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  {Math.abs(data.change)}%
+                  {Math.abs(Number(data.change || 0))}%
                 </div>
               </div>
 
@@ -556,8 +512,8 @@ export default function ViewStats() {
             <h3>
               <Target size={20} /> Monthly Goals
             </h3>
-            <button className="view-all-btn">
-              View all <ChevronRight size={16} />
+            <button className="view-all-btn" onClick={() => navigate(`/owner/view-gym/${gymId}`)}>
+              Manage gym <ChevronRight size={16} />
             </button>
           </div>
           <div className="goals-grid">
@@ -592,11 +548,16 @@ export default function ViewStats() {
         </div>
 
         <div className="analytics-main-grid">
-          <div className="analytics-card timeline-card">
+          <div className="analytics-card timeline-card" ref={timelineRef}>
             <div className="card-header">
               <div>
                 <h3>Performance Timeline</h3>
-                <p>Track your key metrics over time</p>
+                <p>
+                  Bars auto-bucket by range (7D daily, 30D weekly, 90D biweekly, 1Y monthly).{" "}
+                  <span className={`trend-chip ${trendBadge.cls}`} style={{ marginLeft: 8 }}>
+                    {trendBadge.icon} {trendBadge.label}
+                  </span>
+                </p>
               </div>
               <div className="metric-selector">
                 <button className={selectedMetric === "views" ? "active" : ""} onClick={() => setSelectedMetric("views")}>
@@ -613,18 +574,22 @@ export default function ViewStats() {
 
             <div className="timeline-chart">
               {timeline.map((day, i) => {
-                const value = day?.[selectedMetric] ?? 0;
-                const maxValue = Math.max(...timeline.map((d) => Number(d?.[selectedMetric] ?? 0)), 1);
-                const height = (Number(value) / maxValue) * 100;
+                const value = safeNum(day?.[selectedMetric]);
+
+                const height = metricMax > 0 ? Math.max((value / metricMax) * 100, value > 0 ? 6 : 2) : 2;
+
                 return (
                   <div key={i} className="timeline-bar-wrapper">
-                    <div className="timeline-bar" style={{ height: `${height}%` }} data-value={value}>
-                      <span className="bar-tooltip">{value}</span>
+                    <div className="timeline-bar-area">
+                      <div className="timeline-bar" style={{ height: `${height}%` }} data-value={value}>
+                        <span className="bar-tooltip">{value}</span>
+                      </div>
                     </div>
-                    <span className="timeline-label">{String(day?.date || "").split(" ")[1] || day?.date || "-"}</span>
+                    <span className="timeline-label">{fmtTimelineLabel(day?.date)}</span>
                   </div>
                 );
               })}
+              {!timeline.length && <div style={{ padding: 16, opacity: 0.7 }}>No timeline data yet for this range.</div>}
             </div>
           </div>
 
@@ -687,6 +652,7 @@ export default function ViewStats() {
                   </div>
                 </div>
               ))}
+              {!engagementByAction.length && <div style={{ padding: 16, opacity: 0.7 }}>No engagement data yet.</div>}
             </div>
           </div>
 
@@ -739,6 +705,10 @@ export default function ViewStats() {
                 <h3>Inquiry Keywords</h3>
                 <p>Common topics asked by users</p>
               </div>
+              <button className="action-btn secondary" style={{ padding: "8px 12px" }} onClick={() => navigate("/owner/inbox")}>
+                <Inbox size={16} />
+                Open Inbox
+              </button>
             </div>
 
             <div className="traffic-table">
@@ -761,6 +731,19 @@ export default function ViewStats() {
                   </span>
                 </div>
               ))}
+              {!inquiryKeywords.length && (
+                <div className="table-row" style={{ opacity: 0.7 }}>
+                  <div className="source-cell">
+                    <div className="source-rank">—</div>
+                    <span>No inquiry keywords yet</span>
+                  </div>
+                  <span className="visits-cell">—</span>
+                  <span className="conv-cell">—</span>
+                  <span className="ctr-cell">
+                    <span className="ctr-badge normal">—</span>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -768,21 +751,31 @@ export default function ViewStats() {
             <div className="card-header">
               <div>
                 <h3>Member Demographics</h3>
-                <p>Age, gender, and location</p>
+                <p>Age & gender breakdown</p>
               </div>
             </div>
             <div className="demographics-layout">
               <div className="demo-chart age-chart">
                 <h4>Age Distribution</h4>
                 <div className="age-bars">
-                  {ageGroups.map((group, i) => (
-                    <div key={i} className="age-bar">
-                      <div className="age-fill" style={{ height: `${group.percentage * 2.5}%` }}>
-                        <span className="age-value">{group.percentage}%</span>
+                  {ageGroups.map((group, i) => {
+                    const pct = safeNum(group.percentage);
+
+                    // Keep visible even when tiny
+                    const h = Math.max(pct * 2.5, pct > 0 ? 10 : 4);
+
+                    return (
+                      <div key={i} className="age-bar">
+                        <div className="age-bar-area">
+                          <div className="age-fill" style={{ height: `${h}%` }}>
+                            <span className="age-value">{pct}%</span>
+                          </div>
+                        </div>
+                        <span className="age-label">{group.range}</span>
                       </div>
-                      <span className="age-label">{group.range}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
+                  {!ageGroups.length && <div style={{ padding: 12, opacity: 0.7 }}>No demographics data yet.</div>}
                 </div>
               </div>
               <div className="demo-split">
@@ -808,81 +801,236 @@ export default function ViewStats() {
           </div>
         </div>
 
-        <div className="competitor-section">
+        <div className="competitor-section" ref={marketRef}>
           <div className="section-header">
             <h3>
               <Award size={20} /> Market Position
             </h3>
             <span className="section-subtitle">Compare with competitors</span>
           </div>
-          <div className="competitor-grid">
-            <div className="competitor-card you">
-              <div className="competitor-label">Your Gym</div>
-              <div className="competitor-stats">
-                <div className="comp-stat">
-                  <Star size={16} />
-                  <strong>{Number(stats.competitor_comparison.your_gym.rating || 0).toFixed(1)}</strong>
-                  <span>Rating</span>
+
+          {!stats.competitor_comparison ? (
+            <div className="analytics-card" style={{ padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <AlertCircle size={18} />
+                <div>
+                  <strong>Market position not available yet</strong>
+                  <div style={{ opacity: 0.8, marginTop: 4 }}>
+                    Once the API returns market comparisons (area average + top competitor), this section will auto-populate.
+                    For now, you can still manage gym pricing and details.
+                  </div>
                 </div>
-                <div className="comp-stat">
-                  <Users size={16} />
-                  <strong>{stats.competitor_comparison.your_gym.members}</strong>
-                  <span>Members</span>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+                <button className="action-btn primary" onClick={() => navigate(`/owner/edit-gym/${gymId}`)}>
+                  <Settings size={16} />
+                  Edit Gym
+                </button>
+                <button
+                  className="action-btn secondary"
+                  onClick={() => timelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                >
+                  <BarChart3 size={16} />
+                  Back to Timeline
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="competitor-grid">
+              <div className="competitor-card you">
+                <div className="competitor-label">Your Gym</div>
+                <div className="competitor-stats">
+                  <div className="comp-stat">
+                    <Star size={16} />
+                    <strong>{Number(stats.competitor_comparison?.your_gym?.rating || 0).toFixed(1)}</strong>
+                    <span>Rating</span>
+                  </div>
+                  <div className="comp-stat">
+                    <Users size={16} />
+                    <strong>{stats.competitor_comparison?.your_gym?.members ?? 0}</strong>
+                    <span>Members</span>
+                  </div>
+                  <div className="comp-stat">
+                    <DollarSign size={16} />
+                    <strong>₱{stats.competitor_comparison?.your_gym?.price ?? 0}</strong>
+                    <span>Monthly</span>
+                  </div>
                 </div>
-                <div className="comp-stat">
-                  <DollarSign size={16} />
-                  <strong>₱{stats.competitor_comparison.your_gym.price}</strong>
-                  <span>Monthly</span>
+              </div>
+
+              <div className="competitor-card average">
+                <div className="competitor-label">Area Average</div>
+                <div className="competitor-stats">
+                  <div className="comp-stat">
+                    <Star size={16} />
+                    <strong>{Number(stats.competitor_comparison?.area_average?.rating || 0).toFixed(1)}</strong>
+                    <span>Rating</span>
+                  </div>
+                  <div className="comp-stat">
+                    <Users size={16} />
+                    <strong>{stats.competitor_comparison?.area_average?.members ?? 0}</strong>
+                    <span>Members</span>
+                  </div>
+                  <div className="comp-stat">
+                    <DollarSign size={16} />
+                    <strong>₱{stats.competitor_comparison?.area_average?.price ?? 0}</strong>
+                    <span>Monthly</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="competitor-card top">
+                <div className="competitor-label">Top Competitor</div>
+                <div className="competitor-stats">
+                  <div className="comp-stat">
+                    <Star size={16} />
+                    <strong>{Number(stats.competitor_comparison?.top_competitor?.rating || 0).toFixed(1)}</strong>
+                    <span>Rating</span>
+                  </div>
+                  <div className="comp-stat">
+                    <Users size={16} />
+                    <strong>{stats.competitor_comparison?.top_competitor?.members ?? 0}</strong>
+                    <span>Members</span>
+                  </div>
+                  <div className="comp-stat">
+                    <DollarSign size={16} />
+                    <strong>₱{stats.competitor_comparison?.top_competitor?.price || 0}</strong>
+                    <span>Monthly</span>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="competitor-card average">
-              <div className="competitor-label">Area Average</div>
-              <div className="competitor-stats">
-                <div className="comp-stat">
-                  <Star size={16} />
-                  <strong>{stats.competitor_comparison.area_average.rating}</strong>
-                  <span className="better">↑ +0.5</span>
+        {/* NEW: Performance score computation modal */}
+        {showPerfInfo && (
+          <div
+            className="perf-modal-backdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Performance score computation"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setShowPerfInfo(false);
+            }}
+          >
+            <div className="perf-modal">
+              <div className="perf-modal-header">
+                <div>
+                  <h3>How the Performance Score works</h3>
+                  <p>
+                    Your <strong>Overall</strong> score is a weighted mix of 4 sub-scores, each from 0–100.
+                    It changes based on the selected time range ({String(timeRange || "").toUpperCase()}).
+                  </p>
                 </div>
-                <div className="comp-stat">
-                  <Users size={16} />
-                  <strong>{stats.competitor_comparison.area_average.members}</strong>
-                  <span className="better">↑ +58</span>
-                </div>
-                <div className="comp-stat">
-                  <DollarSign size={16} />
-                  <strong>₱{stats.competitor_comparison.area_average.price}</strong>
-                  <span className="worse">↓ -₱300</span>
-                </div>
-              </div>
-            </div>
 
-            <div className="competitor-card top">
-              <div className="competitor-label">Top Competitor</div>
-              <div className="competitor-stats">
-                <div className="comp-stat">
-                  <Star size={16} />
-                  <strong>{stats.competitor_comparison.top_competitor.rating}</strong>
-                  <span className="better">↑ +0.2</span>
-                </div>
-                <div className="comp-stat">
-                  <Users size={16} />
-                  <strong>{stats.competitor_comparison.top_competitor.members}</strong>
-                  <span className="worse">↓ -47</span>
-                </div>
-                <div className="comp-stat">
-                  <DollarSign size={16} />
-                  <strong>₱{stats.competitor_comparison.top_competitor.price}</strong>
-                  <span className="better">↑ +₱100</span>
-                </div>
+                <button
+                  type="button"
+                  className="perf-modal-close"
+                  onClick={() => setShowPerfInfo(false)}
+                  aria-label="Close"
+                  title="Close"
+                >
+                  <XCircle size={18} />
+                </button>
               </div>
+
+              <div className="perf-modal-body">
+                <div className="perf-formula">
+                  <strong>Overall</strong> =
+                  <span> 0.30 × Visibility</span> +
+                  <span> 0.30 × Engagement</span> +
+                  <span> 0.25 × Satisfaction</span> +
+                  <span> 0.15 × Growth</span>
+                </div>
+
+                <div className="perf-grid">
+                  <div className="perf-item">
+                    <div className="perf-item-top">
+                      <strong>Visibility (30%)</strong>
+                      <span className="perf-pill">{stats.performance_score?.visibility ?? 0}/100</span>
+                    </div>
+                    <p>
+                      Measures <strong>views per day</strong> vs a target baseline (depends on range):
+                      <br />
+                      <span className="mono">targetViewsPerDay = 7D: 8, 30D: 6, 90D: 4, 1Y: 3</span>
+                      <br />
+                      <span className="mono">viewsPerDay = views / days</span>
+                      <br />
+                      Then it’s converted to 0–100 using a smooth curve:
+                      <br />
+                      <span className="mono">
+                        smoothScore(x) = round( clamp((1 - exp(-k·x)) · 100, 0, 100) ), k=4
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="perf-item">
+                    <div className="perf-item-top">
+                      <strong>Engagement (30%)</strong>
+                      <span className="perf-pill">{stats.performance_score?.engagement ?? 0}/100</span>
+                    </div>
+                    <p>
+                      Measures how often viewers do something meaningful:
+                      <br />
+                      <span className="mono">engagementActions = saves + inquiries + free_visits_claimed</span>
+                      <br />
+                      <span className="mono">engRate = engagementActions / views</span>
+                      <br />
+                      Compared to a baseline:
+                      <br />
+                      <span className="mono">targetEngRate = 0.06</span>
+                      <br />
+                      Score = <span className="mono">smoothScore(engRate / targetEngRate)</span>
+                    </p>
+                  </div>
+
+                  <div className="perf-item">
+                    <div className="perf-item-top">
+                      <strong>Satisfaction (25%)</strong>
+                      <span className="perf-pill">{stats.performance_score?.satisfaction ?? 0}/100</span>
+                    </div>
+                    <p>
+                      Uses your <strong>verified average rating</strong>, but scales it by confidence (more verified reviews = more reliable):
+                      <br />
+                      <span className="mono">satisfactionRaw = (rating / 5) · 100</span>
+                      <br />
+                      <span className="mono">
+                        confidence = clamp(0.2 + (1 - exp(-verifiedCount/10)) · 0.8, 0.2, 1)
+                      </span>
+                      <br />
+                      <span className="mono">Satisfaction = round( clamp(satisfactionRaw · confidence, 0, 100) )</span>
+                    </p>
+                  </div>
+
+                  <div className="perf-item">
+                    <div className="perf-item-top">
+                      <strong>Growth (15%)</strong>
+                      <span className="perf-pill">{stats.performance_score?.growth ?? 0}/100</span>
+                    </div>
+                    <p>
+                      Based on <strong>active member change %</strong> (clamped to prevent extreme spikes):
+                      <br />
+                      <span className="mono">memberChange = active_members.change (or hero.members.change)</span>
+                      <br />
+                      <span className="mono">memberChangeClamped = clamp(memberChange, -30, 30)</span>
+                      <br />
+                      <span className="mono">
+                        Growth = round( clamp(50 + (memberChangeClamped/30) · 40, 0, 100) )
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+
+              </div>
+
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      <Footer />
     </div>
   );
 }
