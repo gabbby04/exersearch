@@ -16,60 +16,292 @@ DB_CONFIG = {
 }
 
 # ════════════════════════════════════════════════════════════
-# INGREDIENT DETECTION PATTERNS
+# ENHANCED INGREDIENT DETECTION WITH REALISTIC PORTIONS
 # ════════════════════════════════════════════════════════════
 INGREDIENT_PATTERNS = {
-    'egg white': {'ingredient': 'Egg White', 'amount_g': 33, 'unit': 'piece'},
-    'itlog|egg': {'ingredient': 'Egg (Whole)', 'amount_g': 50, 'unit': 'piece'},
-    'chicken breast|manok breast': {'ingredient': 'Chicken Breast', 'amount_g': 150, 'unit': 'g'},
-    'chicken|manok': {'ingredient': 'Chicken Thigh', 'amount_g': 150, 'unit': 'g'},
-    'tinolang manok': {'ingredient': 'Chicken Thigh', 'amount_g': 150, 'unit': 'g'},
-    'pork belly|liempo': {'ingredient': 'Pork Belly (Liempo)', 'amount_g': 120, 'unit': 'g'},
-    'pork chop': {'ingredient': 'Pork Chop', 'amount_g': 150, 'unit': 'g'},
-    'pork|baboy': {'ingredient': 'Ground Pork', 'amount_g': 150, 'unit': 'g'},
-    'beef|baka': {'ingredient': 'Beef Chuck', 'amount_g': 150, 'unit': 'g'},
-    'bangus|milkfish': {'ingredient': 'Milkfish (Bangus)', 'amount_g': 150, 'unit': 'g'},
-    'tinapa': {'ingredient': 'Milkfish (Bangus)', 'amount_g': 100, 'unit': 'g'},
-    'tilapia': {'ingredient': 'Tilapia', 'amount_g': 150, 'unit': 'g'},
-    'tuna': {'ingredient': 'Tuna', 'amount_g': 120, 'unit': 'g'},
-    'hipon|shrimp': {'ingredient': 'Shrimp', 'amount_g': 120, 'unit': 'g'},
-    'squid|pusit': {'ingredient': 'Squid', 'amount_g': 120, 'unit': 'g'},
-    'tofu|tokwa': {'ingredient': 'Tofu', 'amount_g': 100, 'unit': 'g'},
-    'sinangag|fried rice': {'ingredient': 'Sinangag (Garlic Rice)', 'amount_g': 200, 'unit': 'cup'},
-    'brown rice': {'ingredient': 'Brown Rice (Cooked)', 'amount_g': 200, 'unit': 'cup'},
-    'lugaw|congee|arroz': {'ingredient': 'White Rice (Cooked)', 'amount_g': 150, 'unit': 'cup'},
-    'champorado': {'ingredient': 'White Rice (Cooked)', 'amount_g': 150, 'unit': 'cup'},
-    'rice|kanin': {'ingredient': 'White Rice (Cooked)', 'amount_g': 200, 'unit': 'cup'},
-    'pandesal': {'ingredient': 'Pandesal', 'amount_g': 40, 'unit': 'piece'},
-    'oatmeal': {'ingredient': 'Oatmeal', 'amount_g': 50, 'unit': 'cup'},
-    'kangkong': {'ingredient': 'Kangkong (Water Spinach)', 'amount_g': 80, 'unit': 'g'},
-    'sitaw': {'ingredient': 'Sitaw (String Beans)', 'amount_g': 80, 'unit': 'g'},
-    'ampalaya': {'ingredient': 'Ampalaya (Bitter Gourd)', 'amount_g': 80, 'unit': 'g'},
-    'talong|eggplant': {'ingredient': 'Talong (Eggplant)', 'amount_g': 100, 'unit': 'g'},
-    'kalabasa|squash': {'ingredient': 'Kalabasa (Squash)', 'amount_g': 100, 'unit': 'g'},
-    'sayote': {'ingredient': 'Sayote (Chayote)', 'amount_g': 100, 'unit': 'g'},
-    'cabbage|repolyo': {'ingredient': 'Cabbage', 'amount_g': 80, 'unit': 'g'},
-    'carrot|karot': {'ingredient': 'Carrots', 'amount_g': 60, 'unit': 'g'},
-    'tomato|kamatis': {'ingredient': 'Tomato', 'amount_g': 50, 'unit': 'g'},
-    'kamote|sweet potato': {'ingredient': 'Kamote (Sweet Potato)', 'amount_g': 150, 'unit': 'g'},
-    'potato|patatas': {'ingredient': 'Potato', 'amount_g': 150, 'unit': 'g'},
-    'saba': {'ingredient': 'Saba Banana', 'amount_g': 120, 'unit': 'piece'},
-    'ensalada|salad': {'ingredient': 'Lettuce', 'amount_g': 50, 'unit': 'g'},
-    'oil': {'ingredient': 'Cooking Oil', 'amount_g': 10, 'unit': 'tbsp'},
-    'soy sauce|toyo': {'ingredient': 'Soy Sauce', 'amount_g': 15, 'unit': 'tbsp'},
-    'vinegar|suka': {'ingredient': 'Vinegar', 'amount_g': 15, 'unit': 'tbsp'},
-    'garlic|bawang': {'ingredient': 'Garlic', 'amount_g': 10, 'unit': 'cloves'},
-    'onion|sibuyas': {'ingredient': 'Onion (Red)', 'amount_g': 30, 'unit': 'g'},
-    'ginger|luya': {'ingredient': 'Ginger', 'amount_g': 10, 'unit': 'g'},
+    # Proteins - MORE ACCURATE PORTIONS
+    'chicken breast': {
+        'ingredient': 'Chicken Breast',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 10
+    },
+    'tinolang manok|chicken tinola': {
+        'ingredient': 'Chicken Thigh',
+        'breakfast': 120, 'lunch': 180, 'dinner': 180, 'snack': 100,
+        'unit': 'g', 'priority': 9
+    },
+    'lechon manok|manok|chicken': {
+        'ingredient': 'Chicken Thigh',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 7
+    },
+    
+    # Pork
+    'liempo|pork belly': {
+        'ingredient': 'Pork Belly (Liempo)',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 10
+    },
+    'pork chop': {
+        'ingredient': 'Pork Chop',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 9
+    },
+    'pork|baboy': {
+        'ingredient': 'Ground Pork',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 6
+    },
+    
+    # Beef
+    'beef tapa|tapa': {
+        'ingredient': 'Beef Chuck',
+        'breakfast': 100, 'lunch': 140, 'dinner': 140, 'snack': 80,
+        'unit': 'g', 'priority': 10
+    },
+    'beef|baka': {
+        'ingredient': 'Beef Chuck',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 7
+    },
+    
+    # Fish - MORE SPECIFIC
+    'bangus belly': {
+        'ingredient': 'Milkfish (Bangus)',
+        'breakfast': 120, 'lunch': 180, 'dinner': 180, 'snack': 100,
+        'unit': 'g', 'priority': 10
+    },
+    'bangus|milkfish': {
+        'ingredient': 'Milkfish (Bangus)',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 9
+    },
+    'tinapa': {
+        'ingredient': 'Milkfish (Bangus)',
+        'breakfast': 80, 'lunch': 100, 'dinner': 100, 'snack': 60,
+        'unit': 'g', 'priority': 10
+    },
+    'tilapia': {
+        'ingredient': 'Tilapia',
+        'breakfast': 120, 'lunch': 180, 'dinner': 180, 'snack': 100,
+        'unit': 'g', 'priority': 10
+    },
+    'tuna belly': {
+        'ingredient': 'Tuna',
+        'breakfast': 120, 'lunch': 180, 'dinner': 180, 'snack': 100,
+        'unit': 'g', 'priority': 10
+    },
+    'canned tuna|tuna': {
+        'ingredient': 'Tuna',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 80,
+        'unit': 'g', 'priority': 8
+    },
+    'salmon': {
+        'ingredient': 'Salmon',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 10
+    },
+    'tanigue': {
+        'ingredient': 'Tanigue (Spanish Mackerel)',
+        'breakfast': 100, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 10
+    },
+    'lapu-lapu': {
+        'ingredient': 'Lapu-Lapu (Grouper)',
+        'breakfast': 120, 'lunch': 180, 'dinner': 180, 'snack': 100,
+        'unit': 'g', 'priority': 10
+    },
+    
+    # Seafood
+    'hipon|shrimp': {
+        'ingredient': 'Shrimp',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 9
+    },
+    'squid|pusit': {
+        'ingredient': 'Squid',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 9
+    },
+    'clams|tahong|talaba': {
+        'ingredient': 'Mussels (Tahong)',
+        'breakfast': 60, 'lunch': 100, 'dinner': 100, 'snack': 50,
+        'unit': 'g', 'priority': 9
+    },
+    'crab|alimasag': {
+        'ingredient': 'Crab',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 9
+    },
+    
+    # Eggs - ACCURATE COUNTS
+    'egg white': {
+        'ingredient': 'Egg White',
+        'breakfast': 99, 'lunch': 66, 'dinner': 66, 'snack': 33,  # 3, 2, 2, 1 whites
+        'unit': 'pieces', 'priority': 10
+    },
+    '3 boiled egg|3 egg': {
+        'ingredient': 'Egg (Whole)',
+        'breakfast': 150, 'lunch': 150, 'dinner': 150, 'snack': 100,  # 3 eggs
+        'unit': 'pieces', 'priority': 11
+    },
+    '2 boiled egg|2 egg': {
+        'ingredient': 'Egg (Whole)',
+        'breakfast': 100, 'lunch': 100, 'dinner': 100, 'snack': 100,  # 2 eggs
+        'unit': 'pieces', 'priority': 11
+    },
+    'itlog|egg': {
+        'ingredient': 'Egg (Whole)',
+        'breakfast': 100, 'lunch': 50, 'dinner': 50, 'snack': 50,  # 2, 1, 1, 1 eggs
+        'unit': 'pieces', 'priority': 8
+    },
+    'itlog na maalat|salted egg': {
+        'ingredient': 'Salted Egg',
+        'breakfast': 50, 'lunch': 50, 'dinner': 50, 'snack': 25,  # Half or whole
+        'unit': 'piece', 'priority': 10
+    },
+    
+    # Tofu
+    'tofu|tokwa': {
+        'ingredient': 'Tofu',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 9
+    },
+    
+    # Rice - MEAL-SPECIFIC PORTIONS
+    'sinangag|fried rice': {
+        'ingredient': 'Sinangag (Garlic Rice)',
+        'breakfast': 150, 'lunch': 200, 'dinner': 200, 'snack': 100,
+        'unit': 'g', 'priority': 10
+    },
+    'brown rice': {
+        'ingredient': 'Brown Rice (Cooked)',
+        'breakfast': 150, 'lunch': 200, 'dinner': 200, 'snack': 100,
+        'unit': 'g', 'priority': 9
+    },
+    'lugaw|arroz caldo|goto': {
+        'ingredient': 'White Rice (Cooked)',
+        'breakfast': 200, 'lunch': 250, 'dinner': 250, 'snack': 150,
+        'unit': 'g', 'priority': 11
+    },
+    'champorado': {
+        'ingredient': 'White Rice (Cooked)',
+        'breakfast': 150, 'lunch': 150, 'dinner': 150, 'snack': 100,
+        'unit': 'g', 'priority': 11
+    },
+    'rice|kanin': {
+        'ingredient': 'White Rice (Cooked)',
+        'breakfast': 150, 'lunch': 200, 'dinner': 200, 'snack': 100,
+        'unit': 'g', 'priority': 6
+    },
+    
+    # Bread
+    'pandesal': {
+        'ingredient': 'Pandesal',
+        'breakfast': 80, 'lunch': 40, 'dinner': 40, 'snack': 40,  # 2, 1, 1, 1 pieces
+        'unit': 'pieces', 'priority': 10
+    },
+    
+    # Grains
+    'oatmeal': {
+        'ingredient': 'Oatmeal',
+        'breakfast': 50, 'lunch': 40, 'dinner': 40, 'snack': 30,
+        'unit': 'g', 'priority': 10
+    },
+    
+    # Vegetables - REALISTIC PORTIONS
+    'kangkong': {
+        'ingredient': 'Kangkong (Water Spinach)',
+        'breakfast': 50, 'lunch': 80, 'dinner': 80, 'snack': 40,
+        'unit': 'g', 'priority': 9
+    },
+    'pechay': {
+        'ingredient': 'Pechay (Bok Choy)',
+        'breakfast': 50, 'lunch': 80, 'dinner': 80, 'snack': 40,
+        'unit': 'g', 'priority': 9
+    },
+    'sitaw': {
+        'ingredient': 'Sitaw (String Beans)',
+        'breakfast': 50, 'lunch': 80, 'dinner': 80, 'snack': 40,
+        'unit': 'g', 'priority': 9
+    },
+    'ampalaya': {
+        'ingredient': 'Ampalaya (Bitter Gourd)',
+        'breakfast': 60, 'lunch': 80, 'dinner': 80, 'snack': 40,
+        'unit': 'g', 'priority': 9
+    },
+    'talong|eggplant': {
+        'ingredient': 'Talong (Eggplant)',
+        'breakfast': 80, 'lunch': 100, 'dinner': 100, 'snack': 60,
+        'unit': 'g', 'priority': 9
+    },
+    'kalabasa|squash': {
+        'ingredient': 'Kalabasa (Squash)',
+        'breakfast': 60, 'lunch': 100, 'dinner': 100, 'snack': 50,
+        'unit': 'g', 'priority': 9
+    },
+    'sayote': {
+        'ingredient': 'Sayote (Chayote)',
+        'breakfast': 60, 'lunch': 100, 'dinner': 100, 'snack': 50,
+        'unit': 'g', 'priority': 9
+    },
+    'monggo|mungbean': {
+        'ingredient': 'Mung Beans',
+        'breakfast': 80, 'lunch': 120, 'dinner': 120, 'snack': 60,
+        'unit': 'g', 'priority': 10
+    },
+    'ensalada|salad|lettuce': {
+        'ingredient': 'Lettuce',
+        'breakfast': 30, 'lunch': 50, 'dinner': 50, 'snack': 30,
+        'unit': 'g', 'priority': 8
+    },
+    'malunggay': {
+        'ingredient': 'Malunggay (Moringa)',
+        'breakfast': 20, 'lunch': 30, 'dinner': 30, 'snack': 15,
+        'unit': 'g', 'priority': 9
+    },
+    
+    # Root Crops
+    'kamote|sweet potato': {
+        'ingredient': 'Kamote (Sweet Potato)',
+        'breakfast': 150, 'lunch': 120, 'dinner': 120, 'snack': 100,
+        'unit': 'g', 'priority': 10
+    },
+    'potato|patatas': {
+        'ingredient': 'Potato',
+        'breakfast': 120, 'lunch': 150, 'dinner': 150, 'snack': 80,
+        'unit': 'g', 'priority': 9
+    },
+    'gabi|taro': {
+        'ingredient': 'Gabi (Taro)',
+        'breakfast': 100, 'lunch': 120, 'dinner': 120, 'snack': 80,
+        'unit': 'g', 'priority': 9
+    },
+    
+    # Fruits
+    'saba banana|saba': {
+        'ingredient': 'Saba Banana',
+        'breakfast': 120, 'lunch': 120, 'dinner': 120, 'snack': 120,  # 1 piece
+        'unit': 'piece', 'priority': 10
+    },
+    'banana': {
+        'ingredient': 'Saba Banana',
+        'breakfast': 120, 'lunch': 120, 'dinner': 120, 'snack': 120,
+        'unit': 'piece', 'priority': 8
+    },
+    
+    # Condiments - SMALL AMOUNTS
+    'cooking oil|oil': {
+        'ingredient': 'Cooking Oil',
+        'breakfast': 10, 'lunch': 15, 'dinner': 15, 'snack': 5,
+        'unit': 'ml', 'priority': 7
+    },
 }
 
 # ════════════════════════════════════════════════════════════
-# SAFE CSV HELPERS  ← FIX #2
-# Tries multiple column name candidates so naming differences
-# in your CSV never cause a KeyError crash.
+# CSV HELPERS
 # ════════════════════════════════════════════════════════════
 def safe_float(row, *cols, default=0.0):
-    """Return the first valid float found among the given column names."""
     for col in cols:
         if col in row.index and pd.notna(row[col]):
             try:
@@ -79,7 +311,6 @@ def safe_float(row, *cols, default=0.0):
     return default
 
 def safe_str(row, *cols, default=''):
-    """Return the first non-empty string found among the given column names."""
     for col in cols:
         if col in row.index and pd.notna(row[col]):
             val = str(row[col]).strip()
@@ -88,10 +319,52 @@ def safe_str(row, *cols, default=''):
     return default
 
 # ════════════════════════════════════════════════════════════
+# ENHANCED DETECTION
+# ════════════════════════════════════════════════════════════
+def detect_ingredients(meal_name, meal_type):
+    """
+    Detect ingredients with MEAL-SPECIFIC portions and priority matching.
+    Higher priority patterns are checked first.
+    """
+    meal_lower = meal_name.lower()
+    meal_type = meal_type.lower()
+    
+    detected = []
+    used_ingredients = set()
+    
+    # Sort by priority (higher first)
+    sorted_patterns = sorted(
+        INGREDIENT_PATTERNS.items(),
+        key=lambda x: x[1].get('priority', 0),
+        reverse=True
+    )
+    
+    for pattern, data in sorted_patterns:
+        if re.search(r'\b' + pattern + r'\b', meal_lower):
+            ingredient_name = data['ingredient']
+            
+            # Skip if we already detected this ingredient
+            if ingredient_name in used_ingredients:
+                continue
+            
+            # Get meal-specific portion
+            amount = data.get(meal_type, data.get('lunch', 100))
+            
+            detected.append({
+                'ingredient': ingredient_name,
+                'amount_g': amount,
+                'unit': data['unit'],
+            })
+            
+            used_ingredients.add(ingredient_name)
+    
+    return detected
+
+# ════════════════════════════════════════════════════════════
 # CONNECT
 # ════════════════════════════════════════════════════════════
 print("=" * 80)
-print("🚀 ADVANCED MEAL IMPORTER WITH INGREDIENT BREAKDOWN (FIXED)")
+print("🚀 ENHANCED MEAL IMPORTER - ACCURATE PRICING & PORTIONS")
 print("=" * 80)
 
 try:
@@ -100,48 +373,39 @@ try:
     cursor = conn.cursor()
     print("✅ Connected to database")
 except Exception as e:
-    print(f"❌ Database connection failed: {e}")
+    print(f"❌ Connection failed: {e}")
     sys.exit(1)
 
-# ════════════════════════════════════════════════════════════
-# CLEAR EXISTING DATA
-# ════════════════════════════════════════════════════════════
+# Clear existing data
 cursor.execute("SELECT COUNT(*) FROM meals")
 existing = cursor.fetchone()[0]
 
 if existing > 0:
-    print(f"\n⚠️  {existing} meals already in database.")
-    response = input("Delete all and start fresh? (yes/no): ")
+    print(f"\n⚠️  {existing} meals in database.")
+    response = input("Clear and reimport? (yes/no): ")
     if response.lower() == 'yes':
         cursor.execute("TRUNCATE meals, meal_ingredients RESTART IDENTITY CASCADE")
         conn.commit()
-        print("✅ Cleared existing data")
+        print("✅ Cleared")
     else:
-        print("Cancelled.")
-        cursor.close(); conn.close(); sys.exit(0)
+        print("Cancelled")
+        cursor.close()
+        conn.close()
+        sys.exit(0)
 
-# ════════════════════════════════════════════════════════════
-# LOAD CSV
-# ════════════════════════════════════════════════════════════
+# Load CSV
 try:
     df = pd.read_csv('meal_list.csv')
-    print(f"✅ Loaded {len(df)} rows from CSV")
-    print(f"\n📋 Columns found in CSV:\n   {list(df.columns)}\n")
+    print(f"✅ Loaded {len(df)} meals from CSV\n")
 except Exception as e:
-    print(f"❌ Failed to load CSV: {e}")
-    cursor.close(); conn.close(); sys.exit(1)
+    print(f"❌ CSV load failed: {e}")
+    cursor.close()
+    conn.close()
+    sys.exit(1)
 
 # ════════════════════════════════════════════════════════════
 # HELPERS
 # ════════════════════════════════════════════════════════════
-def detect_ingredients(meal_name):
-    meal_lower = meal_name.lower()
-    return [
-        data.copy()
-        for pattern, data in INGREDIENT_PATTERNS.items()
-        if re.search(pattern, meal_lower)
-    ]
-
 def get_ingredient_id(name):
     cursor.execute("SELECT id FROM ingredients WHERE name = %s", (name,))
     r = cursor.fetchone()
@@ -159,68 +423,72 @@ def calc_nutrition(ingredient_id, grams):
     cal, prot, carbs, fats, cost_kg = [float(x) for x in r]
     m = grams / 100.0
     return {
-        'calories': round(cal * m, 2),
-        'protein':  round(prot * m, 2),
-        'carbs':    round(carbs * m, 2),
-        'fats':     round(fats * m, 2),
+        'calories': round(cal * m, 1),
+        'protein':  round(prot * m, 1),
+        'carbs':    round(carbs * m, 1),
+        'fats':     round(fats * m, 1),
         'cost':     round((cost_kg / 1000.0) * grams, 2),
     }
 
 # ════════════════════════════════════════════════════════════
-# IMPORT LOOP
+# IMPORT
 # ════════════════════════════════════════════════════════════
 print(f"🚀 Importing {len(df)} meals...\n" + "=" * 80)
 
 imported = skipped = total_links = 0
-name = "unknown"
+cost_from_ingredients = 0
+cost_from_csv = 0
 
 for idx, row in df.iterrows():
     try:
-        # ── FIX #1: SAVEPOINT isolates each meal ─────────────────────────────
-        # A failure here only rolls back THIS meal, not everything before it.
         cursor.execute("SAVEPOINT meal_sp")
-
-        name      = safe_str(row, 'name', 'meal_name', 'title', default=f"Row {idx+2}")
-        meal_type = safe_str(row, 'meal_type', 'type', 'category', default='lunch').lower()
-        diet_tags_str = safe_str(row, 'diet_tags', 'diet_tag', 'tags')
-        allergens_str = safe_str(row, 'allergens', 'allergen')
-
+        
+        name = safe_str(row, 'name', 'meal_name', default=f"Row {idx+2}")
+        meal_type = safe_str(row, 'meal_type', 'type', default='lunch').lower()
+        diet_tags_str = safe_str(row, 'diet_tags')
+        allergens_str = safe_str(row, 'allergens')
+        
         diet_tags = [t.strip() for t in diet_tags_str.split(',') if t.strip() and t.lower() != 'nan']
         allergens = [t.strip() for t in allergens_str.split(',') if t.strip() and t.lower() != 'nan']
-
-        # Build nutrition from detected ingredients
-        detected = detect_ingredients(name)
+        
+        # Detect ingredients with MEAL-SPECIFIC portions
+        detected = detect_ingredients(name, meal_type)
+        
         tot_cal = tot_prot = tot_carbs = tot_fats = tot_cost = 0.0
         links = []
-
+        
         for ing in detected:
             iid = get_ingredient_id(ing['ingredient'])
             if iid:
                 n = calc_nutrition(iid, ing['amount_g'])
                 if n:
-                    tot_cal   += n['calories']
-                    tot_prot  += n['protein']
+                    tot_cal += n['calories']
+                    tot_prot += n['protein']
                     tot_carbs += n['carbs']
-                    tot_fats  += n['fats']
-                    tot_cost  += n['cost']
+                    tot_fats += n['fats']
+                    tot_cost += n['cost']
                     links.append({
-                        'ingredient_id':  iid,
-                        'amount_grams':   ing['amount_g'],
+                        'ingredient_id': iid,
+                        'amount_grams': ing['amount_g'],
                         'display_amount': str(int(ing['amount_g'])) if ing['amount_g'] >= 1 else str(ing['amount_g']),
-                        'display_unit':   ing['unit'],
+                        'display_unit': ing['unit'],
                         **n,
                     })
-
-        # ── FIX #2: safe fallback to CSV columns ─────────────────────────────
+        
+        # Fallback to CSV if no ingredients detected
         if tot_cal > 0:
-            calories, protein, carbs, fats, cost = tot_cal, tot_prot, tot_carbs, tot_fats, tot_cost
+            calories, protein, carbs, fats = tot_cal, tot_prot, tot_carbs, tot_fats
+            # Use CALCULATED cost (more accurate)
+            cost = tot_cost
+            cost_from_ingredients += 1
         else:
-            calories = safe_float(row, 'calories', 'total_calories', 'calorie', 'kcal')
-            protein  = safe_float(row, 'protein',  'total_protein',  'protein_g')
-            carbs    = safe_float(row, 'carbs',    'total_carbs',    'carbohydrates', 'carbs_g')
-            fats     = safe_float(row, 'fats',     'total_fats',     'fat', 'fat_g')
-            cost     = safe_float(row, 'estimated_cost', 'cost', 'price', 'estimated_price')
-
+            calories = safe_float(row, 'total_calories', 'calories')
+            protein = safe_float(row, 'total_protein', 'protein')
+            carbs = safe_float(row, 'total_carbs', 'carbs')
+            fats = safe_float(row, 'total_fats', 'fats')
+            cost = safe_float(row, 'estimated_cost', 'cost')
+            cost_from_csv += 1
+        
         # Insert meal
         cursor.execute("""
             INSERT INTO meals (
@@ -237,9 +505,8 @@ for idx, row in df.iterrows():
             True,
         ))
         meal_id = cursor.fetchone()[0]
-
-        # Insert ingredient links
-        # ── FIX #3: ON CONFLICT DO NOTHING skips duplicates silently ─────────
+        
+        # Insert links
         for lnk in links:
             cursor.execute("""
                 INSERT INTO meal_ingredients (
@@ -255,16 +522,15 @@ for idx, row in df.iterrows():
                 lnk['fats'], lnk['cost'],
             ))
             total_links += 1
-
+        
         cursor.execute("RELEASE SAVEPOINT meal_sp")
         imported += 1
-
+        
         if imported % 50 == 0:
             conn.commit()
-            print(f"   ✅ {imported}/{len(df)} meals done ({total_links} ingredient links)...")
-
+            print(f"   ✅ {imported}/{len(df)} meals ({total_links} links)...")
+    
     except Exception as e:
-        # Roll back only this meal — everything before it is safe
         cursor.execute("ROLLBACK TO SAVEPOINT meal_sp")
         cursor.execute("RELEASE SAVEPOINT meal_sp")
         skipped += 1
@@ -278,18 +544,21 @@ conn.commit()
 print("\n" + "=" * 80)
 print("✅ IMPORT COMPLETE!")
 print("=" * 80)
-print(f"✅ Imported : {imported} meals")
-print(f"⚠️  Skipped  : {skipped} meals")
-print(f"🔗 Links    : {total_links} ingredient links")
+print(f"✅ Imported: {imported} meals")
+print(f"⚠️  Skipped: {skipped} meals")
+print(f"🔗 Links: {total_links} ingredient links")
 if imported:
-    print(f"📊 Avg      : {total_links/imported:.1f} ingredients/meal")
+    print(f"📊 Avg: {total_links/imported:.1f} ingredients/meal")
+print(f"\n💰 Pricing:")
+print(f"   {cost_from_ingredients} meals: Calculated from ingredients")
+print(f"   {cost_from_csv} meals: Used CSV estimates")
 
 print("\n" + "=" * 80)
 print("VERIFICATION")
 print("=" * 80)
 
 cursor.execute("SELECT COUNT(*) FROM meals")
-print(f"📊 Meals in DB: {cursor.fetchone()[0]}")
+print(f"📊 Meals: {cursor.fetchone()[0]}")
 
 cursor.execute("SELECT meal_type, COUNT(*) FROM meals GROUP BY meal_type ORDER BY meal_type")
 print("\n📋 By type:")
@@ -304,7 +573,7 @@ cursor.execute("""
     LEFT JOIN meal_ingredients mi ON m.id = mi.meal_id
     WHERE mi.id IS NULL
 """)
-print(f"⚠️  Meals without ingredients: {cursor.fetchone()[0]}")
+print(f"⚠️  No ingredients: {cursor.fetchone()[0]}")
 print("=" * 80)
 
 cursor.close()
