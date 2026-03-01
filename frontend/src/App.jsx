@@ -96,18 +96,18 @@ function App() {
           <Route path="inquiries" element={<GymInquiryHistory />} />
         </Route>
 
-        <Route path="/owner/*" element={<OwnerLayout />}>
-          <Route path="home" element={<OwnerHome />} />
-          <Route path="profile" element={<OwnerProfile />} />
-          <Route path="inbox" element={<OwnerInbox />} />
-          <Route path="members/:id" element={<OwnerMembers />} />
-          <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
-          <Route path="view-gym/:id" element={<ViewGym />} />
-          <Route path="edit-gym/:id" element={<EditGym />} />
-          <Route path="view-stats/:id" element={<ViewStats />} />
-          <Route path="gym-application" element={<OwnerGymApplication />} />
-          <Route index element={<Navigate to="home" replace />} />
-        </Route>
+          <Route path="/owner/*" element={<OwnerLayout />}>
+            <Route path="home" element={<OwnerHome />} />
+            <Route path="profile" element={<OwnerProfile />} />
+            <Route path="inbox" element={<OwnerInbox />} />
+            <Route path="members/:id" element={<OwnerMembers />} />
+            <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
+            <Route path="view-gym/:id" element={<ViewGym />} />
+            <Route path="edit-gym/:id" element={<EditGym />} />
+            <Route path="view-stats/:id" element={<ViewStats />} />
+            <Route path="gym-application" element={<OwnerGymApplication />} />
+            <Route index element={<Navigate to="home" replace />} />
+          </Route>
 
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />

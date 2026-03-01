@@ -1,3 +1,4 @@
+// src/pages/owner/OwnerHome.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "./Header2";
@@ -20,17 +21,12 @@ import {
   ArrowRight,
   Calendar,
   MessageSquare,
-  Award,
   Zap,
-  DollarSign,
-  Clock,
-  ThumbsUp,
-  Image as ImageIcon,
-  UserPlus,
   Mail,
   Shield,
   Activity,
   ChevronDown,
+  Award,
 } from "lucide-react";
 
 import {
@@ -38,7 +34,20 @@ import {
   getAllMyGyms,
   getGymAnalytics,
   getOwnerActivities,
+  getOwnerHomeCards,
 } from "../../utils/ownerDashboardApi";
+
+/* -------------------------------------------
+  Config
+------------------------------------------- */
+
+const API_BASE = "https://exersearch.test";
+const DEFAULT_GYM_IMAGE =
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80";
+
+/* -------------------------------------------
+  Shared helpers (kept local)
+------------------------------------------- */
 
 function safeArr(v) {
   if (Array.isArray(v)) return v;
@@ -63,6 +72,32 @@ function areaLabelFromGym(gym) {
   return "your area";
 }
 
+/**
+ * ✅ Image URL resolver:
+ * - supports absolute URLs (imgur, etc.)
+ * - supports laravel "/storage/..." relative paths by prefixing API_BASE
+ * - normalizes double slashes (except after https:)
+ * - if empty/unusable -> DEFAULT_GYM_IMAGE
+ */
+function resolveImageUrl(v) {
+  if (!v) return DEFAULT_GYM_IMAGE;
+
+  const s0 = String(v).trim();
+  if (!s0) return DEFAULT_GYM_IMAGE;
+
+  // already full url
+  if (/^https?:\/\//i.test(s0)) return s0;
+
+  // normalize leading slashes
+  const s = s0.replace(/^\/+/, "");
+
+  // prefix base for relative paths (including storage/*)
+  const out = `${API_BASE}/${s}`;
+
+  // remove double slashes except after scheme
+  return out.replace(/([^:]\/)\/+/g, "$1");
+}
+
 function mapGym(g) {
   const id = g.gym_id ?? g.id;
   const name = g.name ?? g.gym_name ?? "My Gym";
@@ -72,11 +107,14 @@ function mapGym(g) {
     [g.barangay, g.city, g.province].filter(Boolean).join(", ") ??
     "—";
 
-  const image =
+  const rawImage =
+    g.main_image_url ??
     g.image_url ??
     g.cover_photo ??
     g.photo_url ??
-    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80";
+    null;
+
+  const image = resolveImageUrl(rawImage);
 
   const status = normalizeStatus(g.status);
   const verified = Boolean(g.verified ?? g.is_verified ?? true);
@@ -118,7 +156,7 @@ function eventToIcon(ev) {
 /**
  * Alerts priority: "high" | "medium" | "low"
  * If backend returns analytics.alerts, use it.
- * Otherwise generate decent placeholders.
+ * Otherwise generate placeholders.
  */
 function computeGymAlerts({ analytics }) {
   const backendAlerts = safeArr(analytics?.alerts);
@@ -133,33 +171,76 @@ function computeGymAlerts({ analytics }) {
       .slice(0, 2);
   }
 
-  const views = Number(analytics?.total_views || 0);
-  const saves = Number(analytics?.total_saves || 0);
-  const viewsChange = Number(analytics?.views_change || 0);
+  // try both shapes
+  const views = Number(analytics?.total_views ?? analytics?.views ?? analytics?.totals?.views?.total ?? 0);
+  const inquiries = Number(
+    analytics?.total_inquiries ?? analytics?.inquiries ?? analytics?.totals?.inquiries?.total ?? 0
+  );
+  const viewsChange = Number(analytics?.views_change ?? analytics?.totals?.views?.change ?? 0);
 
   const alerts = [];
+  if (viewsChange < -10) alerts.push({ text: "Views dropped this week", priority: "high", count: 0, type: "views" });
 
-  // high-ish: big drop
-  if (viewsChange < -10) {
-    alerts.push({ text: "Views dropped this week", priority: "high", count: 0, type: "views" });
-  }
-
-  // medium: low exposure
   if (views < 100) {
     alerts.push({ text: "Add more photos", priority: "low", count: 0, type: "photo" });
-  } else if (saves < 10) {
-    alerts.push({ text: "Low saves — consider a promo", priority: "medium", count: 0, type: "promo" });
+  } else if (inquiries < 3) {
+    alerts.push({ text: "Low inquiries — add clearer info", priority: "medium", count: 0, type: "inquiries" });
   }
 
   return alerts.slice(0, 2);
 }
 
-function fmtPesoShort(n) {
-  const v = Number(n || 0);
-  if (!Number.isFinite(v)) return "₱0";
-  if (v >= 1000000) return `₱${(v / 1000000).toFixed(1)}M`;
-  if (v >= 1000) return `₱${(v / 1000).toFixed(0)}K`;
-  return `₱${v.toLocaleString()}`;
+/**
+ * ✅ Performance normalizer (works with both old flat + new totals)
+ */
+function pickAnalyticsMetrics(a) {
+  const n = (v) => {
+    const x = Number(v);
+    return Number.isFinite(x) ? x : 0;
+  };
+
+  const flat = {
+    total_views: n(a?.total_views ?? a?.views),
+    total_saves: n(a?.total_saves ?? a?.saves),
+    total_inquiries: n(a?.total_inquiries ?? a?.inquiries),
+
+    views_change: n(a?.views_change),
+    saves_change: n(a?.saves_change),
+    inquiries_change: n(a?.inquiries_change),
+
+    members: n(a?.members),
+    members_change: n(a?.members_change),
+
+    rating: n(a?.rating),
+    rating_change: n(a?.rating_change),
+  };
+
+  const totals = a?.totals ?? null;
+  if (totals) {
+    return {
+      total_views: n(totals?.views?.total),
+      total_saves: n(totals?.saves?.total),
+      total_inquiries: n(totals?.inquiries?.total),
+
+      views_change: n(totals?.views?.change),
+      saves_change: n(totals?.saves?.change),
+      inquiries_change: n(totals?.inquiries?.change),
+
+      members: n(totals?.active_members?.current),
+      members_change: n(totals?.active_members?.change),
+
+      rating: n(totals?.ratings?.verified_avg),
+      rating_change: n(a?.rating_change ?? 0),
+    };
+  }
+
+  return flat;
+}
+
+function clipText(s, n = 90) {
+  const t = String(s || "");
+  if (t.length <= n) return t;
+  return `${t.slice(0, n)}…`;
 }
 
 export default function OwnerHome() {
@@ -178,21 +259,30 @@ export default function OwnerHome() {
   const [activities, setActivities] = useState([]);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
 
-  // ✅ collapsible
+  // collapsible
   const [gymsOpen, setGymsOpen] = useState(true);
   const [activityOpen, setActivityOpen] = useState(true);
 
-  // ✅ show more
+  // show more
   const [showAllGyms, setShowAllGyms] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
+
+  // ✅ prevents img flicker: once broken -> always fallback for that gym
+  const [brokenGymImages, setBrokenGymImages] = useState({});
+
+  // right-side cards
+  const [cards, setCards] = useState({
+    latest_inquiries: [],
+    latest_reviews: [],
+    upcoming_renewals: [],
+    recent_signups: [],
+    meta: null,
+  });
+  const [cardsLoading, setCardsLoading] = useState(false);
 
   const role = (me?.role ?? "").toLowerCase();
   const canUseOwner = role === "owner" || role === "superadmin";
   const isAdminOrSuper = role === "admin" || role === "superadmin";
-
-  const selectedGym = useMemo(() => {
-    return gyms.find((g) => String(g.id) === String(selectedGymId)) || null;
-  }, [gyms, selectedGymId]);
 
   useEffect(() => {
     let alive = true;
@@ -204,7 +294,6 @@ export default function OwnerHome() {
 
         const meRes = await getMe();
         const user = meRes.user ?? meRes;
-
         if (!alive) return;
 
         const r = (user?.role ?? "").toLowerCase();
@@ -218,22 +307,22 @@ export default function OwnerHome() {
           email: user?.email ?? "—",
           role: r,
           verified: Boolean(user?.email_verified_at ?? true),
-          member_since: user?.created_at
-            ? new Date(user.created_at).toLocaleDateString()
-            : "—",
+          member_since: user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—",
         });
 
         const gymsRes = await getAllMyGyms();
         const list = safeArr(gymsRes).map(mapGym);
-
         if (!alive) return;
 
         setGyms(list);
         setSelectedGymId(list[0]?.id ?? null);
-
         setGymsOpen(true);
         setShowAllGyms(false);
 
+        // reset broken images cache when gyms list changes
+        setBrokenGymImages({});
+
+        // load per-gym analytics
         if (list.length) {
           setAnalyticsLoading(true);
 
@@ -255,6 +344,7 @@ export default function OwnerHome() {
           setAnalyticsByGym(map);
         }
 
+        // activities
         setActivitiesLoading(true);
         try {
           const actRes = await getOwnerActivities();
@@ -269,13 +359,35 @@ export default function OwnerHome() {
         } finally {
           if (alive) setActivitiesLoading(false);
         }
+
+        // right-side cards
+        setCardsLoading(true);
+        try {
+          const cardsRes = await getOwnerHomeCards({ days: 3 });
+          if (!alive) return;
+
+          setCards({
+            latest_inquiries: safeArr(cardsRes?.latest_inquiries),
+            latest_reviews: safeArr(cardsRes?.latest_reviews),
+            upcoming_renewals: safeArr(cardsRes?.upcoming_renewals),
+            recent_signups: safeArr(cardsRes?.recent_signups),
+            meta: cardsRes?.meta ?? null,
+          });
+        } catch {
+          if (!alive) return;
+          setCards({
+            latest_inquiries: [],
+            latest_reviews: [],
+            upcoming_renewals: [],
+            recent_signups: [],
+            meta: null,
+          });
+        } finally {
+          if (alive) setCardsLoading(false);
+        }
       } catch (e) {
         console.error(e);
-        setErr(
-          e?.response?.data?.message ||
-            e?.message ||
-            "Failed to load owner dashboard."
-        );
+        setErr(e?.response?.data?.message || e?.message || "Failed to load owner dashboard.");
       } finally {
         if (alive) setLoading(false);
         if (alive) setAnalyticsLoading(false);
@@ -288,40 +400,31 @@ export default function OwnerHome() {
     };
   }, [navigate]);
 
-  /**
-   * Build gyms UI objects:
-   * - adds stats/views/rating if available
-   * - adds rank + total (fallbacks)
-   * - adds alerts (backend or placeholders)
-   */
   const gymsUi = useMemo(() => {
     return gyms.map((g, idx) => {
       const a = analyticsByGym[String(g.id)] || null;
+      const m = pickAnalyticsMetrics(a);
 
-      // Core metrics
-      const views = Number(a?.total_views || a?.views || 0);
-      const saves = Number(a?.total_saves || a?.saves || 0);
-
-      // Optional if your API has them
-      const members = Number(a?.members || 0);
-      const rating = Number(a?.rating || 0);
-      const revenue = Number(a?.revenue || 0);
-
-      // Rank fallback: if API doesn't have it, use list order
       const rank = Number(a?.rank || g.raw?.rank || idx + 1);
       const totalGyms = Number(a?.total_gyms || g.raw?.total_gyms || Math.max(gyms.length, 1));
       const area = areaLabelFromGym(g);
-
       const alerts = computeGymAlerts({ analytics: a });
 
       return {
         ...g,
-        stats: { members, views, rating, saves, revenue },
+        stats: {
+          members: m.members,
+          views: m.total_views,
+          rating: m.rating,
+          saves: m.total_saves,
+          inquiries: m.total_inquiries,
+        },
         rank,
         total_gyms: totalGyms,
         area,
         alerts,
         analytics: a,
+        metrics: m,
       };
     });
   }, [gyms, analyticsByGym]);
@@ -339,13 +442,11 @@ export default function OwnerHome() {
     return safeArr(activities)
       .map((a) => ({
         id: a.id ?? `${a.event}-${a.created_at}-${Math.random()}`,
-        type: a.type || a.event || "activity",
         event: a.event || a.type || "activity",
         text: a.text || eventToText(a.event, a.gym_name || "your gym"),
         time: a.time || timeAgoLike(a.created_at),
         Icon: eventToIcon(a.event || a.type),
       }))
-      // newest first if backend returns oldest first
       .sort((x, y) => (String(y.time) > String(x.time) ? 1 : -1));
   }, [activities]);
 
@@ -354,89 +455,46 @@ export default function OwnerHome() {
     return activityUi.slice(0, 5);
   }, [activityUi, showAllActivities]);
 
-  // Hero totals (safe even if rating/members not available yet)
   const hero = useMemo(() => {
     const totalViews = gymsUi.reduce((sum, g) => sum + Number(g.stats.views || 0), 0);
-    const totalRevenue = gymsUi.reduce((sum, g) => sum + Number(g.stats.revenue || 0), 0);
-    const avgRating =
-      gymsUi.length > 0
-        ? gymsUi.reduce((sum, g) => sum + Number(g.stats.rating || 0), 0) / gymsUi.length
-        : 0;
+    const totalInquiries = gymsUi.reduce((sum, g) => sum + Number(g.stats.inquiries || 0), 0);
+    const avgRating = gymsUi.length > 0 ? gymsUi.reduce((sum, g) => sum + Number(g.stats.rating || 0), 0) / gymsUi.length : 0;
 
-    const bestRank = gymsUi
-      .map((g) => Number(g.rank))
-      .filter((x) => Number.isFinite(x) && x > 0);
+    const bestRank = gymsUi.map((g) => Number(g.rank)).filter((x) => Number.isFinite(x) && x > 0);
     const bestRankValue = bestRank.length ? Math.min(...bestRank) : null;
 
     const totalMembers = gymsUi.reduce((sum, g) => sum + Number(g.stats.members || 0), 0);
 
-    return { totalViews, totalRevenue, avgRating, bestRankValue, totalMembers };
+    return { totalViews, totalInquiries, avgRating, bestRankValue, totalMembers };
   }, [gymsUi]);
 
-  // Selected analytics (right side) with fallbacks
   const selectedA = useMemo(() => {
-    const a = selectedGymUi?.analytics || null;
-    return {
-      total_views: Number(a?.total_views || 0),
-      total_saves: Number(a?.total_saves || 0),
-      views_change: Number(a?.views_change || 0),
-      saves_change: Number(a?.saves_change || 0),
-
-      members: Number(a?.members || 0),
-      members_change: Number(a?.members_change || 0),
-
-      rating: Number(a?.rating || 0),
-      rating_change: Number(a?.rating_change || 0),
-
-      revenue: Number(a?.revenue || 0),
-      revenue_change: Number(a?.revenue_change || 0),
-    };
+    return selectedGymUi?.metrics || pickAnalyticsMetrics(null);
   }, [selectedGymUi]);
 
-  // Needs Your Attention (simple + real)
   const urgentActions = useMemo(() => {
     const items = [];
 
     if (me && !me.verified) {
-      items.push({
-        icon: AlertCircle,
-        text: "Verify your email",
-        link: "/owner/profile",
-        priority: "high",
-        count: 1,
-      });
+      items.push({ icon: AlertCircle, text: "Verify your email", link: "/owner/profile", priority: "high", count: 1 });
     }
 
     if (gyms.length === 0) {
-      items.push({
-        icon: Plus,
-        text: "Add your first gym",
-        link: "/owner/gyms/add",
-        priority: "high",
-        count: 1,
-      });
+      items.push({ icon: Plus, text: "Add your first gym", link: "/owner/gym-application", priority: "high", count: 1 });
     }
 
-    if (selectedGymUi) {
-      if (Number(selectedA.total_views || 0) === 0) {
-        items.push({
-          icon: ImageIcon,
-          text: "Add photos to get more views",
-          link: `/owner/view-gym/${selectedGymUi.id}`,
-          priority: "low",
-          count: 0,
-        });
-      }
-    }
-
-    if (items.length === 0) {
+    if (selectedGymUi && Number(selectedA.total_views || 0) === 0) {
       items.push({
-        icon: ThumbsUp,
-        text: "All good for now",
-        link: "/owner",
+        icon: Star,
+        text: "Add photos to get more views",
+        link: `/owner/view-gym/${selectedGymUi.id}`,
         priority: "low",
         count: 0,
       });
+    }
+
+    if (items.length === 0) {
+      items.push({ icon: CheckCircle, text: "All good for now", link: "/owner/home", priority: "low", count: 0 });
     }
 
     return items.slice(0, 3);
@@ -531,21 +589,17 @@ export default function OwnerHome() {
                 </div>
                 <div className="od-hero-stat-content">
                   <span className="od-hero-stat-label">Total Views</span>
-                  <strong className="od-hero-stat-value">
-                    {analyticsLoading ? "…" : hero.totalViews.toLocaleString()}
-                  </strong>
+                  <strong className="od-hero-stat-value">{analyticsLoading ? "…" : hero.totalViews.toLocaleString()}</strong>
                 </div>
               </div>
 
               <div className="od-hero-stat">
                 <div className="od-hero-stat-icon revenue">
-                  <DollarSign size={20} />
+                  <Mail size={20} />
                 </div>
                 <div className="od-hero-stat-content">
-                  <span className="od-hero-stat-label">Monthly Revenue</span>
-                  <strong className="od-hero-stat-value">
-                    {hero.totalRevenue ? fmtPesoShort(hero.totalRevenue) : "Soon"}
-                  </strong>
+                  <span className="od-hero-stat-label">Total Inquiries</span>
+                  <strong className="od-hero-stat-value">{analyticsLoading ? "…" : hero.totalInquiries.toLocaleString()}</strong>
                 </div>
               </div>
 
@@ -555,9 +609,7 @@ export default function OwnerHome() {
                 </div>
                 <div className="od-hero-stat-content">
                   <span className="od-hero-stat-label">Avg Rating</span>
-                  <strong className="od-hero-stat-value">
-                    {hero.avgRating ? hero.avgRating.toFixed(1) : "—"}
-                  </strong>
+                  <strong className="od-hero-stat-value">{hero.avgRating ? hero.avgRating.toFixed(1) : "—"}</strong>
                 </div>
               </div>
 
@@ -567,9 +619,7 @@ export default function OwnerHome() {
                 </div>
                 <div className="od-hero-stat-content">
                   <span className="od-hero-stat-label">Best Rank</span>
-                  <strong className="od-hero-stat-value">
-                    {hero.bestRankValue ? `#${hero.bestRankValue}` : "—"}
-                  </strong>
+                  <strong className="od-hero-stat-value">{hero.bestRankValue ? `#${hero.bestRankValue}` : "—"}</strong>
                 </div>
               </div>
             </div>
@@ -595,9 +645,7 @@ export default function OwnerHome() {
                   </div>
                   <div className="od-urgent-content">
                     <p>{action.text}</p>
-                    {action.count > 0 && (
-                      <span className="od-urgent-count">{action.count}</span>
-                    )}
+                    {action.count > 0 && <span className="od-urgent-count">{action.count}</span>}
                   </div>
                   <ChevronRight size={18} className="od-urgent-arrow" />
                 </Link>
@@ -609,7 +657,7 @@ export default function OwnerHome() {
         <div className="od-main-grid">
           {/* LEFT */}
           <div className="od-left-column">
-            {/* Your Gyms (collapsible + show more) */}
+            {/* Your Gyms */}
             <div className="od-gyms-section">
               <div
                 className="od-section-header od-collapsible-header"
@@ -623,102 +671,119 @@ export default function OwnerHome() {
                     <ChevronDown size={18} />
                   </span>
                 </h2>
-          <div onClick={(e) => e.stopPropagation()}>
-            <Link to="/owner/gym-application" className="od-add-btn">
-              <Plus size={18} />
-              Add Gym
-            </Link>
-          </div>
+
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Link to="/owner/gym-application" className="od-add-btn">
+                    <Plus size={18} />
+                    Add Gym
+                  </Link>
+                </div>
               </div>
 
               <div className={`od-collapse-body ${gymsOpen ? "open" : ""}`}>
                 <div className="od-gyms-list">
-                  {visibleGyms.map((gym) => (
-                    <div
-                      key={gym.id}
-                      className={`od-gym-card ${String(selectedGymId) === String(gym.id) ? "selected" : ""}`}
-                      onClick={() => setSelectedGymId(gym.id)}
-                    >
-                      <div className="od-gym-image">
-                        <img src={gym.image} alt={gym.name} />
-                        <div className={`od-gym-status ${gym.status}`}>
-                          {gym.status === "active" ? (
-                            <CheckCircle size={14} />
-                          ) : (
-                            <AlertCircle size={14} />
-                          )}
-                          {gym.status}
-                        </div>
-                      </div>
-
-                      <div className="od-gym-info">
-                        <div className="od-gym-header">
-                          <h3>{gym.name}</h3>
-                          {gym.verified && (
-                            <div className="od-verified">
-                              <CheckCircle size={14} />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="od-gym-location">
-                          <MapPin size={14} />
-                          <span>{gym.location}</span>
-                        </div>
-
-                        {gym.status === "active" && (
-                          <>
-                            <div className="od-gym-quick-stats">
-                              {gym.stats.members > 0 && (
-                                <div className="od-quick-stat">
-                                  <Users size={14} />
-                                  <span>{gym.stats.members}</span>
-                                </div>
-                              )}
-                              <div className="od-quick-stat">
-                                <Eye size={14} />
-                                <span>{analyticsLoading ? "…" : gym.stats.views}</span>
-                              </div>
-                              {gym.stats.rating > 0 && (
-                                <div className="od-quick-stat">
-                                  <Star size={14} />
-                                  <span>{gym.stats.rating}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* ✅ flavor rank pill */}
-                            <div className="od-gym-rank">
-                              <Crown size={14} />
-                              <span>
-                                Rank #{gym.rank} of {gym.total_gyms} in {gym.area}
-                              </span>
-                            </div>
-                          </>
-                        )}
-
-                        {/* ✅ flavor alerts */}
-                        {gym.alerts?.length > 0 && (
-                          <div className="od-gym-alerts">
-                            {gym.alerts.slice(0, 2).map((alert, i) => (
-                              <div key={i} className={`od-gym-alert ${alert.priority || "low"}`}>
-                                <AlertCircle size={12} />
-                                <span>{alert.text}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <Link
-                        to={`/owner/view-gym/${gym.id}`}
-                        className="od-gym-action"
-                        onClick={(e) => e.stopPropagation()}
+                  {visibleGyms.map((gym) => {
+                    const showStatusBadge = gym.status && gym.status !== "approved"; // ✅ remove APPROVED display
+                    return (
+                      <div
+                        key={gym.id}
+                        className={`od-gym-card ${String(selectedGymId) === String(gym.id) ? "selected" : ""}`}
+                        onClick={() => setSelectedGymId(gym.id)}
                       >
-                        <ChevronRight size={20} />
-                      </Link>
-                    </div>
-                  ))}
+                        <div className="od-gym-image">
+                          <img
+                            src={brokenGymImages[gym.id] ? DEFAULT_GYM_IMAGE : gym.image}
+                            alt={gym.name}
+                            loading="lazy"
+                            onError={() => {
+                              setBrokenGymImages((prev) =>
+                                prev[gym.id] ? prev : { ...prev, [gym.id]: true }
+                              );
+                            }}
+                          />
+
+                          {showStatusBadge && (
+                            <div className={`od-gym-status ${gym.status}`}>
+                              {gym.status === "active" ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                              {gym.status}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="od-gym-info">
+                          <div className="od-gym-header">
+                            <h3>{gym.name}</h3>
+                            {gym.verified && (
+                              <div className="od-verified">
+                                <CheckCircle size={14} />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="od-gym-location">
+                            <MapPin size={14} />
+                            <span>{gym.location}</span>
+                          </div>
+
+                          {gym.status === "active" && (
+                            <>
+                              <div className="od-gym-quick-stats">
+                                {gym.stats.members > 0 && (
+                                  <div className="od-quick-stat">
+                                    <Users size={14} />
+                                    <span>{gym.stats.members}</span>
+                                  </div>
+                                )}
+
+                                <div className="od-quick-stat">
+                                  <Eye size={14} />
+                                  <span>{analyticsLoading ? "…" : gym.stats.views}</span>
+                                </div>
+
+                                {gym.stats.rating > 0 && (
+                                  <div className="od-quick-stat">
+                                    <Star size={14} />
+                                    <span>{gym.stats.rating}</span>
+                                  </div>
+                                )}
+
+                                <div className="od-quick-stat">
+                                  <Mail size={14} />
+                                  <span>{analyticsLoading ? "…" : gym.stats.inquiries}</span>
+                                </div>
+                              </div>
+
+                              <div className="od-gym-rank">
+                                <Crown size={14} />
+                                <span>
+                                  Rank #{gym.rank} of {gym.total_gyms} in {gym.area}
+                                </span>
+                              </div>
+                            </>
+                          )}
+
+                          {gym.alerts?.length > 0 && (
+                            <div className="od-gym-alerts">
+                              {gym.alerts.slice(0, 2).map((alert, i) => (
+                                <div key={i} className={`od-gym-alert ${alert.priority || "low"}`}>
+                                  <AlertCircle size={12} />
+                                  <span>{alert.text}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <Link
+                          to={`/owner/view-gym/${gym.id}`}
+                          className="od-gym-action"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronRight size={20} />
+                        </Link>
+                      </div>
+                    );
+                  })}
 
                   {gyms.length === 0 && (
                     <div style={{ padding: 14, opacity: 0.8 }}>
@@ -727,14 +792,9 @@ export default function OwnerHome() {
                   )}
                 </div>
 
-                {/* Show more gyms */}
                 {gymsUi.length > 3 && (
                   <div className="od-showmore-row">
-                    <button
-                      type="button"
-                      className="od-showmore-btn"
-                      onClick={() => setShowAllGyms((v) => !v)}
-                    >
+                    <button type="button" className="od-showmore-btn" onClick={() => setShowAllGyms((v) => !v)}>
                       {showAllGyms ? "Show less" : `Show more (${gymsUi.length - 3})`}
                     </button>
                   </div>
@@ -742,21 +802,7 @@ export default function OwnerHome() {
               </div>
             </div>
 
-            {/* Inquiries placeholder */}
-            <div className="od-inquiries-section">
-              <div className="od-section-header">
-                <h2>
-                  <Mail size={20} />
-                  Member Inquiries
-                </h2>
-                <span style={{ opacity: 0.7, fontSize: 12 }}>To be added</span>
-              </div>
-              <div style={{ padding: 14, opacity: 0.75 }}>
-                Member inquiries is under maintenance and will be added soon.
-              </div>
-            </div>
-
-            {/* Recent Activity (collapsible + show more) */}
+            {/* Recent Activity */}
             <div className="od-activity-section">
               <div
                 className="od-section-header od-collapsible-header"
@@ -775,16 +821,9 @@ export default function OwnerHome() {
 
               <div className={`od-collapse-body ${activityOpen ? "open" : ""}`}>
                 <div className="od-activity-feed">
-                  {activitiesLoading && (
-                    <div style={{ padding: 14, opacity: 0.75 }}>
-                      Loading activity…
-                    </div>
-                  )}
-
+                  {activitiesLoading && <div style={{ padding: 14, opacity: 0.75 }}>Loading activity…</div>}
                   {!activitiesLoading && activityUi.length === 0 && (
-                    <div style={{ padding: 14, opacity: 0.75 }}>
-                      No activity yet.
-                    </div>
+                    <div style={{ padding: 14, opacity: 0.75 }}>No activity yet.</div>
                   )}
 
                   {!activitiesLoading &&
@@ -801,14 +840,9 @@ export default function OwnerHome() {
                     ))}
                 </div>
 
-                {/* Show more activities */}
                 {activityUi.length > 5 && (
                   <div className="od-showmore-row">
-                    <button
-                      type="button"
-                      className="od-showmore-btn"
-                      onClick={() => setShowAllActivities((v) => !v)}
-                    >
+                    <button type="button" className="od-showmore-btn" onClick={() => setShowAllActivities((v) => !v)}>
                       {showAllActivities ? "Show less" : `Show more (${activityUi.length - 5})`}
                     </button>
                   </div>
@@ -816,32 +850,45 @@ export default function OwnerHome() {
               </div>
             </div>
 
-            {/* Owner tools */}
+            {/* Owner Tools */}
             <div className="od-tips-section">
               <h3>Owner Tools</h3>
               <div className="od-tips-grid">
-                <Link to="/owner/gyms/add" className="od-tip-card-compact">
+                <Link to="/owner/gym-application" className="od-tip-card-compact">
                   <div className="od-tip-icon-compact" style={{ background: "#3b82f6" }}>
                     <Plus size={20} />
                   </div>
                   <div className="od-tip-content-compact">
                     <h4>Add another gym</h4>
                     <p>Create more listings for more reach.</p>
-                    <span className="od-tip-action">Add Gym →</span>
+                    <span className="od-tip-action">Apply →</span>
                   </div>
                 </Link>
 
                 {selectedGymUi ? (
-                  <Link to={`/owner/view-gym/${selectedGymUi.id}`} className="od-tip-card-compact">
-                    <div className="od-tip-icon-compact" style={{ background: "#10b981" }}>
-                      <ImageIcon size={20} />
-                    </div>
-                    <div className="od-tip-content-compact">
-                      <h4>Manage selected gym</h4>
-                      <p>Update details, equipments, and amenities.</p>
-                      <span className="od-tip-action">Open Gym →</span>
-                    </div>
-                  </Link>
+                  <>
+                    <Link to={`/owner/view-gym/${selectedGymUi.id}`} className="od-tip-card-compact">
+                      <div className="od-tip-icon-compact" style={{ background: "#10b981" }}>
+                        <Eye size={20} />
+                      </div>
+                      <div className="od-tip-content-compact">
+                        <h4>View selected gym</h4>
+                        <p>See listing details & media.</p>
+                        <span className="od-tip-action">Open →</span>
+                      </div>
+                    </Link>
+
+                    <Link to="/owner/inbox" className="od-tip-card-compact">
+                      <div className="od-tip-icon-compact" style={{ background: "#111827" }}>
+                        <Mail size={20} />
+                      </div>
+                      <div className="od-tip-content-compact">
+                        <h4>Inbox</h4>
+                        <p>Reply to member inquiries.</p>
+                        <span className="od-tip-action">Open Inbox →</span>
+                      </div>
+                    </Link>
+                  </>
                 ) : (
                   <Link to="/owner/profile" className="od-tip-card-compact">
                     <div className="od-tip-icon-compact" style={{ background: "#f59e0b" }}>
@@ -856,7 +903,7 @@ export default function OwnerHome() {
                 )}
 
                 {isAdminOrSuper && (
-                  <Link to="/admin" className="od-tip-card-compact">
+                  <Link to="/admin/dashboard" className="od-tip-card-compact">
                     <div className="od-tip-icon-compact" style={{ background: "#7c3aed" }}>
                       <Shield size={20} />
                     </div>
@@ -875,7 +922,7 @@ export default function OwnerHome() {
           <div className="od-right-column">
             {selectedGymUi ? (
               <>
-                {/* Rank / Analytics Card */}
+                {/* Selected Gym Analytics */}
                 <div className="od-rank-card">
                   <div className="od-rank-header">
                     <Award size={20} />
@@ -883,9 +930,7 @@ export default function OwnerHome() {
                   </div>
 
                   <div className="od-rank-display">
-                    <div className="od-rank-number">
-                      {selectedA.total_views.toLocaleString()}
-                    </div>
+                    <div className="od-rank-number">{Number(selectedA.total_views || 0).toLocaleString()}</div>
                     <div className="od-rank-text">
                       <span>Total views</span>
                       <p>{selectedGymUi.name}</p>
@@ -896,19 +941,16 @@ export default function OwnerHome() {
                     <Zap size={16} />
                     <span>
                       Views change: {selectedA.views_change >= 0 ? "+" : ""}
-                      {selectedA.views_change}%
+                      {Number(selectedA.views_change || 0)}%
                     </span>
                   </div>
                 </div>
 
-                {/* Performance Card */}
+                {/* Performance */}
                 <div className="od-performance-card">
                   <div className="od-perf-header">
                     <h3>Performance</h3>
-                    <Link
-                      to={`/owner/view-gym/${selectedGymUi.id}`}
-                      className="od-view-link"
-                    >
+                    <Link to={`/owner/view-gym/${selectedGymUi.id}`} className="od-view-link">
                       Open Gym <ArrowRight size={14} />
                     </Link>
                   </div>
@@ -921,18 +963,10 @@ export default function OwnerHome() {
                         <span>Views</span>
                       </div>
                       <div className="od-perf-value">
-                        <h4>{selectedA.total_views.toLocaleString()}</h4>
-                        <div
-                          className={`od-perf-trend ${
-                            selectedA.views_change >= 0 ? "up" : "down"
-                          }`}
-                        >
-                          {selectedA.views_change >= 0 ? (
-                            <TrendingUp size={12} />
-                          ) : (
-                            <TrendingDown size={12} />
-                          )}
-                          <span>{Math.abs(selectedA.views_change)}%</span>
+                        <h4>{Number(selectedA.total_views || 0).toLocaleString()}</h4>
+                        <div className={`od-perf-trend ${Number(selectedA.views_change || 0) >= 0 ? "up" : "down"}`}>
+                          {Number(selectedA.views_change || 0) >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                          <span>{Math.abs(Number(selectedA.views_change || 0))}%</span>
                         </div>
                       </div>
                     </div>
@@ -944,81 +978,143 @@ export default function OwnerHome() {
                         <span>Saves</span>
                       </div>
                       <div className="od-perf-value">
-                        <h4>{selectedA.total_saves.toLocaleString()}</h4>
-                        <div
-                          className={`od-perf-trend ${
-                            selectedA.saves_change >= 0 ? "up" : "down"
-                          }`}
-                        >
-                          {selectedA.saves_change >= 0 ? (
-                            <TrendingUp size={12} />
-                          ) : (
-                            <TrendingDown size={12} />
-                          )}
-                          <span>{Math.abs(selectedA.saves_change)}%</span>
+                        <h4>{Number(selectedA.total_saves || 0).toLocaleString()}</h4>
+                        <div className={`od-perf-trend ${Number(selectedA.saves_change || 0) >= 0 ? "up" : "down"}`}>
+                          {Number(selectedA.saves_change || 0) >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                          <span>{Math.abs(Number(selectedA.saves_change || 0))}%</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Members (optional) */}
+                    {/* Members (✅ show 0 instead of Soon) */}
                     <div className="od-perf-stat">
                       <div className="od-perf-label">
                         <Users size={16} />
                         <span>Members</span>
                       </div>
                       <div className="od-perf-value">
-                        <h4>{selectedA.members ? selectedA.members.toLocaleString() : "Soon"}</h4>
-                        <div
-                          className={`od-perf-trend ${
-                            selectedA.members_change >= 0 ? "up" : "down"
-                          }`}
-                        >
-                          {selectedA.members ? (
-                            <>
-                              {selectedA.members_change >= 0 ? (
-                                <TrendingUp size={12} />
-                              ) : (
-                                <TrendingDown size={12} />
-                              )}
-                              <span>{Math.abs(selectedA.members_change)}%</span>
-                            </>
-                          ) : (
-                            <>
-                              <TrendingUp size={12} />
-                              <span>To be added</span>
-                            </>
-                          )}
+                        <h4>{Number(selectedA.members || 0).toLocaleString()}</h4>
+                        <div className={`od-perf-trend ${Number(selectedA.members_change || 0) >= 0 ? "up" : "down"}`}>
+                          {Number(selectedA.members_change || 0) >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                          <span>{Math.abs(Number(selectedA.members_change || 0))}%</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Revenue (optional) */}
+                    {/* Inquiries */}
                     <div className="od-perf-stat">
                       <div className="od-perf-label">
-                        <DollarSign size={16} />
-                        <span>Revenue</span>
+                        <Mail size={16} />
+                        <span>Inquiries</span>
                       </div>
                       <div className="od-perf-value">
-                        <h4>{selectedA.revenue ? fmtPesoShort(selectedA.revenue) : "Soon"}</h4>
-                        <div className="od-perf-trend up">
-                          <TrendingUp size={12} />
-                          <span>{selectedA.revenue ? "This month" : "To be added"}</span>
+                        <h4>{Number(selectedA.total_inquiries || 0).toLocaleString()}</h4>
+                        <div className={`od-perf-trend ${Number(selectedA.inquiries_change || 0) >= 0 ? "up" : "down"}`}>
+                          {Number(selectedA.inquiries_change || 0) >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                          <span>{Math.abs(Number(selectedA.inquiries_change || 0))}%</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Pending Reviews */}
+                {/* Member Inquiries (latest 5) */}
+                <div className="od-inquiries-section">
+                  <div className="od-section-header" style={{ justifyContent: "space-between" }}>
+                    <h2>
+                      <Mail size={20} />
+                      Member Inquiries
+                    </h2>
+                    <Link to="/owner/inbox" className="od-view-link">
+                      Open inbox <ArrowRight size={14} />
+                    </Link>
+                  </div>
+
+                  <div style={{ padding: 14 }}>
+                    {cardsLoading ? (
+                      <div style={{ opacity: 0.75 }}>Loading inquiries…</div>
+                    ) : cards.latest_inquiries.length === 0 ? (
+                      <div style={{ opacity: 0.75 }}>No inquiries yet.</div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {cards.latest_inquiries.slice(0, 5).map((it) => (
+                          <Link
+                            key={it.inquiry_id ?? `${it.gym_id}-${it.created_at}`}
+                            to="/owner/inbox"
+                            style={{
+                              textDecoration: "none",
+                              border: "1px solid rgba(0,0,0,0.06)",
+                              borderRadius: 14,
+                              padding: "10px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 12,
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 13, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <b>{it.gym_name ?? "Gym"}</b> • {it.from_name ?? "Member"}
+                              </div>
+                              <div style={{ fontSize: 12, opacity: 0.75, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {clipText(it.question, 90)}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: 12, opacity: 0.7 }}>{it.status ?? "open"}</div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Reviews */}
                 <div className="od-reviews-card">
-                  <div className="od-card-header">
+                  <div className="od-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h3>
                       <MessageSquare size={18} />
-                      Pending Reviews
+                      Reviews
                     </h3>
+                    <Link to={`/owner/view-gym/${selectedGymUi.id}`} className="od-view-link">
+                      Open gym <ArrowRight size={14} />
+                    </Link>
                   </div>
-                  <div style={{ padding: 14, opacity: 0.75 }}>
-                    Under maintenance. Pending reviews will be added soon.
+
+                  <div style={{ padding: 14 }}>
+                    {cardsLoading ? (
+                      <div style={{ opacity: 0.75 }}>Loading reviews…</div>
+                    ) : cards.latest_reviews.length === 0 ? (
+                      <div style={{ opacity: 0.75 }}>No reviews yet.</div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {cards.latest_reviews.slice(0, 5).map((it) => (
+                          <Link
+                            key={it.rating_id ?? `${it.gym_id}-${it.created_at}`}
+                            to={`/owner/view-gym/${it.gym_id}`}
+                            style={{
+                              textDecoration: "none",
+                              border: "1px solid rgba(0,0,0,0.06)",
+                              borderRadius: 14,
+                              padding: "10px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 12,
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 13, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <b>{it.gym_name ?? "Gym"}</b> • {it.user_name ?? "User"} • {Number(it.stars || 0)}★
+                              </div>
+                              <div style={{ fontSize: 12, opacity: 0.75, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {clipText(it.review, 85)}
+                              </div>
+                            </div>
+                            <ChevronRight size={18} style={{ opacity: 0.6 }} />
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1027,11 +1123,45 @@ export default function OwnerHome() {
                   <div className="od-card-header">
                     <h3>
                       <Calendar size={18} />
-                      Upcoming Renewals
+                      Upcoming Renewals (3 days)
                     </h3>
                   </div>
-                  <div style={{ padding: 14, opacity: 0.75 }}>
-                    Under maintenance. Renewals will be added soon.
+
+                  <div style={{ padding: 14 }}>
+                    {cardsLoading ? (
+                      <div style={{ opacity: 0.75 }}>Loading renewals…</div>
+                    ) : cards.upcoming_renewals.length === 0 ? (
+                      <div style={{ opacity: 0.75 }}>No memberships expiring soon.</div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {cards.upcoming_renewals.slice(0, 5).map((it) => (
+                          <Link
+                            key={it.membership_id ?? `${it.gym_id}-${it.user_id}-${it.end_date}`}
+                            to={`/owner/members/${it.gym_id}`}
+                            style={{
+                              textDecoration: "none",
+                              border: "1px solid rgba(0,0,0,0.06)",
+                              borderRadius: 14,
+                              padding: "10px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 12,
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 13, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <b>{it.user_name ?? "Member"}</b> • {it.gym_name ?? "Gym"}
+                              </div>
+                              <div style={{ fontSize: 12, opacity: 0.75, marginTop: 2 }}>
+                                Ends: {it.end_date ? new Date(it.end_date).toLocaleDateString() : "—"}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: 12, opacity: 0.75 }}>{it.days_left != null ? `${it.days_left}d left` : ""}</div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1039,19 +1169,51 @@ export default function OwnerHome() {
                 <div className="od-signups-card">
                   <div className="od-card-header">
                     <h3>
-                      <UserPlus size={18} />
+                      <Users size={18} />
                       Recent Sign-ups
                     </h3>
                   </div>
-                  <div style={{ padding: 14, opacity: 0.75 }}>
-                    Under maintenance. Recent sign-ups will be added soon.
+
+                  <div style={{ padding: 14 }}>
+                    {cardsLoading ? (
+                      <div style={{ opacity: 0.75 }}>Loading sign-ups…</div>
+                    ) : cards.recent_signups.length === 0 ? (
+                      <div style={{ opacity: 0.75 }}>No recent sign-ups.</div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {cards.recent_signups.slice(0, 5).map((it) => (
+                          <Link
+                            key={it.membership_id ?? `${it.gym_id}-${it.user_id}-${it.created_at}`}
+                            to={`/owner/members/${it.gym_id}`}
+                            style={{
+                              textDecoration: "none",
+                              border: "1px solid rgba(0,0,0,0.06)",
+                              borderRadius: 14,
+                              padding: "10px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 12,
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 13, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <b>{it.user_name ?? "Member"}</b> • {it.gym_name ?? "Gym"}
+                              </div>
+                              <div style={{ fontSize: 12, opacity: 0.75, marginTop: 2 }}>
+                                Joined: {it.created_at ? new Date(it.created_at).toLocaleDateString() : "—"}
+                              </div>
+                            </div>
+                            <ChevronRight size={18} style={{ opacity: 0.6 }} />
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
             ) : (
-              <div style={{ padding: 14, opacity: 0.75 }}>
-                Select a gym to see analytics.
-              </div>
+              <div style={{ padding: 14, opacity: 0.75 }}>Select a gym to see analytics.</div>
             )}
           </div>
         </div>

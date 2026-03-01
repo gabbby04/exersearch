@@ -32,20 +32,40 @@ class GymAnalyticsController extends Controller
         return in_array($user->role ?? '', ['admin', 'superadmin'], true);
     }
 
+    /**
+     * Returns "market" gym ids:
+     * - if the gym has lat/lng: gyms within 8km (approved + has coords)
+     * - if fewer than 2 results, fall back to all approved gyms
+     *
+     * ✅ FIXED: clamps acos input to [-1, 1] for Postgres so it never errors
+     */
     private function marketGymIds(Gym $gym)
     {
         $lat = $gym->latitude;
         $lng = $gym->longitude;
 
         if ($lat !== null && $lng !== null) {
+            $lat = (float) $lat;
+            $lng = (float) $lng;
+            $radiusKm = 8;
+
+            // Postgres-safe: clamp value inside acos to [-1, 1]
+            $inner = "
+                cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) +
+                sin(radians(?)) * sin(radians(latitude))
+            ";
+
+            $distance = "
+                6371 * acos(
+                    LEAST(1, GREATEST(-1, ($inner)))
+                )
+            ";
+
             $ids = DB::table('gyms')
                 ->where('status', 'approved')
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->whereRaw(
-                    "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) <= ?",
-                    [(float) $lat, (float) $lng, (float) $lat, 8]
-                )
+                ->whereRaw("$distance <= ?", [$lat, $lng, $lat, $radiusKm])
                 ->pluck('gym_id');
 
             if ($ids->count() >= 2) return $ids;

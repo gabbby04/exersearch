@@ -1,3 +1,4 @@
+// src/utils/ownerDashboardApi.js
 import { api } from "./apiClient";
 
 function cleanParams(params = {}) {
@@ -33,6 +34,10 @@ function getLastPage(payload) {
   return Number.isFinite(lp) && lp > 0 ? lp : 1;
 }
 
+/* -------------------------------------------
+  Core Owner Dashboard calls (existing)
+------------------------------------------- */
+
 export async function getMe() {
   const res = await api.get("/me");
   return res.data;
@@ -57,15 +62,25 @@ export async function getAllMyGyms(params = {}) {
   const perPage = Number(params?.per_page ?? params?.perPage ?? 50);
   const safePerPage = Number.isFinite(perPage) && perPage > 0 ? perPage : 50;
 
-  const firstPayload = await getMyGyms({ ...params, per_page: safePerPage, page: 1 });
-  const lastPage = getLastPage(firstPayload);
+  const firstPayload = await getMyGyms({
+    ...params,
+    per_page: safePerPage,
+    page: 1,
+  });
 
+  const lastPage = getLastPage(firstPayload);
   let merged = [...extractRows(firstPayload)];
 
   if (lastPage > 1) {
     const promises = [];
     for (let p = 2; p <= lastPage; p++) {
-      promises.push(getMyGyms({ ...params, per_page: safePerPage, page: p }));
+      promises.push(
+        getMyGyms({
+          ...params,
+          per_page: safePerPage,
+          page: p,
+        })
+      );
     }
     const rest = await Promise.all(promises);
     for (const payload of rest) merged.push(...extractRows(payload));
@@ -74,8 +89,12 @@ export async function getAllMyGyms(params = {}) {
   return merged;
 }
 
-export async function getGymAnalytics(gymId) {
-  const res = await api.get(`/gyms/${gymId}/analytics`);
+export async function getGymAnalytics(gymId, params = {}) {
+  // Keep backwards compatibility: your old usage was getGymAnalytics(gymId)
+  // If later you want ?range=30d&timeline=1 etc, just pass params.
+  const res = await api.get(`/gyms/${encodeURIComponent(gymId)}/analytics`, {
+    params: cleanParams(params),
+  });
   return res.data;
 }
 
@@ -85,3 +104,21 @@ export async function getOwnerActivities(params = {}) {
   });
   return res.data;
 }
+
+
+export async function getOwnerHomeCards(params = {}) {
+  const res = await api.get("/owner/home/cards", {
+    params: cleanParams({
+      days: params?.days ?? 3, // renewals window
+    }),
+  });
+  return res.data;
+}
+
+
+export const __ownerDashboardApiInternals = {
+  cleanParams,
+  extractRows,
+  getMeta,
+  getLastPage,
+};

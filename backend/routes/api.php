@@ -165,7 +165,7 @@ Route::prefix('v1')->group(function () {
 
             Route::delete('/me/avatar/{type}', [ProfilePhotoController::class, 'remove'])
                 ->whereIn('type', ['user', 'owner', 'admin']);
-
+Route::get('/owner/home/cards', [\App\Http\Controllers\OwnerHomeCardsController::class, 'index']);
 
 
             Route::post('/media/upload', [MediaUploadController::class, 'upload']);
