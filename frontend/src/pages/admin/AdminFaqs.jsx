@@ -1,10 +1,10 @@
 // src/pages/admin/AdminFaqs.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import axios from "axios";
 import { adminThemes } from "./AdminLayout";
 
 import { useAuthMe } from "../../utils/useAuthMe";
-import { useApiList } from "../../utils/useApiList";
 import {
   toggleSort,
   sortIndicator,
@@ -14,15 +14,17 @@ import {
   tableValue,
 } from "../../utils/tableUtils";
 
-import {
-  getFaqs,
-  createFaq,
-  updateFaq,
-  deleteFaq,
-  toggleFaq,
-} from "../../utils/faqApi";
+import { createFaq, updateFaq, deleteFaq, toggleFaq } from "../../utils/faqApi";
 
 import "./AdminEquipments.css";
+
+const API_BASE = "https://exersearch.test";
+const TOKEN_KEY = "token";
+
+function authHeaders() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 function formatDateTimeFallback(value) {
   if (!value) return "-";
@@ -30,7 +32,15 @@ function formatDateTimeFallback(value) {
   return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleString();
 }
 
-const CATEGORY_OPTIONS = ["All"];
+const FAQ_CATEGORY_OPTIONS = [
+  "Account",
+  "Gyms",
+  "Workouts",
+  "Nutrition",
+  "Billing",
+  "Privacy",
+  "Technical",
+];
 
 export default function AdminFaqs() {
   const { theme } = useOutletContext();
@@ -40,9 +50,9 @@ export default function AdminFaqs() {
   const { me, isAdmin } = useAuthMe();
   const canManage = isAdmin && me?.role === "superadmin";
 
-  const { rows, loading: loadingRows, error, reload } = useApiList("/api/v1/faqs", {
-    authed: true,
-  });
+  const [rows, setRows] = useState([]);
+  const [loadingRows, setLoadingRows] = useState(true);
+  const [error, setError] = useState("");
 
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("All");
@@ -76,10 +86,53 @@ export default function AdminFaqs() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const categories = useMemo(() => {
-    const set = new Set((rows || []).map((r) => r.category).filter(Boolean));
-    return ["All", ...Array.from(set).sort()];
-  }, [rows]);
+  const fetchFaqPage = async (p) => {
+    const res = await axios.get(`${API_BASE}/api/v1/faqs`, {
+      headers: authHeaders(),
+      withCredentials: true,
+      params: { page: p, per_page: 50 },
+    });
+    return res.data;
+  };
+
+  const reload = async () => {
+    setLoadingRows(true);
+    setError("");
+    try {
+      const first = await fetchFaqPage(1);
+
+      const paginator = first?.data || first;
+      const firstRows = Array.isArray(paginator?.data) ? paginator.data : [];
+      const lastPage = Number(paginator?.last_page || 1);
+
+      let merged = [...firstRows];
+
+      if (lastPage > 1) {
+        const promises = [];
+        for (let p = 2; p <= lastPage; p++) promises.push(fetchFaqPage(p));
+        const rest = await Promise.all(promises);
+        for (const r of rest) {
+          const pag = r?.data || r;
+          const arr = Array.isArray(pag?.data) ? pag.data : [];
+          merged.push(...arr);
+        }
+      }
+
+      setRows(merged);
+    } catch (e) {
+      setRows([]);
+      setError(e?.response?.data?.message || e?.message || "Failed to load.");
+    } finally {
+      setLoadingRows(false);
+    }
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const categories = useMemo(() => ["All", ...FAQ_CATEGORY_OPTIONS], []);
 
   const searched = useMemo(() => {
     return globalSearch(rows || [], q, [
@@ -106,10 +159,10 @@ export default function AdminFaqs() {
         return tableValue.str(r.question);
       case "category":
         return tableValue.str(r.category);
-      case "active":
-        return tableValue.num(r.is_active ? 1 : 0);
       case "order":
         return tableValue.num(r.display_order);
+      case "active":
+        return tableValue.num(r.is_active ? 1 : 0);
       case "updated":
         return tableValue.dateMs(r.updated_at);
       case "id":
@@ -201,7 +254,7 @@ export default function AdminFaqs() {
       await deleteFaq(activeFaq.faq_id);
       setDelOpen(false);
       setFaqOpen(false);
-      reload();
+      await reload();
     } catch (e) {
       setFaqErr(e?.message || "Delete failed.");
     } finally {
@@ -226,8 +279,10 @@ export default function AdminFaqs() {
       const payload = {
         question,
         answer,
-        category: String(faqForm.category || "").trim() || null,
-        display_order: Number.isFinite(Number(faqForm.display_order)) ? Number(faqForm.display_order) : 0,
+        category: faqForm.category || null,
+        display_order: Number.isFinite(Number(faqForm.display_order))
+          ? Number(faqForm.display_order)
+          : 0,
         is_active: !!faqForm.is_active,
       };
 
@@ -242,7 +297,7 @@ export default function AdminFaqs() {
 
       setFaqOpen(false);
       setSaveOpen(false);
-      reload();
+      await reload();
     } catch (e) {
       setFaqErr(e?.message || "Save failed.");
     } finally {
@@ -255,7 +310,7 @@ export default function AdminFaqs() {
     setFaqErr("");
     try {
       await toggleFaq(r.faq_id);
-      reload();
+      await reload();
     } catch (e) {
       setFaqErr(e?.message || "Toggle failed.");
     }
@@ -310,7 +365,11 @@ export default function AdminFaqs() {
                 <span className="ae-searchIcon">⌕</span>
               </div>
 
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="ae-select">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="ae-select"
+              >
                 {categories.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -336,19 +395,34 @@ export default function AdminFaqs() {
               <table className="ae-table">
                 <thead>
                   <tr>
-                    <th className="ae-th ae-thClickable" onClick={() => setSort((p) => toggleSort(p, "question"))}>
+                    <th
+                      className="ae-th ae-thClickable"
+                      onClick={() => setSort((p) => toggleSort(p, "question"))}
+                    >
                       Question{sortIndicator(sort, "question")}
                     </th>
-                    <th className="ae-th ae-thClickable" onClick={() => setSort((p) => toggleSort(p, "category"))}>
+                    <th
+                      className="ae-th ae-thClickable"
+                      onClick={() => setSort((p) => toggleSort(p, "category"))}
+                    >
                       Category{sortIndicator(sort, "category")}
                     </th>
-                    <th className="ae-th ae-thClickable" onClick={() => setSort((p) => toggleSort(p, "order"))}>
+                    <th
+                      className="ae-th ae-thClickable"
+                      onClick={() => setSort((p) => toggleSort(p, "order"))}
+                    >
                       Order{sortIndicator(sort, "order")}
                     </th>
-                    <th className="ae-th ae-thClickable" onClick={() => setSort((p) => toggleSort(p, "active"))}>
+                    <th
+                      className="ae-th ae-thClickable"
+                      onClick={() => setSort((p) => toggleSort(p, "active"))}
+                    >
                       Active{sortIndicator(sort, "active")}
                     </th>
-                    <th className="ae-th ae-thClickable" onClick={() => setSort((p) => toggleSort(p, "updated"))}>
+                    <th
+                      className="ae-th ae-thClickable"
+                      onClick={() => setSort((p) => toggleSort(p, "updated"))}
+                    >
                       Updated{sortIndicator(sort, "updated")}
                     </th>
                     <th className="ae-th ae-thRight" />
@@ -385,27 +459,43 @@ export default function AdminFaqs() {
                             {r.is_active ? "Yes" : "No"}
                           </span>
                         </td>
-                        <td className="ae-td ae-mutedCell">{formatDateTimeFallback(r.updated_at)}</td>
+                        <td className="ae-td ae-mutedCell">
+                          {formatDateTimeFallback(r.updated_at)}
+                        </td>
 
                         <td className="ae-td ae-tdRight">
                           <div className="ae-actionsInline">
-                            <IconBtn title="View" className="ae-iconBtn" onClick={() => openView(r)}>
+                            <IconBtn
+                              title="View"
+                              className="ae-iconBtn"
+                              onClick={() => openView(r)}
+                            >
                               👁
                             </IconBtn>
 
                             {canManage ? (
                               <>
-                                <IconBtn title="Edit" className="ae-iconBtn" onClick={() => openEdit(r)}>
+                                <IconBtn
+                                  title="Edit"
+                                  className="ae-iconBtn"
+                                  onClick={() => openEdit(r)}
+                                >
                                   ✎
                                 </IconBtn>
+
                                 <IconBtn
                                   title={r.is_active ? "Deactivate" : "Activate"}
                                   className="ae-iconBtn"
                                   onClick={() => doToggle(r)}
                                 >
-                                  {r.is_active ? "⏻" : "⏻"}
+                                  ⏻
                                 </IconBtn>
-                                <IconBtn title="Delete" className="ae-iconBtnDanger" onClick={() => askDelete(r)}>
+
+                                <IconBtn
+                                  title="Delete"
+                                  className="ae-iconBtnDanger"
+                                  onClick={() => askDelete(r)}
+                                >
                                   🗑
                                 </IconBtn>
                               </>
@@ -462,12 +552,23 @@ export default function AdminFaqs() {
             {faqErr ? <div className="ae-alert ae-alertError">{faqErr}</div> : null}
 
             <div className="ae-formGrid">
-              <Field
-                label="Category"
-                value={faqForm.category}
-                disabled={!canEdit}
-                onChange={(v) => setFaqForm((p) => ({ ...p, category: v }))}
-              />
+              <label className="ae-field">
+                <div className="ae-fieldLabel">Category</div>
+                <select
+                  value={faqForm.category || ""}
+                  disabled={!canEdit}
+                  className={`ae-select ${!canEdit ? "ae-fieldInputDisabled" : ""}`}
+                  onChange={(e) => setFaqForm((p) => ({ ...p, category: e.target.value }))}
+                  style={{ height: 42 }}
+                >
+                  <option value="">—</option>
+                  {FAQ_CATEGORY_OPTIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
               <label className="ae-field">
                 <div className="ae-fieldLabel">Display order</div>
@@ -565,7 +666,9 @@ export default function AdminFaqs() {
                 ✅
               </div>
               <div className="ae-confirmHeaderText">
-                <div className="ae-confirmTitle">{faqMode === "add" ? "Create FAQ?" : "Confirm changes?"}</div>
+                <div className="ae-confirmTitle">
+                  {faqMode === "add" ? "Create FAQ?" : "Confirm changes?"}
+                </div>
               </div>
 
               <button className="ae-modalClose" onClick={() => setSaveOpen(false)}>
@@ -599,8 +702,7 @@ export default function AdminFaqs() {
               <div className="ae-confirmHeaderText">
                 <div className="ae-confirmTitle">Delete FAQ?</div>
                 <div className="ae-mutedTiny">
-                  This will permanently remove <b className="ae-strongText">{activeFaq.question}</b>. This can’t be
-                  undone.
+                  This will permanently remove <b className="ae-strongText">{activeFaq.question}</b>. This can’t be undone.
                 </div>
               </div>
 
@@ -637,19 +739,5 @@ function IconBtn({ children, title, className, onClick }) {
     <button type="button" title={title} onClick={onClick} className={className}>
       {children}
     </button>
-  );
-}
-
-function Field({ label, value, onChange, disabled, full }) {
-  return (
-    <label className={`ae-field ${full ? "ae-fieldFull" : ""}`}>
-      <div className="ae-fieldLabel">{label}</div>
-      <input
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        className={`ae-fieldInput ${disabled ? "ae-fieldInputDisabled" : ""}`}
-      />
-    </label>
   );
 }

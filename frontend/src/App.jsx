@@ -46,6 +46,7 @@ import AdminPasigGymsMap from "./pages/admin/PasigGymsMap";
 import AdminOwnerApplications from "./pages/admin/AdminOwnerApplications";
 import AdminGymApplications from "./pages/admin/AdminGymApplications";
 import AdminFaqs from "./pages/admin/AdminFaqs";
+import UserFaq from "./pages/user/FAQs";
 
 import AdminProfile from "./pages/admin/Profile";
 import GymDetailAdmin from "./pages/admin/GymDetails";
@@ -60,6 +61,7 @@ import ScrollToTop from "./utils/ScrollToTop";  // ← Changed from ../../utils 
 
 import { getUserRole } from "./utils/auth";
 import "leaflet/dist/leaflet.css";
+import { FAQS } from "./utils/userHomeApi";
 
 function RoleLanding() {
   const r = getUserRole();
@@ -81,7 +83,8 @@ function App() {
         <Route path="/become-an-owner" element={<BecomeOwner />} />
         <Route path="/owner-application" element={<OwnerApplication />} />
         <Route path="meal-plan" element={<MealPlanGenerator />} />
-        
+             <Route path="/owner-application" element={<OwnerApplication />} />
+   
         <Route path="/home/*" element={<UserLayout />}>
           <Route index element={<UserHome />} />
           <Route path="becomeowner" element={<BecomeOwner />} />
@@ -96,6 +99,8 @@ function App() {
           <Route path="workout/day/:id" element={<WorkoutDayDetails />} />
           <Route path="test-gym-results" element={<GymResults />} />
           <Route path="inquiries" element={<GymInquiryHistory />} />
+                  <Route path="faqs" element={<UserFaq />} />
+
         </Route>
 
           <Route path="/owner/*" element={<OwnerLayout />}>

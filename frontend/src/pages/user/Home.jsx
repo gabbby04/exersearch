@@ -2018,7 +2018,7 @@ export default function Home() {
               </h2>
               <p className="uhv-section__sub">Quick answers to common questions</p>
             </div>
-            <Link to="/faqs" className="uhv-section__link">
+            <Link to="/home/faqs" className="uhv-section__link">
               View All Faqs <ChevronRight size={14} />
             </Link>
           </div>
