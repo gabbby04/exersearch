@@ -45,6 +45,8 @@ import AdminAdmins from "./pages/admin/AdminAdmins";
 import AdminPasigGymsMap from "./pages/admin/PasigGymsMap";
 import AdminOwnerApplications from "./pages/admin/AdminOwnerApplications";
 import AdminGymApplications from "./pages/admin/AdminGymApplications";
+import AdminFaqs from "./pages/admin/AdminFaqs";
+
 import AdminProfile from "./pages/admin/Profile";
 import GymDetailAdmin from "./pages/admin/GymDetails";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -127,6 +129,8 @@ function App() {
           <Route path="template-days" element={<AdminTemplateDays />} />
           <Route path="template-items" element={<AdminTemplateItems />} />
           <Route path="db-backup" element={<AdminDatabaseBackup />} />
+                    <Route path="faqs" element={<AdminFaqs />} />
+
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

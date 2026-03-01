@@ -60,7 +60,11 @@ export default function UserLayout() {
       alive = false;
     };
   }, [navigate]);
-  
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   if (!ready) return <UserLoading />;
 
   const hideHeader = location.pathname === "/home";

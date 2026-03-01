@@ -61,11 +61,21 @@ use App\Http\Controllers\MealPlanController;
 
 use App\Http\Controllers\GymActivityFeedController;
 use App\Http\Controllers\UserWorkoutGoalController;
+use App\Http\Controllers\FaqController;
 
 Route::prefix('v1')->group(function () {
 
     Route::get('/settings/public', [AppSettingsPublicController::class, 'show']);
+    Route::get('/faqs', [FaqController::class, 'index']);
+    Route::get('/faqs/active', [FaqController::class, 'active']);
+    Route::get('/faqs/{faq}', [FaqController::class, 'show']);
 
+    Route::post('/faqs', [FaqController::class, 'store']);
+    Route::put('/faqs/{faq}', [FaqController::class, 'update']);
+    Route::patch('/faqs/{faq}', [FaqController::class, 'update']);
+
+    Route::patch('/faqs/{faq}/toggle', [FaqController::class, 'toggle']);
+    Route::delete('/faqs/{faq}', [FaqController::class, 'destroy']);
     Route::post('/auth/login', [UserAuthController::class, 'login']);
     Route::post('/auth/register', [UserAuthController::class, 'register']);
     Route::post('/auth/google', [UserAuthController::class, 'google']);

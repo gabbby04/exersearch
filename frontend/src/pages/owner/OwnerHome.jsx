@@ -1219,7 +1219,6 @@ export default function OwnerHome() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }
