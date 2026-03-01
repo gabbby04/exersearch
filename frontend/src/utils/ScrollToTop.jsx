@@ -28,7 +28,7 @@ export default function ScrollToTop() {
   const styles = {
     button: {
       position: 'fixed',
-      bottom: '2rem',
+      bottom: '8rem',   
       right: '2rem',
       width: '50px',
       height: '50px',
