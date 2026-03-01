@@ -24,7 +24,6 @@ import OwnerApplication from "./pages/user/OwnerApplication";
 import MealPlanGenerator from "./pages/user/MealPlan";
 import GymInquiryHistory from "./pages/user/GymInquiryHistory";
 
-
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
 import OwnerMembers from "./pages/owner/OwnerMembers";
@@ -55,6 +54,8 @@ import AdminTemplateDays from "./pages/admin/AdminTemplateDays";
 import AdminTemplateItems from "./pages/admin/AdminTemplateItems";
 import AdminDatabaseBackup from "./pages/admin/AdminDatabaseBackup";
 
+import ScrollToTop from "./utils/ScrollToTop";  // ← Changed from ../../utils // ← ADD THIS
+
 import { getUserRole } from "./utils/auth";
 import "leaflet/dist/leaflet.css";
 
@@ -68,73 +69,71 @@ function RoleLanding() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/maintenance" element={<Maintenance />} />
-
-      <Route path="/" element={<RoleLanding />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-   
-
-      <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/become-an-owner" element={<BecomeOwner />} />
-      <Route path="/owner-application" element={<OwnerApplication />} />
-      <Route path="meal-plan" element={<MealPlanGenerator />} />
-      {/* USER ROUTES */}
-      <Route path="/home/*" element={<UserLayout />}>
-        <Route index element={<UserHome />} />
+    <>
+      <Routes>
+        <Route path="/maintenance" element={<Maintenance />} />
+        <Route path="/" element={<RoleLanding />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/become-an-owner" element={<BecomeOwner />} />
+        <Route path="/owner-application" element={<OwnerApplication />} />
+        <Route path="meal-plan" element={<MealPlanGenerator />} />
         
-        <Route path="becomeowner" element={<BecomeOwner />} />
-        <Route path="applyowner" element={<OwnerApplication />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="find-gyms" element={<FindGyms />} />
-        <Route path="gym/:id" element={<GymDetails />} />
-        <Route path="memberships" element={<Memberships />} />
-        <Route path="gym-results" element={<GymResultsMatching />} />
-        <Route path="saved-gyms" element={<SavedGyms />} />
-        <Route path="workout" element={<WorkoutWeek />} />
-        <Route path="workout/day/:id" element={<WorkoutDayDetails />} />
-        <Route path="test-gym-results" element={<GymResults />} />
-        <Route path="inquiries" element={<GymInquiryHistory />} />
-      </Route>
+        <Route path="/home/*" element={<UserLayout />}>
+          <Route index element={<UserHome />} />
+          <Route path="becomeowner" element={<BecomeOwner />} />
+          <Route path="applyowner" element={<OwnerApplication />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="find-gyms" element={<FindGyms />} />
+          <Route path="gym/:id" element={<GymDetails />} />
+          <Route path="memberships" element={<Memberships />} />
+          <Route path="gym-results" element={<GymResultsMatching />} />
+          <Route path="saved-gyms" element={<SavedGyms />} />
+          <Route path="workout" element={<WorkoutWeek />} />
+          <Route path="workout/day/:id" element={<WorkoutDayDetails />} />
+          <Route path="test-gym-results" element={<GymResults />} />
+          <Route path="inquiries" element={<GymInquiryHistory />} />
+        </Route>
 
-      {/* OWNER ROUTES */}
-      <Route path="/owner/*" element={<OwnerLayout />}>
-        <Route path="home" element={<OwnerHome />} />
-        <Route path="profile" element={<OwnerProfile />} />
-        <Route path="inbox" element={<OwnerInbox />} />
-        <Route path="members/:id" element={<OwnerMembers />} />
-        <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
-        <Route path="view-gym/:id" element={<ViewGym />} />
-        <Route path="edit-gym/:id" element={<EditGym />} />
-        <Route path="view-stats/:id" element={<ViewStats />} />
-        <Route path="gym-application" element={<OwnerGymApplication />} />
-        <Route index element={<Navigate to="home" replace />} />
-      </Route>
+        <Route path="/owner/*" element={<OwnerLayout />}>
+          <Route path="home" element={<OwnerHome />} />
+          <Route path="profile" element={<OwnerProfile />} />
+          <Route path="inbox" element={<OwnerInbox />} />
+          <Route path="members/:id" element={<OwnerMembers />} />
+          <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
+          <Route path="view-gym/:id" element={<ViewGym />} />
+          <Route path="edit-gym/:id" element={<EditGym />} />
+          <Route path="view-stats/:id" element={<ViewStats />} />
+          <Route path="gym-application" element={<OwnerGymApplication />} />
+          <Route index element={<Navigate to="home" replace />} />
+        </Route>
 
-      {/* ADMIN ROUTES */}
-      <Route path="/admin/*" element={<AdminLayout />}>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="equipments" element={<AdminEquipments />} />
-        <Route path="amenities" element={<AdminAmenities />} />
-        <Route path="gyms" element={<AdminGyms />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="admins" element={<AdminAdmins />} />
-        <Route path="map" element={<AdminPasigGymsMap />} />
-        <Route path="applications" element={<AdminOwnerApplications />} />
-        <Route path="gym-applications" element={<AdminGymApplications />} />
-        <Route path="profile" element={<AdminProfile />} />
-        <Route path="gyms/:gymId" element={<GymDetailAdmin />} />
-        <Route path="settings" element={<AdminSettings />} />
-        <Route path="exercises" element={<AdminExercises />} />
-        <Route path="workout-templates" element={<AdminWorkoutTemplates />} />
-        <Route path="template-days" element={<AdminTemplateDays />} />
-        <Route path="template-items" element={<AdminTemplateItems />} />
-        <Route path="db-backup" element={<AdminDatabaseBackup />} />
-      </Route>
+        <Route path="/admin/*" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="equipments" element={<AdminEquipments />} />
+          <Route path="amenities" element={<AdminAmenities />} />
+          <Route path="gyms" element={<AdminGyms />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="admins" element={<AdminAdmins />} />
+          <Route path="map" element={<AdminPasigGymsMap />} />
+          <Route path="applications" element={<AdminOwnerApplications />} />
+          <Route path="gym-applications" element={<AdminGymApplications />} />
+          <Route path="profile" element={<AdminProfile />} />
+          <Route path="gyms/:gymId" element={<GymDetailAdmin />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="exercises" element={<AdminExercises />} />
+          <Route path="workout-templates" element={<AdminWorkoutTemplates />} />
+          <Route path="template-days" element={<AdminTemplateDays />} />
+          <Route path="template-items" element={<AdminTemplateItems />} />
+          <Route path="db-backup" element={<AdminDatabaseBackup />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      
+      <ScrollToTop />
+    </>
   );
 }
 
