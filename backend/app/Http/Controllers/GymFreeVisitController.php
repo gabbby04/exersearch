@@ -162,4 +162,30 @@ class GymFreeVisitController extends Controller
             'gym' => $gym->fresh(),
         ]);
     }
+public function listEnabledGyms(Request $request)
+{
+    $limit = (int)($request->query('limit', 6));
+    $limit = max(1, min(20, $limit));
+
+    $rows = Gym::query()
+        ->where('status', 'approved')
+        ->where('free_first_visit_enabled', true)
+        ->orderByDesc('free_first_visit_enabled_at')
+        ->limit($limit)
+        ->get([
+            'gym_id',
+            'name',
+            'address',
+            'latitude',
+            'longitude',
+            'daily_price',
+            'monthly_price',
+            'gym_type',
+            'main_image_url',
+            'free_first_visit_enabled',
+            'free_first_visit_enabled_at',
+        ]);
+
+    return response()->json(['data' => $rows]);
+}
 }

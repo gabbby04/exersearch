@@ -106,9 +106,7 @@ class UserWorkoutPlanDayController extends Controller
         $isRest = (bool)($data['is_rest'] ?? false);
 
         if ($isRest && !empty($data['template_day_id'])) {
-            return response()->json([
-                'message' => 'Rest days must not have template_day_id.',
-            ], 422);
+            return response()->json(['message' => 'Rest days must not have template_day_id.'], 422);
         }
 
         if (!$isRest && empty($data['template_day_id'])) {
@@ -122,9 +120,7 @@ class UserWorkoutPlanDayController extends Controller
             ->exists();
 
         if ($existsDayNumber) {
-            return response()->json([
-                'message' => 'This day_number already exists for this user plan.',
-            ], 422);
+            return response()->json(['message' => 'This day_number already exists for this user plan.'], 422);
         }
 
         if (!empty($data['weekday'])) {
@@ -133,9 +129,7 @@ class UserWorkoutPlanDayController extends Controller
                 ->exists();
 
             if ($existsWeekday) {
-                return response()->json([
-                    'message' => 'This weekday already exists for this user plan.',
-                ], 422);
+                return response()->json(['message' => 'This weekday already exists for this user plan.'], 422);
             }
         }
 
@@ -168,15 +162,21 @@ class UserWorkoutPlanDayController extends Controller
             'weekday_name' => 'nullable|string|max:10',
             'focus' => 'nullable|string|max:30',
             'is_rest' => 'nullable|boolean',
+            'completed_at' => 'nullable|date',
+            'mark_completed' => 'nullable|boolean',
         ]);
+
+        if (array_key_exists('mark_completed', $data)) {
+            $data['completed_at'] = $data['mark_completed']
+                ? now()
+                : null;
+        }
 
         $merged = array_merge($day->toArray(), $data);
         $isRest = (bool)($merged['is_rest'] ?? false);
 
         if ($isRest && !empty($merged['template_day_id'])) {
-            return response()->json([
-                'message' => 'Rest days must not have template_day_id.',
-            ], 422);
+            return response()->json(['message' => 'Rest days must not have template_day_id.'], 422);
         }
 
         if (!$isRest && empty($merged['template_day_id'])) {
@@ -192,9 +192,7 @@ class UserWorkoutPlanDayController extends Controller
                 ->exists();
 
             if ($exists) {
-                return response()->json([
-                    'message' => 'This day_number already exists for this user plan.',
-                ], 422);
+                return response()->json(['message' => 'This day_number already exists for this user plan.'], 422);
             }
         }
 
@@ -205,9 +203,7 @@ class UserWorkoutPlanDayController extends Controller
                 ->exists();
 
             if ($exists) {
-                return response()->json([
-                    'message' => 'This weekday already exists for this user plan.',
-                ], 422);
+                return response()->json(['message' => 'This weekday already exists for this user plan.'], 422);
             }
         }
 

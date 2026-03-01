@@ -240,4 +240,24 @@ class GymRatingController extends Controller
         'ratings' => $rows,
     ]);
 }
+public function latest(Request $request)
+{
+    $limit = (int) $request->query('limit', 3);
+    $limit = max(1, min($limit, 10));
+
+    $rows = GymRating::query()
+        ->with([
+            'user:user_id,name,email',
+            'gym:gym_id,name'
+        ])
+        ->whereNotNull('review')
+        ->where('review', '<>', '')
+        ->orderByDesc('created_at')
+        ->limit($limit)
+        ->get();
+
+    return response()->json([
+        'data' => $rows
+    ]);
+}
 }

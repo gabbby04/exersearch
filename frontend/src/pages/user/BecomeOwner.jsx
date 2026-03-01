@@ -21,7 +21,7 @@ export default function BecomeOwner() {
 
   return (
     <div className="bo-page">
-    <HeaderUserNoScroll />
+    <Header />
 
       {/* ── HERO ── */}
       <section className="bo-hero">

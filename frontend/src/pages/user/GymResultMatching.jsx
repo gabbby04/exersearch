@@ -9,12 +9,10 @@ const RECOMMEND_ENDPOINT = "/gyms/recommend";
 const GYM_SHOW_ENDPOINT = (id) => `/gyms/${id}`;
 const DEFAULT_MODE = "driving";
 
-// ✅ Saved gyms endpoints (Laravel)
 const SAVED_GYMS_INDEX = "/user/saved-gyms";
 const SAVED_GYMS_STORE = "/user/saved-gyms";
 const SAVED_GYMS_DELETE = (gymId) => `/user/saved-gyms/${gymId}`;
 
-// ✅ session id storage
 const SESSION_KEY = "exersearch_session_id";
 function getSessionId() {
   let sid = localStorage.getItem(SESSION_KEY);

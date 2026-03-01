@@ -59,6 +59,9 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MacroPresetController;
 use App\Http\Controllers\MealPlanController;
 
+use App\Http\Controllers\GymActivityFeedController;
+use App\Http\Controllers\UserWorkoutGoalController;
+
 Route::prefix('v1')->group(function () {
 
     Route::get('/settings/public', [AppSettingsPublicController::class, 'show']);
@@ -142,6 +145,7 @@ Route::prefix('v1')->group(function () {
         ], 200);
 
     })->middleware('signed')->name('verification.verify');
+            Route::get('/gyms/free-first-visits', [GymFreeVisitController::class, 'listEnabledGyms']);
 
     Route::middleware('auth:sanctum')->group(function () {
 
@@ -165,8 +169,12 @@ Route::prefix('v1')->group(function () {
 
             Route::delete('/me/avatar/{type}', [ProfilePhotoController::class, 'remove'])
                 ->whereIn('type', ['user', 'owner', 'admin']);
-Route::get('/owner/home/cards', [\App\Http\Controllers\OwnerHomeCardsController::class, 'index']);
 
+            Route::get('/owner/home/cards', [\App\Http\Controllers\OwnerHomeCardsController::class, 'index']);
+            Route::get('/gyms/ratings/summary', [\App\Http\Controllers\GymRatingSummaryController::class, 'index']);
+
+            Route::get('/ratings/latest', [GymRatingController::class, 'latest'])
+                ->middleware('auth:sanctum');
 
             Route::post('/media/upload', [MediaUploadController::class, 'upload']);
             Route::delete('/media/delete', [MediaUploadController::class, 'delete']);
@@ -189,15 +197,6 @@ Route::get('/owner/home/cards', [\App\Http\Controllers\OwnerHomeCardsController:
             Route::get('/user/profile', [UserProfileController::class, 'show']);
             Route::put('/user/profile', [UserProfileController::class, 'update']);
 
-            /*
-            |--------------------------------------------------------------------------
-            | OWNER PROFILE ROUTES (added)
-            |--------------------------------------------------------------------------
-            | These match your OwnerProfileController:
-            | - GET  /api/v1/owner/profile   -> show()
-            | - PUT  /api/v1/owner/profile   -> update() (storeOrUpdate)
-            | (Optional) POST /api/v1/owner/profile -> storeOrUpdate
-            */
             Route::get('/owner/profile', [OwnerProfileController::class, 'show']);
             Route::put('/owner/profile', [OwnerProfileController::class, 'update']);
             Route::post('/owner/profile', [OwnerProfileController::class, 'storeOrUpdate']);
@@ -256,7 +255,10 @@ Route::get('/owner/home/cards', [\App\Http\Controllers\OwnerHomeCardsController:
             Route::get('/me/memberships', [GymMembershipController::class, 'myMemberships']);
 
             Route::post('/gyms/{gymId}/free-visit/claim', [GymFreeVisitController::class, 'claim'])->whereNumber('gymId');
-            Route::get('/me/free-visits', [GymFreeVisitController::class, 'myFreeVisits']);
+            Route::get('/me/free-visits', [GymFreeVisitController::class, 'myFreeVisits']);           
+
+            Route::get('/user/activity', [GymActivityFeedController::class, 'index']);
+            Route::get('/user/workout-goal', [UserWorkoutGoalController::class, 'show']);
 
             Route::post('/gyms/{gymId}/inquiries', [GymInquiryController::class, 'ask'])->whereNumber('gymId');
             Route::get('/me/inquiries', [GymInquiryController::class, 'myInquiries']);

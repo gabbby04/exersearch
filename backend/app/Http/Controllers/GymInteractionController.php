@@ -11,7 +11,7 @@ class GymInteractionController extends Controller
 {
     public function store(Request $request)
     {
-        $user = $request->user(); // may be null now
+        $user = $request->user();
 
         $validated = $request->validate([
             'gym_id' => ['required', 'integer'],

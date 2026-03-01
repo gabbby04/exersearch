@@ -13,12 +13,13 @@ class UserWorkoutPlanDay extends Model
 
     protected $fillable = [
         'user_plan_id',
-        'template_day_id',   // now nullable (rest days)
-        'day_number',        // keep 1..7 on user side
-        'focus',             // 'push'/'pull'/'legs'/'rest'
-        'weekday',           // 1..7
-        'weekday_name',      // Monday..Sunday
-        'is_rest',           // true/false
+        'template_day_id',
+        'day_number',
+        'focus',
+        'weekday',
+        'weekday_name',
+        'is_rest',
+        'completed_at',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class UserWorkoutPlanDay extends Model
         'day_number' => 'integer',
         'weekday' => 'integer',
         'is_rest' => 'boolean',
+        'completed_at' => 'datetime',
     ];
 
     public function plan()
