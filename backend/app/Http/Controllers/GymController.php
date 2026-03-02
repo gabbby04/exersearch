@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Gym;
+use App\Models\GymMembership;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Resources\GymResource;
 use App\Http\Resources\EquipmentResource;
 use App\Http\Resources\AmenityResource;
+use App\Services\NotificationService;
 
 class GymController extends Controller
 {
@@ -15,32 +18,16 @@ class GymController extends Controller
         $query = Gym::with(['owner', 'equipments', 'amenities'])
             ->where('status', 'approved');
 
-        if ($request->has('gym_type')) {
-            $query->where('gym_type', $request->gym_type);
-        }
-        if ($request->has('is_airconditioned')) {
-            $query->where('is_airconditioned', $request->is_airconditioned);
-        }
-        if ($request->has('has_personal_trainers')) {
-            $query->where('has_personal_trainers', $request->has_personal_trainers);
-        }
-        if ($request->has('has_classes')) {
-            $query->where('has_classes', $request->has_classes);
-        }
-        if ($request->has('is_24_hours')) {
-            $query->where('is_24_hours', $request->is_24_hours);
-        }
+        if ($request->has('gym_type')) $query->where('gym_type', $request->gym_type);
+        if ($request->has('is_airconditioned')) $query->where('is_airconditioned', $request->is_airconditioned);
+        if ($request->has('has_personal_trainers')) $query->where('has_personal_trainers', $request->has_personal_trainers);
+        if ($request->has('has_classes')) $query->where('has_classes', $request->has_classes);
+        if ($request->has('is_24_hours')) $query->where('is_24_hours', $request->is_24_hours);
 
         foreach (['daily_price', 'monthly_price', 'annual_price'] as $field) {
-            if ($request->has($field)) {
-                $query->where($field, $request->get($field));
-            }
-            if ($request->has("{$field}_min")) {
-                $query->where($field, '>=', $request->get("{$field}_min"));
-            }
-            if ($request->has("{$field}_max")) {
-                $query->where($field, '<=', $request->get("{$field}_max"));
-            }
+            if ($request->has($field)) $query->where($field, $request->get($field));
+            if ($request->has("{$field}_min")) $query->where($field, '>=', $request->get("{$field}_min"));
+            if ($request->has("{$field}_max")) $query->where($field, '<=', $request->get("{$field}_max"));
         }
 
         if ($request->has('amenity_id')) {
@@ -54,9 +41,7 @@ class GymController extends Controller
             $query->whereHas('equipments', fn ($q) => $q->where('difficulty', $request->equipment_difficulty));
         }
 
-        $perPage = (int) $request->query('per_page', 10);
-        $perPage = max(1, min($perPage, 200));
-
+        $perPage = max(1, min((int) $request->query('per_page', 10), 200));
         return GymResource::collection($query->paginate($perPage));
     }
 
@@ -74,16 +59,10 @@ class GymController extends Controller
         $gym = Gym::where('status', 'approved')->findOrFail($gym_id);
         $query = $gym->equipments();
 
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
-        }
-        if ($request->has('difficulty')) {
-            $query->where('difficulty', $request->difficulty);
-        }
+        if ($request->has('category')) $query->where('category', $request->category);
+        if ($request->has('difficulty')) $query->where('difficulty', $request->difficulty);
 
-        $perPage = (int) $request->query('per_page', 10);
-        $perPage = max(1, min($perPage, 200));
-
+        $perPage = max(1, min((int) $request->query('per_page', 10), 200));
         return EquipmentResource::collection($query->paginate($perPage));
     }
 
@@ -106,9 +85,7 @@ class GymController extends Controller
             $query->wherePivot('availability_status', $request->available);
         }
 
-        $perPage = (int) $request->query('per_page', 10);
-        $perPage = max(1, min($perPage, 200));
-
+        $perPage = max(1, min((int) $request->query('per_page', 10), 200));
         return AmenityResource::collection($query->paginate($perPage));
     }
 
@@ -125,33 +102,21 @@ class GymController extends Controller
     public function myGyms(Request $request)
     {
         $user = auth()->user();
-
-        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
+        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) abort(403, 'Unauthorized');
 
         $query = Gym::with(['owner', 'equipments', 'amenities']);
+        if ($user->role !== 'superadmin') $query->where('owner_id', $user->user_id);
 
-        if ($user->role !== 'superadmin') {
-            $query->where('owner_id', $user->user_id);
-        }
-
-        $perPage = (int) $request->query('per_page', 20);
-        $perPage = max(1, min($perPage, 200));
-
+        $perPage = max(1, min((int) $request->query('per_page', 20), 200));
         return GymResource::collection($query->orderByDesc('created_at')->paginate($perPage));
     }
 
     public function adminIndex(Request $request)
     {
         $user = auth()->user();
-        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
+        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) abort(403, 'Unauthorized');
 
-        $perPage = (int) $request->query('per_page', 20);
-        $perPage = max(1, min($perPage, 200));
-
+        $perPage = max(1, min((int) $request->query('per_page', 20), 200));
         $q = trim((string) $request->query('q', ''));
         $status = $request->query('status');
 
@@ -172,9 +137,7 @@ class GymController extends Controller
     public function adminShow($gym_id)
     {
         $user = auth()->user();
-        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
+        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) abort(403, 'Unauthorized');
 
         $gym = Gym::with(['owner', 'equipments', 'amenities'])->findOrFail($gym_id);
         return new GymResource($gym);
@@ -183,18 +146,29 @@ class GymController extends Controller
     public function adminApprove($gym_id)
     {
         $user = auth()->user();
+        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) abort(403, 'Unauthorized');
 
-        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
-
-        $gym = Gym::findOrFail($gym_id);
+        $gym = Gym::with(['owner'])->findOrFail($gym_id);
 
         $gym->update([
             'status' => 'approved',
             'approved_at' => now(),
             'approved_by' => $user->user_id,
         ]);
+
+        if (!empty($gym->owner_id)) {
+            NotificationService::create([
+                'recipient_id' => (int) $gym->owner_id,
+                'recipient_role' => 'owner',
+                'type' => 'GYM_APPROVED',
+                'title' => 'Gym approved',
+                'message' => '"' . ($gym->name ?? 'Your gym') . '" was approved by admin.',
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $user->user_id,
+                'url' => '/owner/my-gyms',
+                'meta' => ['status' => 'approved'],
+            ]);
+        }
 
         return response()->json([
             'message' => 'Gym approved successfully.',
@@ -205,18 +179,30 @@ class GymController extends Controller
     public function adminReject(Request $request, $gym_id)
     {
         $user = auth()->user();
+        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) abort(403, 'Unauthorized');
 
-        if (!$user || !in_array($user->role, ['admin', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
-
-        $gym = Gym::findOrFail($gym_id);
+        $gym = Gym::with(['owner'])->findOrFail($gym_id);
+        $reason = trim((string) $request->input('reason', ''));
 
         $gym->update([
             'status' => 'rejected',
             'approved_at' => null,
             'approved_by' => null,
         ]);
+
+        if (!empty($gym->owner_id)) {
+            NotificationService::create([
+                'recipient_id' => (int) $gym->owner_id,
+                'recipient_role' => 'owner',
+                'type' => 'GYM_REJECTED',
+                'title' => 'Gym rejected',
+                'message' => '"' . ($gym->name ?? 'Your gym') . '" was rejected by admin.' . ($reason ? " Reason: {$reason}" : ''),
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $user->user_id,
+                'url' => '/owner/my-gyms',
+                'meta' => ['status' => 'rejected', 'reason' => $reason ?: null],
+            ]);
+        }
 
         return response()->json([
             'message' => 'Gym rejected.',
@@ -227,10 +213,7 @@ class GymController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-
-        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
+        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) abort(403, 'Unauthorized');
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -272,6 +255,20 @@ class GymController extends Controller
 
         $gym = Gym::create($validated);
 
+        if ($user->role !== 'superadmin') {
+            NotificationService::notifyAdmins(
+                'GYM_SUBMITTED',
+                'New gym submitted',
+                'Gym "' . ($gym->name ?? 'New gym') . '" was submitted for approval.',
+                [
+                    'gym_id' => $gym->gym_id,
+                    'actor_id' => $user->user_id,
+                    'url' => '/admin/gyms/' . $gym->gym_id,
+                    'meta' => ['status' => $gym->status],
+                ]
+            );
+        }
+
         return response()->json([
             'message' => 'Gym created.',
             'data' => new GymResource($gym->load(['owner', 'equipments', 'amenities'])),
@@ -281,18 +278,18 @@ class GymController extends Controller
     public function update(Request $request, $gym_id)
     {
         $user = auth()->user();
-
-        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
+        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) abort(403, 'Unauthorized');
 
         $query = Gym::where('gym_id', $gym_id);
-
-        if ($user->role !== 'superadmin') {
-            $query->where('owner_id', $user->user_id);
-        }
+        if ($user->role !== 'superadmin') $query->where('owner_id', $user->user_id);
 
         $gym = $query->firstOrFail();
+
+        $before = [
+            'opening_time' => (string) ($gym->opening_time ?? ''),
+            'closing_time' => (string) ($gym->closing_time ?? ''),
+            'is_24_hours'  => (bool) ($gym->is_24_hours ?? false),
+        ];
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -322,6 +319,45 @@ class GymController extends Controller
 
         $gym->update($validated);
 
+        $after = [
+            'opening_time' => (string) ($gym->opening_time ?? ''),
+            'closing_time' => (string) ($gym->closing_time ?? ''),
+            'is_24_hours'  => (bool) ($gym->is_24_hours ?? false),
+        ];
+
+        $scheduleChanged = $before !== $after;
+
+        if ($scheduleChanged) {
+            $memberIds = GymMembership::query()
+                ->where('gym_id', (int) $gym->gym_id)
+                ->where('status', 'active')
+                ->pluck('user_id')
+                ->unique()
+                ->values()
+                ->all();
+
+            if (!empty($memberIds)) {
+                $rows = [];
+                foreach ($memberIds as $uid) {
+                    $rows[] = [
+                        'recipient_id' => (int) $uid,
+                        'recipient_role' => 'user',
+                        'type' => 'GYM_SCHEDULE_UPDATED',
+                        'title' => 'Gym schedule updated',
+                        'message' => '"' . ($gym->name ?? 'Your gym') . '" updated its schedule.',
+                        'gym_id' => (int) $gym->gym_id,
+                        'actor_id' => (int) $user->user_id,
+                        'url' => '/home/gym/' . (int) $gym->gym_id,
+                        'meta' => [
+                            'before' => $before,
+                            'after' => $after,
+                        ],
+                    ];
+                }
+                NotificationService::bulkInsert($rows);
+            }
+        }
+
         return response()->json([
             'message' => 'Gym updated.',
             'data' => new GymResource($gym->load(['owner', 'equipments', 'amenities'])),
@@ -331,23 +367,15 @@ class GymController extends Controller
     public function destroy($gym_id)
     {
         $user = auth()->user();
-
-        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) {
-            abort(403, 'Unauthorized');
-        }
+        if (!$user || !in_array($user->role, ['owner', 'superadmin'])) abort(403, 'Unauthorized');
 
         $query = Gym::where('gym_id', $gym_id);
-
-        if ($user->role !== 'superadmin') {
-            $query->where('owner_id', $user->user_id);
-        }
+        if ($user->role !== 'superadmin') $query->where('owner_id', $user->user_id);
 
         $gym = $query->firstOrFail();
         $gym->delete();
 
-        return response()->json([
-            'message' => 'Gym deleted.',
-        ]);
+        return response()->json(['message' => 'Gym deleted.']);
     }
 
     public function mapGyms(Request $request)
@@ -359,22 +387,18 @@ class GymController extends Controller
             'east'  => 'required|numeric',
         ]);
 
-        $q = Gym::query()
+        $rows = Gym::query()
             ->select(['gym_id', 'name', 'address', 'latitude', 'longitude', 'owner_id'])
             ->where('status', 'approved')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->whereBetween('latitude', [$validated['south'], $validated['north']])
             ->whereBetween('longitude', [$validated['west'], $validated['east']])
-            ->orderBy('name');
-
-        $rows = $q->get();
+            ->orderBy('name')
+            ->get();
 
         return response()->json([
-            'meta' => [
-                'count' => $rows->count(),
-                'bbox' => $validated,
-            ],
+            'meta' => ['count' => $rows->count(), 'bbox' => $validated],
             'data' => $rows,
         ]);
     }

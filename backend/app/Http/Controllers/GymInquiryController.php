@@ -7,12 +7,12 @@ use App\Models\GymInquiry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Services\NotificationService;
 
 class GymInquiryController extends Controller
 {
     private function attachUserProfilePhotoUrl($inq)
     {
-        // ✅ your relation name is userProfile (NOT profile)
         $raw = $inq?->user?->userProfile?->profile_photo_url;
 
         $inq->user_profile_photo_url = $raw
@@ -55,12 +55,78 @@ class GymInquiryController extends Controller
             'user_read_at' => now(),
         ]);
 
+        if (!empty($gym->owner_id)) {
+            NotificationService::create([
+                'recipient_id' => (int) $gym->owner_id,
+                'recipient_role' => 'owner',
+                'type' => 'INQUIRY_RECEIVED',
+                'title' => 'New inquiry received',
+                'message' => ($user->name ?? 'A user') . ' sent an inquiry for "' . ($gym->name ?? 'your gym') . '".',
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $user->user_id,
+                'url' => '/owner/inquiries?gym_id=' . (int) $gym->gym_id,
+                'meta' => ['inquiry_id' => (int) $row->inquiry_id],
+            ]);
+        }
+
         $inq = $row->load(['gym']);
+        return response()->json(['message' => 'Inquiry submitted', 'inquiry' => $inq], 201);
+    }
+
+    public function userReply(Request $request, $inquiryId)
+    {
+        $user = Auth::user();
+        if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
+
+        $row = GymInquiry::where('inquiry_id', $inquiryId)
+            ->where('user_id', $user->user_id)
+            ->first();
+
+        if (!$row) return response()->json(['message' => 'Inquiry not found'], 404);
+
+        $gym = Gym::where('gym_id', $row->gym_id)->first();
+        if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
+
+        if ($row->status === 'closed') {
+            return response()->json(['message' => 'Inquiry is closed'], 422);
+        }
+
+        $request->validate([
+            'message' => ['required', 'string', 'min:1', 'max:1500'],
+            'attachment_url' => ['nullable', 'string', 'max:4000'],
+        ]);
+
+        $msg = trim((string) $request->input('message'));
+
+        $append = "\n\n[User follow-up " . now()->toDateTimeString() . "]\n" . $msg;
+        $newQuestion = (string) ($row->question ?? '') . $append;
+
+        $row->update([
+            'question' => $newQuestion,
+            'attachment_url' => $request->input('attachment_url', $row->attachment_url),
+            'status' => 'open',
+            'user_read_at' => now(),
+            'owner_read_at' => null,
+        ]);
+
+        if (!empty($gym->owner_id)) {
+            NotificationService::create([
+                'recipient_id' => (int) $gym->owner_id,
+                'recipient_role' => 'owner',
+                'type' => 'INQUIRY_UPDATED',
+                'title' => 'Inquiry updated',
+                'message' => ($user->name ?? 'A user') . ' replied to an inquiry for "' . ($gym->name ?? 'your gym') . '".',
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $user->user_id,
+                'url' => '/owner/inquiries?gym_id=' . (int) $gym->gym_id,
+                'meta' => ['inquiry_id' => (int) $row->inquiry_id],
+            ]);
+        }
 
         return response()->json([
-            'message' => 'Inquiry submitted',
-            'inquiry' => $inq,
-        ], 201);
+            'message' => 'Reply sent',
+            'inquiry' => $row->fresh()->load(['gym']),
+        ]);
     }
 
     public function myInquiries(Request $request)
@@ -77,13 +143,8 @@ class GymInquiryController extends Controller
         $q = GymInquiry::with(['gym', 'answeredByOwner'])
             ->where('user_id', $user->user_id);
 
-        if ($request->filled('status')) {
-            $q->where('status', $request->query('status'));
-        }
-
-        if ($request->filled('gym_id')) {
-            $q->where('gym_id', $request->query('gym_id'));
-        }
+        if ($request->filled('status')) $q->where('status', $request->query('status'));
+        if ($request->filled('gym_id')) $q->where('gym_id', $request->query('gym_id'));
 
         $rows = $q->orderByDesc('created_at')
             ->paginate((int)($request->query('per_page', 20)));
@@ -95,15 +156,11 @@ class GymInquiryController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
 
         $gym = Gym::where('gym_id', $gymId)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
         $request->validate([
             'status' => ['nullable', Rule::in(['open', 'answered', 'closed'])],
@@ -111,15 +168,10 @@ class GymInquiryController extends Controller
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $q = GymInquiry::with([
-            // ✅ load the correct nested relation
-            'user.userProfile',
-            'answeredByOwner',
-        ])->where('gym_id', $gymId);
+        $q = GymInquiry::with(['user.userProfile', 'answeredByOwner'])
+            ->where('gym_id', $gymId);
 
-        if ($request->filled('status')) {
-            $q->where('status', $request->query('status'));
-        }
+        if ($request->filled('status')) $q->where('status', $request->query('status'));
 
         if ($request->filled('q')) {
             $search = $request->query('q');
@@ -127,7 +179,7 @@ class GymInquiryController extends Controller
                 $qq->where('question', 'ilike', "%{$search}%")
                     ->orWhereHas('user', function ($uq) use ($search) {
                         $uq->where('name', 'ilike', "%{$search}%")
-                            ->orWhere('email', 'ilike', "%{$search}%");
+                           ->orWhere('email', 'ilike', "%{$search}%");
                     });
             });
         }
@@ -136,7 +188,6 @@ class GymInquiryController extends Controller
             ->paginate((int)($request->query('per_page', 20)));
 
         $rows = $this->attachUserProfilePhotoUrlToPaginator($rows);
-
         return response()->json($rows);
     }
 
@@ -144,20 +195,13 @@ class GymInquiryController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
 
         $gymsQ = Gym::query()->select(['gym_id', 'name', 'owner_id']);
-
-        if ($user->role === 'owner') {
-            $gymsQ->where('owner_id', $user->user_id);
-        }
+        if ($user->role === 'owner') $gymsQ->where('owner_id', $user->user_id);
 
         $gymIds = $gymsQ->pluck('gym_id');
-        if ($gymIds->isEmpty()) {
-            return response()->json(['data' => []]);
-        }
+        if ($gymIds->isEmpty()) return response()->json(['data' => []]);
 
         $agg = GymInquiry::query()
             ->selectRaw('gym_id')
@@ -188,26 +232,18 @@ class GymInquiryController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
 
         $row = GymInquiry::where('inquiry_id', $inquiryId)->first();
         if (!$row) return response()->json(['message' => 'Inquiry not found'], 404);
 
         $gym = Gym::where('gym_id', $row->gym_id)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
-        if ($row->status === 'closed') {
-            return response()->json(['message' => 'Inquiry is closed'], 422);
-        }
+        if ($row->status === 'closed') return response()->json(['message' => 'Inquiry is closed'], 422);
 
-        $request->validate([
-            'answer' => ['required', 'string', 'min:1', 'max:1500'],
-        ]);
+        $request->validate(['answer' => ['required', 'string', 'min:1', 'max:1500']]);
 
         $row->update([
             'answer' => $request->input('answer'),
@@ -217,40 +253,42 @@ class GymInquiryController extends Controller
             'owner_read_at' => now(),
         ]);
 
+        NotificationService::create([
+            'recipient_id' => (int) $row->user_id,
+            'recipient_role' => 'user',
+            'type' => 'INQUIRY_REPLIED',
+            'title' => 'Inquiry replied',
+            'message' => 'Your inquiry to "' . ($gym->name ?? 'a gym') . '" has a reply.',
+            'gym_id' => (int) $gym->gym_id,
+            'actor_id' => (int) $user->user_id,
+            'url' => '/home/inquiries',
+            'meta' => ['inquiry_id' => (int) $row->inquiry_id],
+        ]);
+
         $inq = $row->fresh()->load(['user.userProfile', 'gym', 'answeredByOwner']);
         $inq = $this->attachUserProfilePhotoUrl($inq);
 
-        return response()->json([
-            'message' => 'Inquiry answered',
-            'inquiry' => $inq,
-        ]);
+        return response()->json(['message' => 'Inquiry answered', 'inquiry' => $inq]);
     }
 
     public function ownerClose(Request $request, $inquiryId)
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
 
         $row = GymInquiry::where('inquiry_id', $inquiryId)->first();
         if (!$row) return response()->json(['message' => 'Inquiry not found'], 404);
 
         $gym = Gym::where('gym_id', $row->gym_id)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
         if ($row->status === 'closed') {
             $inq = $row->load(['user.userProfile', 'gym']);
             $inq = $this->attachUserProfilePhotoUrl($inq);
 
-            return response()->json([
-                'message' => 'Inquiry already closed',
-                'inquiry' => $inq,
-            ]);
+            return response()->json(['message' => 'Inquiry already closed', 'inquiry' => $inq]);
         }
 
         $row->update([
@@ -260,13 +298,22 @@ class GymInquiryController extends Controller
             'owner_read_at' => now(),
         ]);
 
+        NotificationService::create([
+            'recipient_id' => (int) $row->user_id,
+            'recipient_role' => 'user',
+            'type' => 'INQUIRY_CLOSED',
+            'title' => 'Inquiry closed',
+            'message' => 'Your inquiry to "' . ($gym->name ?? 'a gym') . '" was closed.',
+            'gym_id' => (int) $gym->gym_id,
+            'actor_id' => (int) $user->user_id,
+            'url' => '/home/inquiries',
+            'meta' => ['inquiry_id' => (int) $row->inquiry_id],
+        ]);
+
         $inq = $row->fresh()->load(['user.userProfile', 'gym', 'closedByOwner']);
         $inq = $this->attachUserProfilePhotoUrl($inq);
 
-        return response()->json([
-            'message' => 'Inquiry closed',
-            'inquiry' => $inq,
-        ]);
+        return response()->json(['message' => 'Inquiry closed', 'inquiry' => $inq]);
     }
 
     public function userMarkRead(Request $request, $inquiryId)
@@ -292,27 +339,20 @@ class GymInquiryController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
 
         $row = GymInquiry::where('inquiry_id', $inquiryId)->first();
         if (!$row) return response()->json(['message' => 'Inquiry not found'], 404);
 
         $gym = Gym::where('gym_id', $row->gym_id)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
         $row->update(['owner_read_at' => now()]);
 
         $inq = $row->fresh()->load(['user.userProfile', 'gym', 'answeredByOwner']);
         $inq = $this->attachUserProfilePhotoUrl($inq);
 
-        return response()->json([
-            'message' => 'Marked as read',
-            'inquiry' => $inq,
-        ]);
+        return response()->json(['message' => 'Marked as read', 'inquiry' => $inq]);
     }
 }

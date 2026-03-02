@@ -35,7 +35,9 @@ const hexToRgba = (hex: string, alpha: number) => {
 };
 
 const isPathActive = (pathname: string, targets: string[]) => {
-  return targets.some((t) => (t === "/" ? pathname === "/" : pathname === t || pathname.startsWith(t + "/")));
+  return targets.some((t) =>
+    t === "/" ? pathname === "/" : pathname === t || pathname.startsWith(t + "/")
+  );
 };
 
 const rtl = false;
@@ -138,7 +140,11 @@ const AdminSidebar: React.FC<Props> = ({
               <MenuItem
                 icon={<BarChart />}
                 onClick={() => go("/admin/dashboard")}
-                style={isPathActive(location.pathname, ["/admin/dashboard"]) ? activeButtonStyle : undefined}
+                style={
+                  isPathActive(location.pathname, ["/admin/dashboard"])
+                    ? activeButtonStyle
+                    : undefined
+                }
               >
                 Dashboard
               </MenuItem>
@@ -146,7 +152,11 @@ const AdminSidebar: React.FC<Props> = ({
               <MenuItem
                 icon={<Service />}
                 onClick={() => go("/admin/applications")}
-                style={isPathActive(location.pathname, ["/admin/applications"]) ? activeButtonStyle : undefined}
+                style={
+                  isPathActive(location.pathname, ["/admin/applications"])
+                    ? activeButtonStyle
+                    : undefined
+                }
               >
                 Owner Applications
               </MenuItem>
@@ -154,16 +164,36 @@ const AdminSidebar: React.FC<Props> = ({
               <MenuItem
                 icon={<Service />}
                 onClick={() => go("/admin/gym-applications")}
-                style={isPathActive(location.pathname, ["/admin/gym-applications"]) ? activeButtonStyle : undefined}
+                style={
+                  isPathActive(location.pathname, ["/admin/gym-applications"])
+                    ? activeButtonStyle
+                    : undefined
+                }
               >
                 Gym Applications
+              </MenuItem>
+
+              <MenuItem
+                icon={<Book />}
+                onClick={() => go("/admin/announcements")}
+                style={
+                  isPathActive(location.pathname, ["/admin/announcements"])
+                    ? activeButtonStyle
+                    : undefined
+                }
+              >
+                Announcements
               </MenuItem>
 
               <SubMenu label="Manage Data" icon={<Diamond />}>
                 <MenuItem
                   icon={<Dumbbell />}
                   onClick={() => go("/admin/gyms")}
-                  style={isPathActive(location.pathname, ["/admin/gyms"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/gyms"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Gyms
                 </MenuItem>
@@ -171,7 +201,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Sparkles />}
                   onClick={() => go("/admin/equipments")}
-                  style={isPathActive(location.pathname, ["/admin/equipments"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/equipments"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Equipments
                 </MenuItem>
@@ -179,7 +213,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Sparkles />}
                   onClick={() => go("/admin/amenities")}
-                  style={isPathActive(location.pathname, ["/admin/amenities"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/amenities"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Amenities
                 </MenuItem>
@@ -187,7 +225,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Dumbbell />}
                   onClick={() => go("/admin/exercises")}
-                  style={isPathActive(location.pathname, ["/admin/exercises"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/exercises"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Exercises
                 </MenuItem>
@@ -195,7 +237,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Book />}
                   onClick={() => go("/admin/workout-templates")}
-                  style={isPathActive(location.pathname, ["/admin/workout-templates"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/workout-templates"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Templates
                 </MenuItem>
@@ -203,7 +249,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Book />}
                   onClick={() => go("/admin/template-days")}
-                  style={isPathActive(location.pathname, ["/admin/template-days"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/template-days"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Template Days
                 </MenuItem>
@@ -211,7 +261,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Book />}
                   onClick={() => go("/admin/template-items")}
-                  style={isPathActive(location.pathname, ["/admin/template-items"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/template-items"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Template Items
                 </MenuItem>
@@ -219,7 +273,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Users />}
                   onClick={() => go("/admin/users")}
-                  style={isPathActive(location.pathname, ["/admin/users"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/users"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Users
                 </MenuItem>
@@ -227,7 +285,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Users />}
                   onClick={() => go("/admin/admins")}
-                  style={isPathActive(location.pathname, ["/admin/admins"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/admins"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Admins
                 </MenuItem>
@@ -251,7 +313,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Sparkles />}
                   onClick={() => go("/admin/settings")}
-                  style={isPathActive(location.pathname, ["/admin/settings"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/settings"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   App Settings
                 </MenuItem>
@@ -259,7 +325,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Book />}
                   onClick={() => go("/admin/faqs")}
-                  style={isPathActive(location.pathname, ["/admin/faqs"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/faqs"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   FAQs
                 </MenuItem>
@@ -267,7 +337,11 @@ const AdminSidebar: React.FC<Props> = ({
                 <MenuItem
                   icon={<Book />}
                   onClick={() => go("/admin/db-backup")}
-                  style={isPathActive(location.pathname, ["/admin/db-backup"]) ? activeButtonStyle : undefined}
+                  style={
+                    isPathActive(location.pathname, ["/admin/db-backup"])
+                      ? activeButtonStyle
+                      : undefined
+                  }
                 >
                   Database Backup
                 </MenuItem>
@@ -290,7 +364,11 @@ const AdminSidebar: React.FC<Props> = ({
               <MenuItem
                 icon={<MapPin />}
                 onClick={() => go("/admin/map")}
-                style={isPathActive(location.pathname, ["/admin/map"]) ? activeButtonStyle : undefined}
+                style={
+                  isPathActive(location.pathname, ["/admin/map"])
+                    ? activeButtonStyle
+                    : undefined
+                }
               >
                 Gyms Map
               </MenuItem>
@@ -298,7 +376,11 @@ const AdminSidebar: React.FC<Props> = ({
               <MenuItem
                 icon={<Book />}
                 onClick={() => go("/admin/docs")}
-                style={isPathActive(location.pathname, ["/admin/docs"]) ? activeButtonStyle : undefined}
+                style={
+                  isPathActive(location.pathname, ["/admin/docs"])
+                    ? activeButtonStyle
+                    : undefined
+                }
               >
                 Documentation
               </MenuItem>

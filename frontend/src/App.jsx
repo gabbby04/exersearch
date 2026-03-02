@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/index";
 import Login from "./pages/auth/login";
 import VerifyEmail from "./pages/auth/VerifyEmail";
-
 import Maintenance from "./pages/Maintenance";
 
 import UserLayout from "./pages/user/UserLayout";
@@ -23,6 +22,7 @@ import BecomeOwner from "./pages/user/BecomeOwner";
 import OwnerApplication from "./pages/user/OwnerApplication";
 import MealPlanGenerator from "./pages/user/MealPlan";
 import GymInquiryHistory from "./pages/user/GymInquiryHistory";
+import UserFaq from "./pages/user/FAQs";
 
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
@@ -34,6 +34,7 @@ import ViewStats from "./pages/owner/ViewStats";
 import OwnerGymApplication from "./pages/owner/OwnerGymApplication";
 import OwnerInbox from "./pages/owner/OwnerInbox";
 import OwnerProfile from "./pages/owner/OwnerProfile";
+import OwnerGymAnnouncements from "./pages/owner/OwnerGymAnnouncements";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -46,8 +47,6 @@ import AdminPasigGymsMap from "./pages/admin/PasigGymsMap";
 import AdminOwnerApplications from "./pages/admin/AdminOwnerApplications";
 import AdminGymApplications from "./pages/admin/AdminGymApplications";
 import AdminFaqs from "./pages/admin/AdminFaqs";
-import UserFaq from "./pages/user/FAQs";
-
 import AdminProfile from "./pages/admin/Profile";
 import GymDetailAdmin from "./pages/admin/GymDetails";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -56,18 +55,19 @@ import AdminWorkoutTemplates from "./pages/admin/AdminWorkoutTemplates";
 import AdminTemplateDays from "./pages/admin/AdminTemplateDays";
 import AdminTemplateItems from "./pages/admin/AdminTemplateItems";
 import AdminDatabaseBackup from "./pages/admin/AdminDatabaseBackup";
+import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 
-import ScrollToTop from "./utils/ScrollToTop";  // ← Changed from ../../utils // ← ADD THIS
-
+import ScrollToTop from "./utils/ScrollToTop";
 import { getUserRole } from "./utils/auth";
+
 import "leaflet/dist/leaflet.css";
-import { FAQS } from "./utils/userHomeApi";
 
 function RoleLanding() {
   const r = getUserRole();
   if (r === "user") return <Navigate to="/home" replace />;
   if (r === "owner") return <Navigate to="/owner/home" replace />;
-  if (r === "superadmin") return <Navigate to="/admin/dashboard" replace />;
+  if (r === "superadmin" || r === "admin")
+    return <Navigate to="/admin/dashboard" replace />;
   return <Index />;
 }
 
@@ -82,8 +82,7 @@ function App() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/become-an-owner" element={<BecomeOwner />} />
         <Route path="/owner-application" element={<OwnerApplication />} />
-             <Route path="/owner-application" element={<OwnerApplication />} />
-   
+
         <Route path="/home/*" element={<UserLayout />}>
           <Route index element={<UserHome />} />
           <Route path="becomeowner" element={<BecomeOwner />} />
@@ -91,31 +90,30 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="find-gyms" element={<FindGyms />} />
           <Route path="gym/:id" element={<GymDetails />} />
-                      <Route path="gyms" element={<AllGym />} />
-        <Route path="meal-plan" element={<MealPlanGenerator />} />
-
+          <Route path="gyms" element={<AllGym />} />
+          <Route path="meal-plan" element={<MealPlanGenerator />} />
           <Route path="memberships" element={<Memberships />} />
           <Route path="gym-results" element={<GymResultsMatching />} />
           <Route path="saved-gyms" element={<SavedGyms />} />
           <Route path="workout" element={<WorkoutWeek />} />
           <Route path="workout/day/:id" element={<WorkoutDayDetails />} />
           <Route path="inquiries" element={<GymInquiryHistory />} />
-            <Route path="faqs" element={<UserFaq />} />
-
+          <Route path="faqs" element={<UserFaq />} />
         </Route>
 
-          <Route path="/owner/*" element={<OwnerLayout />}>
-            <Route path="home" element={<OwnerHome />} />
-            <Route path="profile" element={<OwnerProfile />} />
-            <Route path="inbox" element={<OwnerInbox />} />
-            <Route path="members/:id" element={<OwnerMembers />} />
-            <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
-            <Route path="view-gym/:id" element={<ViewGym />} />
-            <Route path="edit-gym/:id" element={<EditGym />} />
-            <Route path="view-stats/:id" element={<ViewStats />} />
-            <Route path="gym-application" element={<OwnerGymApplication />} />
-            <Route index element={<Navigate to="home" replace />} />
-          </Route>
+        <Route path="/owner/*" element={<OwnerLayout />}>
+          <Route path="home" element={<OwnerHome />} />
+          <Route path="profile" element={<OwnerProfile />} />
+          <Route path="inbox" element={<OwnerInbox />} />
+          <Route path="members/:id" element={<OwnerMembers />} />
+          <Route path="free-visits/:id" element={<OwnerFreeVisits />} />
+          <Route path="view-gym/:id" element={<ViewGym />} />
+          <Route path="edit-gym/:id" element={<EditGym />} />
+          <Route path="announcements/:id" element={<OwnerGymAnnouncements />} />
+          <Route path="view-stats/:id" element={<ViewStats />} />
+          <Route path="gym-application" element={<OwnerGymApplication />} />
+          <Route index element={<Navigate to="home" replace />} />
+        </Route>
 
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -135,13 +133,13 @@ function App() {
           <Route path="template-days" element={<AdminTemplateDays />} />
           <Route path="template-items" element={<AdminTemplateItems />} />
           <Route path="db-backup" element={<AdminDatabaseBackup />} />
-                    <Route path="faqs" element={<AdminFaqs />} />
-
+          <Route path="faqs" element={<AdminFaqs />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      
+
       <ScrollToTop />
     </>
   );

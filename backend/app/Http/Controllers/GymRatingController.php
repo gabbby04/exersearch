@@ -8,6 +8,7 @@ use App\Models\GymMembership;
 use App\Models\GymRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\NotificationService;
 
 class GymRatingController extends Controller
 {
@@ -79,6 +80,25 @@ class GymRatingController extends Controller
             $payload
         );
 
+        // ✅ OWNER NOTIF: New review posted
+        // (send on create OR update; if you only want create, wrap with if ($rating->wasRecentlyCreated) { ... })
+        if (!empty($gym->owner_id)) {
+            NotificationService::create([
+                'recipient_id' => (int) $gym->owner_id,
+                'recipient_role' => 'owner',
+                'type' => 'REVIEW_POSTED',
+                'title' => 'New review posted',
+                'message' => ($user->name ?? 'A user') . ' left a ' . (int) $rating->stars . '-star review for "' . ($gym->name ?? 'your gym') . '".',
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $user->user_id,
+                'url' => '/owner/gyms/' . (int) $gym->gym_id . '/ratings',
+                'meta' => [
+                    'rating_id' => (int) ($rating->rating_id ?? 0),
+                    'verified' => (bool) ($rating->verified ?? false),
+                ],
+            ]);
+        }
+
         return response()->json([
             'message' => $rating->wasRecentlyCreated ? 'Rating created' : 'Rating updated',
             'rating' => $rating->fresh(),
@@ -90,7 +110,7 @@ class GymRatingController extends Controller
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
 
-        $perPage = (int) ($request->query('per_page', 20));
+        $perPage = max(1, min((int) ($request->query('per_page', 20)), 100));
 
         $rows = GymRating::with(['gym'])
             ->where('user_id', $user->user_id)
@@ -107,21 +127,15 @@ class GymRatingController extends Controller
         $gym = Gym::where('gym_id', $gymId)->where('status', 'approved')->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
 
-        $perPage = (int) ($request->query('per_page', 20));
+        $perPage = max(1, min((int) ($request->query('per_page', 20)), 100));
 
         $rows = GymRating::with(['user'])
             ->where('gym_id', $gymId)
             ->orderByDesc('created_at')
             ->paginate($perPage);
 
-        $verifiedAvg = GymRating::where('gym_id', $gymId)
-            ->where('verified', true)
-            ->avg('stars');
-
-        $verifiedCount = GymRating::where('gym_id', $gymId)
-            ->where('verified', true)
-            ->count();
-
+        $verifiedAvg = GymRating::where('gym_id', $gymId)->where('verified', true)->avg('stars');
+        $verifiedCount = GymRating::where('gym_id', $gymId)->where('verified', true)->count();
         $totalCount = GymRating::where('gym_id', $gymId)->count();
         $unverifiedCount = $totalCount - $verifiedCount;
 
@@ -154,110 +168,107 @@ class GymRatingController extends Controller
             'verified_ref_id' => $check['ref_id'],
         ]);
     }
+
     public function ownerGymRatings(Request $request, $gymId)
-{
-    $user = Auth::user();
-    if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
+    {
+        $user = Auth::user();
+        if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
 
-    $gymId = (int) $gymId;
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
-    // IMPORTANT: ownership check (prevents viewing other gyms)
-    $gym = Gym::where('gym_id', $gymId)
-        ->where('owner_id', (int) $user->user_id) // adjust if your FK differs
-        ->first();
+        $gymId = (int) $gymId;
 
-    if (!$gym) {
-        return response()->json(['message' => 'Gym not found or not owned by you'], 404);
-    }
+        // ✅ owner can only view own gym (admins can view any)
+        $gymQ = Gym::where('gym_id', $gymId);
+        if ($user->role === 'owner') $gymQ->where('owner_id', (int) $user->user_id);
 
-    $perPage = (int) ($request->query('per_page', 20));
-    $perPage = max(1, min($perPage, 100));
+        $gym = $gymQ->first();
+        if (!$gym) return response()->json(['message' => 'Gym not found or not accessible'], 404);
 
-    $verified = $request->query('verified', null); // "1" | "0" | null
-    $stars    = $request->query('stars', null);    // 1..5 or null
-    $q        = trim((string) $request->query('q', ''));
-    $sort     = (string) $request->query('sort', 'newest'); // newest|oldest|highest|lowest
+        $perPage = max(1, min((int) ($request->query('per_page', 20)), 100));
 
-    $query = GymRating::query()
-        ->where('gym_id', $gymId)
-        ->with([
-            'user' => function ($u) {
-                // return only what owner UI needs
+        $verified = $request->query('verified', null); // "1" | "0" | null
+        $stars    = $request->query('stars', null);    // 1..5 or null
+        $q        = trim((string) $request->query('q', ''));
+        $sort     = (string) $request->query('sort', 'newest'); // newest|oldest|highest|lowest
+
+        $query = GymRating::query()
+            ->where('gym_id', $gymId)
+            ->with(['user' => function ($u) {
                 $u->select('user_id', 'name', 'email', 'avatar');
-            }
+            }]);
+
+        if ($verified !== null && ($verified === "0" || $verified === "1")) {
+            $query->where('verified', $verified === "1");
+        }
+
+        if ($stars !== null && is_numeric($stars)) {
+            $s = (int) $stars;
+            if ($s >= 1 && $s <= 5) $query->where('stars', $s);
+        }
+
+        if ($q !== '') {
+            $query->where(function ($w) use ($q) {
+                $w->where('review', 'like', "%{$q}%")
+                    ->orWhereHas('user', function ($u) use ($q) {
+                        $u->where('name', 'like', "%{$q}%")
+                            ->orWhere('email', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'highest':
+                $query->orderBy('stars', 'desc')->orderBy('created_at', 'desc');
+                break;
+            case 'lowest':
+                $query->orderBy('stars', 'asc')->orderBy('created_at', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $rows = $query->paginate($perPage);
+
+        $verifiedAvg = GymRating::where('gym_id', $gymId)->where('verified', true)->avg('stars');
+        $verifiedCount = GymRating::where('gym_id', $gymId)->where('verified', true)->count();
+        $totalCount = GymRating::where('gym_id', $gymId)->count();
+        $unverifiedCount = $totalCount - $verifiedCount;
+
+        return response()->json([
+            'summary' => [
+                'public_avg_stars' => $verifiedAvg ? round((float) $verifiedAvg, 2) : null,
+                'verified_count' => (int) $verifiedCount,
+                'unverified_count' => (int) $unverifiedCount,
+                'total_count' => (int) $totalCount,
+                'note' => 'Public rating score uses verified reviews only.',
+            ],
+            'ratings' => $rows,
         ]);
-
-    if ($verified !== null && ($verified === "0" || $verified === "1")) {
-        $query->where('verified', $verified === "1");
     }
 
-    if ($stars !== null && is_numeric($stars)) {
-        $s = (int) $stars;
-        if ($s >= 1 && $s <= 5) $query->where('stars', $s);
+    public function latest(Request $request)
+    {
+        $limit = max(1, min((int) $request->query('limit', 3), 10));
+
+        $rows = GymRating::query()
+            ->with([
+                'user:user_id,name,email',
+                'gym:gym_id,name'
+            ])
+            ->whereNotNull('review')
+            ->where('review', '<>', '')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+
+        return response()->json(['data' => $rows]);
     }
-
-    if ($q !== '') {
-        $query->where(function ($w) use ($q) {
-            $w->where('review', 'like', "%{$q}%")
-              ->orWhereHas('user', function ($u) use ($q) {
-                  $u->where('name', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%");
-              });
-        });
-    }
-
-    switch ($sort) {
-        case 'oldest':
-            $query->orderBy('created_at', 'asc');
-            break;
-        case 'highest':
-            $query->orderBy('stars', 'desc')->orderBy('created_at', 'desc');
-            break;
-        case 'lowest':
-            $query->orderBy('stars', 'asc')->orderBy('created_at', 'desc');
-            break;
-        case 'newest':
-        default:
-            $query->orderBy('created_at', 'desc');
-            break;
-    }
-
-    $rows = $query->paginate($perPage);
-
-    $verifiedAvg = GymRating::where('gym_id', $gymId)->where('verified', true)->avg('stars');
-    $verifiedCount = GymRating::where('gym_id', $gymId)->where('verified', true)->count();
-    $totalCount = GymRating::where('gym_id', $gymId)->count();
-    $unverifiedCount = $totalCount - $verifiedCount;
-
-    return response()->json([
-        'summary' => [
-            'public_avg_stars' => $verifiedAvg ? round((float) $verifiedAvg, 2) : null,
-            'verified_count' => (int) $verifiedCount,
-            'unverified_count' => (int) $unverifiedCount,
-            'total_count' => (int) $totalCount,
-            'note' => 'Public rating score uses verified reviews only.',
-        ],
-        'ratings' => $rows,
-    ]);
-}
-public function latest(Request $request)
-{
-    $limit = (int) $request->query('limit', 3);
-    $limit = max(1, min($limit, 10));
-
-    $rows = GymRating::query()
-        ->with([
-            'user:user_id,name,email',
-            'gym:gym_id,name'
-        ])
-        ->whereNotNull('review')
-        ->where('review', '<>', '')
-        ->orderByDesc('created_at')
-        ->limit($limit)
-        ->get();
-
-    return response()->json([
-        'data' => $rows
-    ]);
-}
 }

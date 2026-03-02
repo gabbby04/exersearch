@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Services\NotificationService;
 
 class GymOwnerApplicationController extends Controller
 {
@@ -66,20 +67,36 @@ class GymOwnerApplicationController extends Controller
 
         if ($application) {
             $application->update($payload);
-            return response()->json([
-                'message' => 'Application updated.',
-                'data' => $application->fresh(),
-            ]);
+
+            NotificationService::notifyAdmins(
+                'OWNER_REQUEST_SUBMITTED',
+                'Owner application updated',
+                ($user->name ?? 'A user') . ' updated an owner application for "' . ($application->gym_name ?? 'a gym') . '".',
+                [
+                    'actor_id' => $user->user_id,
+                    'url' => '/admin/owner-applications',
+                    'meta' => ['application_id' => $application->id],
+                ]
+            );
+
+            return response()->json(['message' => 'Application updated.', 'data' => $application->fresh()]);
         }
 
         $payload['user_id'] = $user->user_id;
-
         $application = GymOwnerApplication::create($payload);
 
-        return response()->json([
-            'message' => 'Application submitted.',
-            'data' => $application,
-        ], 201);
+        NotificationService::notifyAdmins(
+            'OWNER_REQUEST_SUBMITTED',
+            'New owner application',
+            ($user->name ?? 'A user') . ' requested to become an owner for "' . ($application->gym_name ?? 'a gym') . '".',
+            [
+                'actor_id' => $user->user_id,
+                'url' => '/admin/owner-applications',
+                'meta' => ['application_id' => $application->id],
+            ]
+        );
+
+        return response()->json(['message' => 'Application submitted.', 'data' => $application], 201);
     }
 
     public function myApplication(Request $request)
@@ -146,8 +163,9 @@ class GymOwnerApplicationController extends Controller
         $mailName = 'Applicant';
         $mailGym = 'Your Gym';
         $approverId = auth()->user()?->user_id;
+        $recipientUserId = null;
 
-        DB::transaction(function () use ($id, &$mailTo, &$mailName, &$mailGym, $approverId) {
+        DB::transaction(function () use ($id, &$mailTo, &$mailName, &$mailGym, $approverId, &$recipientUserId) {
             $application = GymOwnerApplication::with('user')
                 ->where('id', $id)
                 ->lockForUpdate()
@@ -212,27 +230,33 @@ class GymOwnerApplicationController extends Controller
 
             $syncPayload = [];
             foreach ($amenityIds as $aid) {
-                $syncPayload[$aid] = [
-                    'availability_status' => 'available',
-                    'notes' => null,
-                    'image_url' => null,
-                ];
+                $syncPayload[$aid] = ['availability_status' => 'available', 'notes' => null, 'image_url' => null];
             }
-
             $gym->amenities()->sync($syncPayload);
 
             $mailTo = $application->user?->email;
             $mailName = $application->user?->name ?? 'Applicant';
             $mailGym = $application->gym_name ?? 'Your Gym';
+            $recipientUserId = (int) $application->user_id;
         });
+
+        if ($recipientUserId) {
+            NotificationService::create([
+                'recipient_id' => (int) $recipientUserId,
+                'recipient_role' => 'owner',
+                'type' => 'OWNER_APPLICATION_APPROVED',
+                'title' => 'Owner application approved',
+                'message' => 'Your owner application for "' . ($mailGym ?? 'your gym') . '" was approved.',
+                'actor_id' => (int) ($approverId ?? 0),
+                'url' => '/owner',
+                'meta' => ['gym_name' => $mailGym],
+            ]);
+        }
 
         if ($mailTo) {
             DB::afterCommit(function () use ($mailTo, $mailName, $mailGym) {
                 try {
-                    Mail::to($mailTo)->send(new OwnerApplicationApproved(
-                        name: $mailName,
-                        gymName: $mailGym
-                    ));
+                    Mail::to($mailTo)->send(new OwnerApplicationApproved(name: $mailName, gymName: $mailGym));
                 } catch (\Throwable $e) {
                     Log::warning('Approval email failed: ' . $e->getMessage());
                 }
@@ -244,9 +268,7 @@ class GymOwnerApplicationController extends Controller
 
     public function reject(Request $request, $id)
     {
-        $request->validate([
-            'reason' => 'nullable|string|max:500',
-        ]);
+        $request->validate(['reason' => 'nullable|string|max:500']);
 
         $application = GymOwnerApplication::with('user')->findOrFail($id);
 
@@ -255,16 +277,24 @@ class GymOwnerApplicationController extends Controller
 
         $application->update(['status' => 'rejected']);
 
+        NotificationService::create([
+            'recipient_id' => (int) $application->user_id,
+            'recipient_role' => 'user',
+            'type' => 'OWNER_APPLICATION_REJECTED',
+            'title' => 'Owner application rejected',
+            'message' => 'Your owner application for "' . ($application->gym_name ?? 'your gym') . '" was rejected.',
+            'actor_id' => (int) (auth()->user()?->user_id ?? 0),
+            'url' => '/home',
+            'meta' => ['reason' => $request->input('reason')],
+        ]);
+
         $mailTo = $application->user?->email;
         $mailName = $application->user?->name ?? 'Applicant';
         $reason = $request->input('reason');
 
         if ($mailTo) {
             try {
-                Mail::to($mailTo)->send(new OwnerApplicationRejected(
-                    name: $mailName,
-                    reason: $reason
-                ));
+                Mail::to($mailTo)->send(new OwnerApplicationRejected(name: $mailName, reason: $reason));
             } catch (\Throwable $e) {
                 Log::warning('Rejection email failed: ' . $e->getMessage());
             }

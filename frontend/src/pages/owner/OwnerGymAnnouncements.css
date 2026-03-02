@@ -1,0 +1,521 @@
+/* src/pages/owner/OwnerGymAnnouncements.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+.oga-app{
+  font-family: 'Montserrat', sans-serif;
+  background: #fafafa;
+  min-height: 100vh;
+  padding-top: 68px;
+}
+
+.oga-container{
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 2.25rem 2.25rem 4rem;
+}
+
+/* ===== HERO ===== */
+.oga-hero{
+  position: relative;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  border-radius: 28px;
+  padding: 2.25rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.18);
+}
+
+.oga-hero-bg{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.oga-orb{
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.14;
+  animation: oga-float 20s ease-in-out infinite;
+}
+
+.oga-orb.one{
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, #d23f0b, #ff6b35);
+  top: -260px;
+  right: -130px;
+}
+
+.oga-orb.two{
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #f59e0b, #fbbf24);
+  bottom: -220px;
+  left: -170px;
+  animation-delay: -10s;
+}
+
+@keyframes oga-float{
+  0%,100%{ transform: translate(0,0) scale(1); }
+  33%{ transform: translate(28px,-28px) scale(1.08); }
+  66%{ transform: translate(-18px,18px) scale(0.94); }
+}
+
+.oga-hero-top{
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.oga-hero-left{
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.oga-hero-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.1rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 800;
+  font-size: 0.85rem;
+  width: fit-content;
+}
+
+.oga-pill-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.12);
+  animation: oga-pulse 2s ease-in-out infinite;
+}
+
+@keyframes oga-pulse{
+  0%,100%{ opacity: 1; transform: scale(1); }
+  50%{ opacity: 0.6; transform: scale(0.92); }
+}
+
+.oga-hero-title{
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: -1.8px;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.70) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.oga-hero-subtitle{
+  margin: 0;
+  color: rgba(255,255,255,0.62);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.oga-hero-actions{
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.oga-back{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.90);
+  text-decoration: none;
+  font-weight: 800;
+  transition: transform 0.15s ease, filter 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+
+.oga-back:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.22);
+}
+
+/* ===== LAYOUT ===== */
+.oga-grid{
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+
+.oga-col{
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ===== ALERTS ===== */
+.oga-alert{
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  font-weight: 700;
+  border: 2px solid;
+}
+
+.oga-alert.err{
+  background: #fff2f2;
+  border-color: #ffb4b4;
+  color: #7f1d1d;
+}
+
+/* ===== CARDS ===== */
+.oga-card{
+  background: white;
+  border-radius: 18px;
+  border: 2px solid #f5f5f5;
+  padding: 1.5rem;
+}
+
+.oga-card-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.oga-card-title{
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #1a1a1a;
+}
+
+.oga-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.oga-badge.orange{
+  background: #fff5f0;
+  border: 2px solid #ffd8c4;
+  color: #d23f0b;
+}
+
+.oga-badge.gray{
+  background: #f7f7f7;
+  border: 2px solid #eeeeee;
+  color: #666;
+}
+
+.oga-muted{
+  color: #666;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ===== FORM ===== */
+.oga-form{
+  display: grid;
+  gap: 0.9rem;
+}
+
+.oga-field{
+  display: grid;
+  gap: 0.45rem;
+}
+
+.oga-label{
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #666;
+  letter-spacing: 0.2px;
+}
+
+.oga-input,
+.oga-textarea{
+  width: 100%;
+  border: 2px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.oga-textarea{
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.oga-input:focus,
+.oga-textarea:focus{
+  background: #fff;
+  border-color: rgba(210,63,11,0.55);
+  box-shadow: 0 0 0 3px rgba(210,63,11,0.14);
+}
+
+.oga-audience{
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.oga-check{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 999px;
+  border: 2px solid #f0f0f0;
+  background: #fafafa;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.oga-check input{
+  width: 16px;
+  height: 16px;
+  accent-color: #d23f0b;
+}
+
+.oga-primary{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.95rem 1.15rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #d23f0b, #ff6b35);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(210,63,11,0.22);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.oga-primary:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow: 0 14px 34px rgba(210,63,11,0.28);
+}
+
+.oga-primary:active{
+  transform: translateY(0px);
+  box-shadow: 0 10px 24px rgba(210,63,11,0.22);
+}
+
+.oga-primary:disabled{
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.oga-primary:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(210,63,11,0.18), 0 14px 34px rgba(210,63,11,0.28);
+}
+
+/* ===== LIST ===== */
+.oga-list{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.oga-empty{
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #fafafa;
+  border: 2px dashed #eeeeee;
+  font-weight: 800;
+  color: #666;
+}
+
+.oga-item{
+  padding: 1.25rem;
+  border-radius: 18px;
+  border: 2px solid #f5f5f5;
+  background: white;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.oga-item:hover{
+  transform: translateY(-2px);
+  border-color: #eaeaea;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.oga-item-top{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.oga-item-title{
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #1a1a1a;
+  letter-spacing: -0.2px;
+}
+
+.oga-time{
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #999;
+  white-space: nowrap;
+}
+
+.oga-body{
+  margin: 0;
+  color: #666;
+  font-weight: 600;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+/* ===== PAGINATION ===== */
+.oga-pager{
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.oga-btn{
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  border: 2px solid #f0f0f0;
+  background: white;
+  font-weight: 900;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.oga-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(210,63,11,0.35);
+  box-shadow: 0 10px 24px rgba(210,63,11,0.10);
+  filter: brightness(1.02);
+}
+
+.oga-btn:disabled{
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.oga-page{
+  margin-left: auto;
+  font-weight: 800;
+  color: #666;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px){
+  .oga-container{
+    padding: 2rem 1.5rem 3rem;
+  }
+  .oga-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px){
+  .oga-container{
+    padding: 1.75rem 1rem 2.5rem;
+  }
+  .oga-hero{
+    padding: 1.75rem 1.25rem;
+    border-radius: 22px;
+  }
+  .oga-hero-title{
+    font-size: 2.05rem;
+    letter-spacing: -1.2px;
+  }
+  .oga-card{
+    padding: 1.25rem;
+  }
+  .oga-page{
+    margin-left: 0;
+    width: 100%;
+  }
+}/* ===== RIGHT-ALIGNED ACTIONS ON ANNOUNCEMENT CARD ===== */
+.oga-item-actions{
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* ===== DELETE BUTTON (RED-ORANGE) ===== */
+.oga-delete{
+  padding: 0.62rem 1rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #d23f0b, #ff6b35);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(210,63,11,0.22);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.oga-delete:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow: 0 12px 26px rgba(210,63,11,0.28);
+}
+
+.oga-delete:active{
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(210,63,11,0.22);
+}
+
+.oga-delete:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}

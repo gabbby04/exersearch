@@ -37,6 +37,11 @@ class Gym extends Model
         'is_airconditioned',
         'free_first_visit_enabled',
         'free_first_visit_enabled_at',
+
+        'is_announcement_blocked',
+        'announcement_blocked_at',
+        'announcement_blocked_by',
+
         'status',
         'approved_at',
         'approved_by',
@@ -55,6 +60,12 @@ class Gym extends Model
         'is_airconditioned' => 'boolean',
         'free_first_visit_enabled' => 'boolean',
         'free_first_visit_enabled_at' => 'datetime',
+
+        // ✅ new casts
+        'is_announcement_blocked' => 'boolean',
+        'announcement_blocked_at' => 'datetime',
+        'announcement_blocked_by' => 'integer',
+
         'approved_at' => 'datetime',
         'opening_time' => 'string',
         'closing_time' => 'string',
@@ -137,7 +148,9 @@ class Gym extends Model
             return 100;
         }
 
-        $gymEquipmentIds = $this->equipments()->pluck('equipments.id')->toArray();
+        // ✅ fix: equipment PK in your app is typically equipment_id
+        $gymEquipmentIds = $this->equipments()->pluck('equipments.equipment_id')->toArray();
+
         $matched = array_intersect($requiredEquipmentIds, $gymEquipmentIds);
 
         return round((count($matched) / count($requiredEquipmentIds)) * 100);
@@ -192,5 +205,10 @@ class Gym extends Model
     public function manualMembers()
     {
         return $this->hasMany(\App\Models\GymManualMember::class, 'gym_id', 'gym_id');
+    }
+
+    public function announcements()
+    {
+        return $this->hasMany(\App\Models\GymAnnouncement::class, 'gym_id', 'gym_id');
     }
 }
