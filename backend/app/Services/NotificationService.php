@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Models\Gym;
+use Illuminate\Support\Facades\DB;
 
 class NotificationService
 {
@@ -70,5 +72,42 @@ class NotificationService
         }
 
         self::bulkInsert($rows);
+    }
+
+    public static function notifySavedUsersFreeVisitEnabled(Gym $gym, $actorUser, int $cooldownDays = 7): int
+    {
+        $userIds = DB::table('saved_gyms')
+            ->where('gym_id', (int) $gym->gym_id)
+            ->pluck('user_id')
+            ->all();
+
+        $recipientIds = array_values(array_unique(array_map('intval', $userIds)));
+
+        if (empty($recipientIds)) {
+            return 0;
+        }
+
+        $rows = [];
+        foreach ($recipientIds as $uid) {
+            $rows[] = [
+                'recipient_id' => (int) $uid,
+                'recipient_role' => 'user',
+                'type' => 'FREE_VISIT_ENABLED',
+                'title' => 'Free first visit available',
+                'message' => '"' . ($gym->name ?? 'A gym you follow') . '" enabled free first visit.',
+                'url' => '/home/gym/' . (int) $gym->gym_id,
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $actorUser->user_id,
+                'meta' => [
+                    'gym_id' => (int) $gym->gym_id,
+                    'kind' => 'free_visit_enabled',
+                    'cooldown_days' => $cooldownDays,
+                ],
+            ];
+        }
+
+        self::bulkInsert($rows);
+
+        return count($rows);
     }
 }

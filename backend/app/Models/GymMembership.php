@@ -16,6 +16,7 @@ class GymMembership extends Model
         'start_date',
         'end_date',
         'activated_at',
+        'expiry_notified_at',
         'cancelled_at',
         'plan_type',
         'notes',
@@ -27,6 +28,7 @@ class GymMembership extends Model
         'activated_at'  => 'datetime',
         'cancelled_at'  => 'datetime',
         'created_at'    => 'datetime',
+        'expiry_notified_at' => 'datetime',
         'updated_at'    => 'datetime',
     ];
 

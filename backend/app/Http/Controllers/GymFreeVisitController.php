@@ -17,7 +17,10 @@ class GymFreeVisitController extends Controller
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
 
-        $gym = Gym::where('gym_id', $gymId)->where('status', 'approved')->first();
+        $gym = Gym::where('gym_id', $gymId)
+            ->where('status', 'approved')
+            ->first();
+
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
 
         if (!$gym->free_first_visit_enabled) {
@@ -65,11 +68,16 @@ class GymFreeVisitController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
         $gym = Gym::where('gym_id', $gymId)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
+
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
         $request->validate([
             'status' => ['nullable', Rule::in(['claimed', 'used', 'cancelled', 'expired'])],
@@ -79,7 +87,9 @@ class GymFreeVisitController extends Controller
         $q = GymFreeVisit::with(['user', 'usedByOwner'])
             ->where('gym_id', $gymId);
 
-        if ($request->filled('status')) $q->where('status', $request->query('status'));
+        if ($request->filled('status')) {
+            $q->where('status', $request->query('status'));
+        }
 
         if ($request->filled('q')) {
             $search = $request->query('q');
@@ -99,16 +109,23 @@ class GymFreeVisitController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
         $row = GymFreeVisit::where('free_visit_id', $freeVisitId)->first();
         if (!$row) return response()->json(['message' => 'Free visit not found'], 404);
 
         $gym = Gym::where('gym_id', $row->gym_id)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
-        if ($row->status !== 'claimed') return response()->json(['message' => 'Only claimed free visits can be marked used'], 409);
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        if ($row->status !== 'claimed') {
+            return response()->json(['message' => 'Only claimed free visits can be marked used'], 409);
+        }
 
         $row->update([
             'status' => 'used',
@@ -126,42 +143,39 @@ class GymFreeVisitController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
-        $gym = Gym::where('gym_id', $gymId)->first();
+        $gym = Gym::where('gym_id', (int) $gymId)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
-        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
+
+        if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
         $request->validate(['enabled' => ['required', 'boolean']]);
-        $enabled = (bool)$request->input('enabled');
+        $enabled = (bool) $request->input('enabled');
+
+        $wasEnabled = (bool) $gym->free_first_visit_enabled;
+        $lastEnabledAt = $gym->free_first_visit_enabled_at;
 
         $gym->update([
             'free_first_visit_enabled' => $enabled,
-            'free_first_visit_enabled_at' => $enabled ? now() : null,
+            'free_first_visit_enabled_at' => $enabled
+                ? now()
+                : $gym->free_first_visit_enabled_at,
         ]);
 
-        if ($enabled) {
-            $userIds = DB::table('saved_gyms')
-                ->where('gym_id', (int) $gym->gym_id)
-                ->pluck('user_id')
-                ->all();
+        if (!$wasEnabled && $enabled) {
+            $cooldownDays = 7;
 
-            if (!empty($userIds)) {
-                $rows = [];
-                foreach ($userIds as $uid) {
-                    $rows[] = [
-                        'recipient_id' => (int) $uid,
-                        'recipient_role' => 'user',
-                        'type' => 'FREE_FIRST_VISIT_ENABLED',
-                        'title' => 'Free first visit available',
-                        'message' => '"' . ($gym->name ?? 'A gym you follow') . '" enabled free first visit.',
-                        'gym_id' => (int) $gym->gym_id,
-                        'actor_id' => (int) $user->user_id,
-                        'url' => '/home/gym/' . (int) $gym->gym_id,
-                        'meta' => ['gym_id' => (int) $gym->gym_id],
-                    ];
-                }
-                NotificationService::bulkInsert($rows);
+            if (!$lastEnabledAt || $lastEnabledAt->lt(now()->subDays($cooldownDays))) {
+                NotificationService::notifySavedUsersFreeVisitEnabled(
+                    $gym->fresh(),
+                    $user,
+                    $cooldownDays
+                );
             }
         }
 
