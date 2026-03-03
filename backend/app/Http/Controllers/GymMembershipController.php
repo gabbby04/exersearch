@@ -6,6 +6,7 @@ use App\Models\Gym;
 use App\Models\GymMembership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Services\NotificationService;
 
@@ -72,20 +73,28 @@ class GymMembershipController extends Controller
                 ],
             ]);
         } else {
-            NotificationService::create([
-                'recipient_id' => 0,
-                'recipient_role' => 'owner',
-                'type' => 'MEMBERSHIP_REQUESTED',
-                'title' => 'New membership request',
-                'message' => ($user->name ?? 'A user') . ' requested membership for "' . ($gym->name ?? 'your gym') . '".',
-                'gym_id' => (int) $gym->gym_id,
-                'actor_id' => (int) $user->user_id,
-                'url' => '/owner/memberships?gym_id=' . (int) $gym->gym_id,
-                'meta' => [
-                    'membership_id' => (int) $membership->membership_id,
-                    'unassigned_owner' => true,
-                ],
-            ]);
+            $fallbackOwnerId = (int) (DB::table('users')
+                ->whereIn('role', ['superadmin', 'admin'])
+                ->orderByRaw("CASE WHEN role = 'superadmin' THEN 0 ELSE 1 END")
+                ->orderBy('user_id')
+                ->value('user_id') ?? 0);
+
+            if ($fallbackOwnerId > 0) {
+                NotificationService::create([
+                    'recipient_id' => $fallbackOwnerId,
+                    'recipient_role' => 'owner',
+                    'type' => 'MEMBERSHIP_REQUESTED',
+                    'title' => 'New membership request',
+                    'message' => ($user->name ?? 'A user') . ' requested membership for "' . ($gym->name ?? 'your gym') . '".',
+                    'gym_id' => (int) $gym->gym_id,
+                    'actor_id' => (int) $user->user_id,
+                    'url' => '/owner/memberships?gym_id=' . (int) $gym->gym_id,
+                    'meta' => [
+                        'membership_id' => (int) $membership->membership_id,
+                        'unassigned_owner' => true,
+                    ],
+                ]);
+            }
 
             NotificationService::notifyAdmins(
                 'MEMBERSHIP_REQUESTED',

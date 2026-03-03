@@ -6,9 +6,10 @@ use App\Models\Gym;
 use App\Models\GymFreeVisit;
 use App\Models\GymMembership;
 use App\Models\GymRating;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Services\NotificationService;
 
 class GymRatingController extends Controller
 {
@@ -50,6 +51,25 @@ class GymRatingController extends Controller
         ];
     }
 
+    /**
+     * If gym has owner_id -> notify owner
+     * Else -> notify a fallback superadmin/admin user_id
+     * BUT recipient_role remains 'owner'
+     */
+    private function resolveOwnerRecipientId(?Gym $gym): ?int
+    {
+        if ($gym && !empty($gym->owner_id)) {
+            return (int) $gym->owner_id;
+        }
+
+        $fallbackAdminId = User::whereIn('role', ['superadmin', 'admin'])
+            ->orderByRaw("CASE WHEN role = 'superadmin' THEN 0 ELSE 1 END")
+            ->orderBy('user_id')
+            ->value('user_id');
+
+        return !empty($fallbackAdminId) ? (int) $fallbackAdminId : null;
+    }
+
     public function upsertMyRating(Request $request, $gymId)
     {
         $user = Auth::user();
@@ -80,23 +100,41 @@ class GymRatingController extends Controller
             $payload
         );
 
-        // ✅ OWNER NOTIF: New review posted
-        // (send on create OR update; if you only want create, wrap with if ($rating->wasRecentlyCreated) { ... })
-        if (!empty($gym->owner_id)) {
-            NotificationService::create([
-                'recipient_id' => (int) $gym->owner_id,
-                'recipient_role' => 'owner',
-                'type' => 'REVIEW_POSTED',
-                'title' => 'New review posted',
-                'message' => ($user->name ?? 'A user') . ' left a ' . (int) $rating->stars . '-star review for "' . ($gym->name ?? 'your gym') . '".',
-                'gym_id' => (int) $gym->gym_id,
-                'actor_id' => (int) $user->user_id,
-                'url' => '/owner/gyms/' . (int) $gym->gym_id . '/ratings',
-                'meta' => [
-                    'rating_id' => (int) ($rating->rating_id ?? 0),
-                    'verified' => (bool) ($rating->verified ?? false),
-                ],
-            ]);
+        // ✅ OWNER NOTIF: Review received (User -> Owner)
+        // Fallback: if gym has no owner_id, send to superadmin/admin BUT keep recipient_role='owner'
+        // NOTE: removed "don't notify self" guard on purpose (you asked)
+        if ($rating->wasRecentlyCreated) {
+            $recipientId = $this->resolveOwnerRecipientId($gym);
+
+            if (!empty($recipientId)) {
+                $msg = ($user->name ?? 'A user')
+                    . ' left a '
+                    . (int) $rating->stars
+                    . '-star review for "'
+                    . ($gym->name ?? 'your gym')
+                    . '".';
+
+                Notification::create([
+                    'recipient_id' => (int) $recipientId,
+                    'recipient_role' => 'owner', // ✅ always "owner"
+                    'type' => 'REVIEW_RECEIVED',
+                    'title' => 'New review posted',
+                    'message' => $msg,
+                    'url' => '/owner/gyms/' . (int) $gym->gym_id . '/ratings',
+                    'gym_id' => (int) $gym->gym_id,
+                    'actor_id' => (int) $user->user_id,
+                    'meta' => [
+                        'rating_id' => (int) ($rating->rating_id ?? 0),
+                        'verified'  => (bool) ($rating->verified ?? false),
+                        'stars'     => (int) $rating->stars,
+                        'unassigned_owner' => empty($gym->owner_id),
+                    ],
+                    'is_read' => false,
+                    'is_hidden' => false,
+                    'created_at' => now(),
+                    'read_at' => null,
+                ]);
+            }
         }
 
         return response()->json([
@@ -113,7 +151,7 @@ class GymRatingController extends Controller
         $perPage = max(1, min((int) ($request->query('per_page', 20)), 100));
 
         $rows = GymRating::with(['gym'])
-            ->where('user_id', $user->user_id)
+            ->where('user_id', (int) $user->user_id)
             ->orderByDesc('updated_at')
             ->paginate($perPage);
 
@@ -174,7 +212,7 @@ class GymRatingController extends Controller
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
 
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) {
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'], true)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

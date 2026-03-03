@@ -1,4 +1,3 @@
-// GymDetails.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Homestyles.css";
@@ -10,7 +9,8 @@ import RequestMembershipModal from "./RequestMembershipModal";
 import GiftRevealModal from "./GiftRevealModal";
 import RateGymModal from "./RateGymModal";
 import GymInquiryModal from "./GymInquiryModal";
-import { askGymInquiry } from "../../utils/gymInquiriesApi";import {
+import { askGymInquiry } from "../../utils/gymInquiriesApi";
+import {
   claimFreeVisit,
   getMyFreeVisits,
   findMyFreeVisitForGym,
@@ -54,7 +54,6 @@ function clamp(n, a, b) {
   return Math.max(a, Math.min(b, x));
 }
 
-// ✅ ONLY 5 STARS
 function StarRow({ value = 0, compact = false }) {
   const v = clamp(value, 0, 5);
   const full = Math.round(v);
@@ -107,39 +106,42 @@ function RatingStatCard({ rating, label, color, verifiedCount }) {
 export default function GymDetails() {
   const { id } = useParams();
   const gymIdNum = useMemo(() => Number(id), [id]);
+
   const [showReviewsModal, setShowReviewsModal] = useState(false);
-const [gymInquiryOpen, setGymInquiryOpen] = useState(false);
-const [gymInquirySending, setGymInquirySending] = useState(false);
+  const [gymInquiryOpen, setGymInquiryOpen] = useState(false);
+  const [gymInquirySending, setGymInquirySending] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
-const onSendGymInquiry = async (gymId, question) => {
-  setGymInquirySending(true);
-  try {
-    await askGymInquiry(gymId, { question });
 
-    // close modal first (optional, feels snappy)
-    setGymInquiryOpen(false);
+  const onSendGymInquiry = async (gymId, question) => {
+    setGymInquirySending(true);
+    try {
+      await askGymInquiry(gymId, { question });
+      setGymInquiryOpen(false);
+      await Swal.fire({
+        title: "Message Sent!",
+        text: "Your inquiry was successfully sent to the gym.",
+        icon: "success",
+        confirmButtonText: "Great!",
+        confirmButtonColor: "#ed8936",
+        iconColor: "#ed8936",
+      });
+    } catch (e) {
+      await Swal.fire({
+        title: "Failed",
+        text:
+          e?.response?.data?.message ||
+          e?.message ||
+          "Failed to send inquiry.",
+        icon: "error",
+        confirmButtonColor: "#dc2626",
+      });
+    } finally {
+      setGymInquirySending(false);
+    }
+  };
 
-    // ✅ orangey success confirmation
-    await Swal.fire({
-      title: "Message Sent!",
-      text: "Your inquiry was successfully sent to the gym.",
-      icon: "success",
-      confirmButtonText: "Great!",
-      confirmButtonColor: "#ed8936", // orangey
-      iconColor: "#ed8936",
-    });
-  } catch (e) {
-    await Swal.fire({
-      title: "Failed",
-      text: e?.response?.data?.message || e?.message || "Failed to send inquiry.",
-      icon: "error",
-      confirmButtonColor: "#dc2626",
-    });
-  } finally {
-    setGymInquirySending(false);
-  }
-};
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -163,11 +165,9 @@ const onSendGymInquiry = async (gymId, question) => {
 
   const [myUserId, setMyUserId] = useState(null);
 
-  // ✅ membership for this gym
   const [myGymMembership, setMyGymMembership] = useState(null);
   const [membershipLoading, setMembershipLoading] = useState(false);
 
-  // ✅ my ratings (searchable, accurate)
   const [myRatings, setMyRatings] = useState([]);
   const [myRatingsLoading, setMyRatingsLoading] = useState(false);
 
@@ -197,7 +197,6 @@ const onSendGymInquiry = async (gymId, question) => {
     }
   }
 
-  // ✅ ALWAYS compute these with hooks BEFORE any returns
   const images = useMemo(() => {
     if (!gym) return [];
     const list = joinImages(gym?.main_image_url, gym?.gallery_urls);
@@ -240,19 +239,27 @@ const onSendGymInquiry = async (gymId, question) => {
     [publicAvg]
   );
 
-  // ✅ accurate: MY rating for THIS gym (from /me/ratings)
   const myGymRating = useMemo(() => {
     if (!gymIdNum) return null;
     const list = Array.isArray(myRatings) ? myRatings : [];
     return list.find((r) => Number(r?.gym_id) === gymIdNum) || null;
   }, [myRatings, gymIdNum]);
 
-  const hasMembershipHere = useMemo(() => {
-    if (!myGymMembership) return false;
-    return true;
+  const membershipStatus = useMemo(() => {
+    const s = myGymMembership?.status ?? "";
+    return String(s).toLowerCase().trim();
   }, [myGymMembership]);
 
-  // ✅ NEW: amenities + equipments helpers (so UI doesn't crash)
+  const hasActiveMembershipHere = useMemo(() => {
+    if (!myGymMembership) return false;
+    return ["active", "approved"].includes(membershipStatus);
+  }, [myGymMembership, membershipStatus]);
+
+  const isPendingMembershipHere = useMemo(() => {
+    if (!myGymMembership) return false;
+    return ["pending", "processing", "under_review"].includes(membershipStatus);
+  }, [myGymMembership, membershipStatus]);
+
   const amenities = useMemo(() => {
     const list = Array.isArray(gym?.amenities) ? gym.amenities : [];
     return list;
@@ -263,7 +270,6 @@ const onSendGymInquiry = async (gymId, question) => {
     return list;
   }, [gym]);
 
-  // ✅ load /me for user_id
   useEffect(() => {
     let cancelled = false;
 
@@ -322,13 +328,11 @@ const onSendGymInquiry = async (gymId, question) => {
     };
   }, [id]);
 
-  // ✅ load ratings (gym)
   useEffect(() => {
     if (!gymIdNum) return;
     refreshRatings(gymIdNum);
   }, [gymIdNum]);
 
-  // ✅ load my ratings (search)
   useEffect(() => {
     let cancelled = false;
 
@@ -355,7 +359,6 @@ const onSendGymInquiry = async (gymId, question) => {
     };
   }, []);
 
-  // ✅ load my memberships for this gym
   useEffect(() => {
     let cancelled = false;
 
@@ -392,7 +395,6 @@ const onSendGymInquiry = async (gymId, question) => {
     };
   }, [gymIdNum]);
 
-  // liked gyms
   useEffect(() => {
     const saved = localStorage.getItem("likedGyms");
     if (!saved) return;
@@ -448,7 +450,6 @@ const onSendGymInquiry = async (gymId, question) => {
     );
   };
 
-  // animated stats
   useEffect(() => {
     if (!gym) return;
 
@@ -487,7 +488,6 @@ const onSendGymInquiry = async (gymId, question) => {
     return () => observer.disconnect();
   }, [gym, hasAnimated]);
 
-  // free pass
   useEffect(() => {
     let cancelled = false;
 
@@ -542,7 +542,6 @@ const onSendGymInquiry = async (gymId, question) => {
     }
   }
 
-  // ✅ NOW it is safe to return early (ALL hooks already ran)
   if (loading) {
     return (
       <div className="gym-details-page">
@@ -668,7 +667,9 @@ const onSendGymInquiry = async (gymId, question) => {
             {images.map((_, index) => (
               <span
                 key={index}
-                className={`dot ${index === currentImageIndex ? "active" : ""}`}
+                className={`dot ${
+                  index === currentImageIndex ? "active" : ""
+                }`}
                 onClick={() => setCurrentImageIndex(index)}
               />
             ))}
@@ -743,7 +744,6 @@ const onSendGymInquiry = async (gymId, question) => {
               </div>
             </div>
 
-            {/* ✅ ADDED: Amenities */}
             <div className="detail-card amenities-section">
               <h2 className="section-title">Amenities & Features</h2>
 
@@ -790,7 +790,6 @@ const onSendGymInquiry = async (gymId, question) => {
               </div>
             </div>
 
-            {/* ✅ ADDED: Equipments */}
             <div className="detail-card equipment-section">
               <h2 className="section-title">Available Equipment</h2>
 
@@ -846,108 +845,110 @@ const onSendGymInquiry = async (gymId, question) => {
                 Get Directions
               </button>
             </div>
-{/* Contact & Social */}
-<div className="detail-card contact-card">
-  <h2 className="section-title">Get in Touch</h2>
 
-  <div className="contact-info" style={{ display: "grid", gap: 8 }}>
-    <p>
-      <strong>Phone:</strong> {gym?.contact_number || "—"}
-    </p>
-    <p>
-      <strong>Email:</strong> {gym?.email || "—"}
-    </p>
-    <p>
-      <strong>Website:</strong>{" "}
-      {gym?.website ? (
-        <a href={gym.website} target="_blank" rel="noreferrer">
-          {gym.website}
-        </a>
-      ) : (
-        "—"
-      )}
-    </p>
-  </div>
+            <div className="detail-card contact-card">
+              <h2 className="section-title">Get in Touch</h2>
 
-  <div className="social-links" style={{ marginTop: 12 }}>
-    {gym?.facebook_page ? (
-      <a
-        href={gym.facebook_page}
-        className="social-link facebook"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="Facebook"
-      >
-        f
-      </a>
-    ) : null}
+              <div className="contact-info" style={{ display: "grid", gap: 8 }}>
+                <p>
+                  <strong>Phone:</strong> {gym?.contact_number || "—"}
+                </p>
+                <p>
+                  <strong>Email:</strong> {gym?.email || "—"}
+                </p>
+                <p>
+                  <strong>Website:</strong>{" "}
+                  {gym?.website ? (
+                    <a href={gym.website} target="_blank" rel="noreferrer">
+                      {gym.website}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </p>
+              </div>
 
-    {gym?.instagram_page ? (
-      <a
-        href={gym.instagram_page}
-        className="social-link instagram"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="Instagram"
-      >
-        ig
-      </a>
-    ) : null}
-  </div>
+              <div className="social-links" style={{ marginTop: 12 }}>
+                {gym?.facebook_page ? (
+                  <a
+                    href={gym.facebook_page}
+                    className="social-link facebook"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Facebook"
+                  >
+                    f
+                  </a>
+                ) : null}
 
-  {gym?.owner ? (
-    <div style={{ marginTop: 14 }}>
-      <div style={{ fontWeight: 900, marginBottom: 8 }}>Owner</div>
+                {gym?.instagram_page ? (
+                  <a
+                    href={gym.instagram_page}
+                    className="social-link instagram"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Instagram"
+                  >
+                    ig
+                  </a>
+                ) : null}
+              </div>
 
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-        {gym?.owner?.profile_photo_url ? (
-          <img
-            src={gym.owner.profile_photo_url}
-            alt={gym.owner.name}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 999,
-              objectFit: "cover",
-              border: "2px solid rgba(0,0,0,0.06)",
-            }}
-          />
-        ) : null}
+              {gym?.owner ? (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ fontWeight: 900, marginBottom: 8 }}>Owner</div>
 
-        <div style={{ lineHeight: 1.15 }}>
-          <div style={{ fontWeight: 900 }}>{gym.owner.name}</div>
-          <div style={{ opacity: 0.8, fontWeight: 650 }}>{gym.owner.email}</div>
-        </div>
-      </div>
-    </div>
-  ) : null}
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    {gym?.owner?.profile_photo_url ? (
+                      <img
+                        src={gym.owner.profile_photo_url}
+                        alt={gym.owner.name}
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 999,
+                          objectFit: "cover",
+                          border: "2px solid rgba(0,0,0,0.06)",
+                        }}
+                      />
+                    ) : null}
 
-  <div style={{ marginTop: 16 }}>
-    <button
-      type="button"
-      className="action-btn primary"
-      onClick={() => setGymInquiryOpen(true)}
-      disabled={!gym?.id && !gym?.gym_id}
-    >
-      Inquire Now
-    </button>
-  </div>
+                    <div style={{ lineHeight: 1.15 }}>
+                      <div style={{ fontWeight: 900 }}>{gym.owner.name}</div>
+                      <div style={{ opacity: 0.8, fontWeight: 650 }}>
+                        {gym.owner.email}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
- 
-  {gymInquiryOpen && (
-    <GymInquiryModal
-      gym={gym}
-      onClose={() => setGymInquiryOpen(false)}
-      sending={gymInquirySending}
-      onSend={onSendGymInquiry}
-    />
-  )}
-</div>
+              <div style={{ marginTop: 16 }}>
+                <button
+                  type="button"
+                  className="action-btn primary"
+                  onClick={() => setGymInquiryOpen(true)}
+                  disabled={!gym?.id && !gym?.gym_id}
+                >
+                  Inquire Now
+                </button>
+              </div>
+
+              {gymInquiryOpen && (
+                <GymInquiryModal
+                  gym={gym}
+                  onClose={() => setGymInquiryOpen(false)}
+                  sending={gymInquirySending}
+                  onSend={onSendGymInquiry}
+                />
+              )}
+            </div>
+
             <div className="detail-card actions-card">
               <h2 className="section-title">Quick Actions</h2>
 
               <div className="action-buttons">
-                {hasMembershipHere ? (
+                {hasActiveMembershipHere ? (
                   <button
                     className="action-btn primary"
                     type="button"
@@ -955,6 +956,15 @@ const onSendGymInquiry = async (gymId, question) => {
                   >
                     <span className="action-icon">🎫</span>
                     View Membership
+                  </button>
+                ) : isPendingMembershipHere ? (
+                  <button
+                    className="action-btn secondary"
+                    type="button"
+                    onClick={() => navigate("/home/memberships")}
+                  >
+                    <span className="action-icon">⏳</span>
+                    Membership Pending
                   </button>
                 ) : (
                   <button
@@ -1148,8 +1158,7 @@ function reviewTag(r) {
   if (verifiedBool) {
     const via = String(r?.verified_via || "").toLowerCase();
     if (via === "membership") return { label: "Member", cls: "tag-member" };
-    if (via === "free_visit_used")
-      return { label: "Visited", cls: "tag-visited" };
+    if (via === "free_visit_used") return { label: "Visited", cls: "tag-visited" };
     return { label: "Verified", cls: "tag-member" };
   }
 
