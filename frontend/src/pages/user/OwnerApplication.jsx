@@ -1,7 +1,7 @@
 // ✅ src/pages/user/OwnerApplication.jsx
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import HeaderUser from "./Header-user";
+import HomeHeader from "./HomeHeader";
 import Footer from "./Footer";
 import "./OwnerApplication.css";
 import {
@@ -932,8 +932,10 @@ export default function OwnerApplication() {
 
   if (submitted)
     return (
+  
       <div className="oa-app">
-        <HeaderUserNoScroll />
+              <HomeHeader />
+
         <div className="oa-success">
           <div className="oa-success-card">
             <div className="oa-success-icon">
@@ -974,13 +976,12 @@ export default function OwnerApplication() {
             </Link>
           </div>
         </div>
-        <Footer />
       </div>
     );
 
   return (
     <div className="oa-app">
-      <HeaderUser />
+      <HomeHeader />
 
       <div className="oa-stepper-bar">
         <div className="oa-stepper">

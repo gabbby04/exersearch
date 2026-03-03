@@ -73,9 +73,9 @@ class GymOwnerApplicationController extends Controller
                 'Owner application updated',
                 ($user->name ?? 'A user') . ' updated an owner application for "' . ($application->gym_name ?? 'a gym') . '".',
                 [
-                    'actor_id' => $user->user_id,
+                    'actor_id' => (int) $user->user_id,
                     'url' => '/admin/owner-applications',
-                    'meta' => ['application_id' => $application->id],
+                    'meta' => ['application_id' => (int) $application->id],
                 ]
             );
 
@@ -90,9 +90,9 @@ class GymOwnerApplicationController extends Controller
             'New owner application',
             ($user->name ?? 'A user') . ' requested to become an owner for "' . ($application->gym_name ?? 'a gym') . '".',
             [
-                'actor_id' => $user->user_id,
+                'actor_id' => (int) $user->user_id,
                 'url' => '/admin/owner-applications',
-                'meta' => ['application_id' => $application->id],
+                'meta' => ['application_id' => (int) $application->id],
             ]
         );
 
@@ -164,6 +164,7 @@ class GymOwnerApplicationController extends Controller
         $mailGym = 'Your Gym';
         $approverId = auth()->user()?->user_id;
         $recipientUserId = null;
+        $applicationId = (int) $id;
 
         DB::transaction(function () use ($id, &$mailTo, &$mailName, &$mailGym, $approverId, &$recipientUserId) {
             $application = GymOwnerApplication::with('user')
@@ -240,16 +241,36 @@ class GymOwnerApplicationController extends Controller
             $recipientUserId = (int) $application->user_id;
         });
 
+        // Two notifications for the same recipient, different UI buckets (user + owner)
         if ($recipientUserId) {
+            // 1) USER bucket: approval confirmation
+            NotificationService::create([
+                'recipient_id' => (int) $recipientUserId,
+                'recipient_role' => 'user',
+                'type' => 'OWNER_REQUEST_APPROVED', // keep/rename freely as long as FE matches
+                'title' => 'Owner application approved',
+                'message' => 'Your request to become an owner for "' . ($mailGym ?? 'your gym') . '" was approved.',
+                'actor_id' => (int) ($approverId ?? 0),
+                'url' => '/home',
+                'meta' => [
+                    'application_id' => (int) $applicationId,
+                    'gym_name' => $mailGym,
+                ],
+            ]);
+
+            // 2) OWNER bucket: welcome / onboarding
             NotificationService::create([
                 'recipient_id' => (int) $recipientUserId,
                 'recipient_role' => 'owner',
-                'type' => 'OWNER_APPLICATION_APPROVED',
-                'title' => 'Owner application approved',
-                'message' => 'Your owner application for "' . ($mailGym ?? 'your gym') . '" was approved.',
+                'type' => 'OWNER_WELCOME',
+                'title' => 'Welcome, owner!',
+                'message' => 'Your owner access is ready. Manage "' . ($mailGym ?? 'your gym') . '" from your dashboard.',
                 'actor_id' => (int) ($approverId ?? 0),
                 'url' => '/owner',
-                'meta' => ['gym_name' => $mailGym],
+                'meta' => [
+                    'application_id' => (int) $applicationId,
+                    'gym_name' => $mailGym,
+                ],
             ]);
         }
 
@@ -280,12 +301,16 @@ class GymOwnerApplicationController extends Controller
         NotificationService::create([
             'recipient_id' => (int) $application->user_id,
             'recipient_role' => 'user',
-            'type' => 'OWNER_APPLICATION_REJECTED',
+            'type' => 'OWNER_REQUEST_REJECTED', // keep/rename freely as long as FE matches
             'title' => 'Owner application rejected',
-            'message' => 'Your owner application for "' . ($application->gym_name ?? 'your gym') . '" was rejected.',
+            'message' => 'Your request to become an owner for "' . ($application->gym_name ?? 'your gym') . '" was rejected.',
             'actor_id' => (int) (auth()->user()?->user_id ?? 0),
             'url' => '/home',
-            'meta' => ['reason' => $request->input('reason')],
+            'meta' => [
+                'reason' => $request->input('reason'),
+                'application_id' => (int) $application->id,
+                'gym_name' => $application->gym_name,
+            ],
         ]);
 
         $mailTo = $application->user?->email;

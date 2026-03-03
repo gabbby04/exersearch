@@ -1,5 +1,6 @@
 // src/pages/user/HomeHeader.jsx
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import "./HF.css";
 
@@ -19,7 +20,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-import { FALLBACK_AVATAR, initials } from "../../utils/userHomeApi";
+import { FALLBACK_AVATAR as FALLBACK_AVATAR_FROM_API, initials } from "../../utils/userHomeApi";
 
 import {
   listNotifications,
@@ -28,6 +29,7 @@ import {
   markAllNotificationsRead,
 } from "../../utils/notificationApi";
 
+const API_BASE = "https://exersearch.test";
 const TOKEN_KEY = "token";
 
 function safeStr(v) {
@@ -36,6 +38,16 @@ function safeStr(v) {
 function safeNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
+}
+
+function toAbsUrl(u) {
+  if (!u) return "";
+  const s = String(u).trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  const base = String(API_BASE || "").replace(/\/$/, "");
+  const path = s.startsWith("/") ? s : `/${s}`;
+  return `${base}${path}`;
 }
 
 function iconForNotifType(type) {
@@ -81,16 +93,19 @@ function notifUrl(n) {
 }
 
 export default function HomeHeader({
-  appLogo,
-  fallbackLogo,
+  // NOTE: now optional — we can fetch logo if not provided
+  appLogo: appLogoProp,
+  fallbackLogo: fallbackLogoProp,
+
   searchQuery,
   setSearchQuery,
   onClearSearch,
   goBestMatch,
 
-  avatarSrc,
-  displayName,
-  displayEmail,
+  // props are still supported, but now optional:
+  avatarSrc: avatarSrcProp,
+  displayName: displayNameProp,
+  displayEmail: displayEmailProp,
 
   isOwnerPlus,
   switchModes,
@@ -109,6 +124,108 @@ export default function HomeHeader({
   const profileRef = useRef(null);
 
   const token = localStorage.getItem(TOKEN_KEY);
+
+  // =========================
+  // Logo fetch (NEW)
+  // =========================
+  const [fetchedLogoUrl, setFetchedLogoUrl] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadLogo() {
+      try {
+        const res = await axios.get(`${API_BASE}/api/v1/settings/public`, {
+          withCredentials: true,
+        });
+
+        const data = res.data?.data ?? res.data;
+        const url = data?.user_logo_url || "";
+
+        if (!mounted) return;
+        setFetchedLogoUrl(toAbsUrl(url));
+      } catch {
+        if (mounted) setFetchedLogoUrl("");
+      }
+    }
+
+    // only fetch if parent didn't pass a logo
+    if (!appLogoProp) loadLogo();
+
+    return () => {
+      mounted = false;
+    };
+  }, [appLogoProp]);
+
+  const effectiveFallbackLogo = fallbackLogoProp || "/defaultlogo.png"; // change if you want
+  const effectiveAppLogo = appLogoProp || fetchedLogoUrl || effectiveFallbackLogo;
+
+  // =========================
+  // Profile (/me) fetch
+  // =========================
+  const [me, setMe] = useState(null);
+  const [meLoading, setMeLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadMe() {
+      if (!token) return;
+      setMeLoading(true);
+      try {
+        const res = await axios.get(`${API_BASE}/api/v1/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
+        if (!mounted) return;
+        setMe(res.data || null);
+      } catch (err) {
+        // keep silent (header shouldn't block UI)
+      } finally {
+        if (mounted) setMeLoading(false);
+      }
+    }
+
+    // only fetch if parent didn't pass details
+    const needsProfile =
+      !avatarSrcProp || !displayNameProp || displayEmailProp == null || displayEmailProp === "";
+    if (!me && needsProfile && token) loadMe();
+
+    return () => {
+      mounted = false;
+    };
+  }, [token, me, avatarSrcProp, displayNameProp, displayEmailProp]);
+
+  const effectiveName = useMemo(() => {
+    return safeStr(displayNameProp) || safeStr(me?.name) || (meLoading ? "Loading..." : "User");
+  }, [displayNameProp, me, meLoading]);
+
+  const effectiveEmail = useMemo(() => {
+    return safeStr(displayEmailProp) || safeStr(me?.email) || "";
+  }, [displayEmailProp, me]);
+
+  const effectiveAvatar = useMemo(() => {
+    if (avatarSrcProp) return avatarSrcProp;
+
+    const raw =
+      me?.user_profile?.profile_photo_url ||
+      me?.userProfile?.profile_photo_url ||
+      me?.owner_profile?.profile_photo_url ||
+      me?.ownerProfile?.profile_photo_url ||
+      me?.admin_profile?.avatar_url ||
+      me?.adminProfile?.avatar_url ||
+      me?.avatar_url ||
+      me?.profile_photo_url ||
+      me?.photoURL ||
+      me?.avatar ||
+      "";
+
+    const fallback = FALLBACK_AVATAR_FROM_API || "/defaulticon.png";
+    if (!raw) return fallback;
+    if (String(raw).startsWith("http")) return raw;
+    const abs = toAbsUrl(raw);
+    return abs || fallback;
+  }, [avatarSrcProp, me]);
 
   // =========================
   // Notifications
@@ -191,10 +308,10 @@ export default function HomeHeader({
           }}
         >
           <img
-            src={appLogo}
+            src={effectiveAppLogo}
             alt="ExerSearch Logo"
             onError={(e) => {
-              e.currentTarget.src = fallbackLogo;
+              e.currentTarget.src = effectiveFallbackLogo;
             }}
           />
         </div>
@@ -210,10 +327,10 @@ export default function HomeHeader({
           style={{ cursor: "pointer" }}
         >
           <img
-            src={appLogo}
+            src={effectiveAppLogo}
             alt="ExerSearch"
             onError={(e) => {
-              e.currentTarget.src = fallbackLogo;
+              e.currentTarget.src = effectiveFallbackLogo;
             }}
           />
         </div>
@@ -256,7 +373,7 @@ export default function HomeHeader({
             </span>
           </Link>
 
-          {/* ✅ Notifications (UPDATED) */}
+          {/* ✅ Notifications */}
           <div className="uhv-notif-wrap" ref={notifRef}>
             <button
               type="button"
@@ -348,7 +465,7 @@ export default function HomeHeader({
                               await refreshAllNotifs();
                             }
 
-                            // Navigate (this is what you were missing)
+                            // Navigate
                             if (url) {
                               setNotifOpen(false);
                               navigate(url);
@@ -386,14 +503,14 @@ export default function HomeHeader({
             >
               <div className="uhv-profile-avatar">
                 <img
-                  src={avatarSrc}
+                  src={effectiveAvatar}
                   alt="Profile"
                   className="uhv-profile-avatar__img"
                   onError={(e) => {
-                    e.currentTarget.src = FALLBACK_AVATAR;
+                    e.currentTarget.src = FALLBACK_AVATAR_FROM_API || "/defaulticon.png";
                   }}
                 />
-                <span className="uhv-profile-avatar__fallback">{initials(displayName)}</span>
+                <span className="uhv-profile-avatar__fallback">{initials(effectiveName)}</span>
               </div>
               <ChevronDown size={13} className={"uhv-profile-chevron" + (profileOpen ? " open" : "")} />
             </button>
@@ -403,17 +520,17 @@ export default function HomeHeader({
                 <div className="uhv-profile-pop__top">
                   <div className="uhv-profile-pop__bigavatar">
                     <img
-                      src={avatarSrc}
+                      src={effectiveAvatar}
                       alt="Profile"
                       onError={(e) => {
-                        e.currentTarget.src = FALLBACK_AVATAR;
+                        e.currentTarget.src = FALLBACK_AVATAR_FROM_API || "/defaulticon.png";
                       }}
                     />
-                    <span>{initials(displayName)}</span>
+                    <span>{initials(effectiveName)}</span>
                   </div>
                   <div>
-                    <p className="uhv-profile-pop__name">{displayName}</p>
-                    <p className="uhv-profile-pop__email">{displayEmail || " "}</p>
+                    <p className="uhv-profile-pop__name">{effectiveName}</p>
+                    <p className="uhv-profile-pop__email">{effectiveEmail || " "}</p>
                   </div>
                 </div>
 

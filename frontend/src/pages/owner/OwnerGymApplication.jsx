@@ -700,7 +700,6 @@ export default function OwnerGymApplication() {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }

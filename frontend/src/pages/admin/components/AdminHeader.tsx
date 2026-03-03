@@ -10,7 +10,6 @@ import {
   getUnreadNotificationsCount,
   markNotificationRead,
   markAllNotificationsRead,
-  // (optional) safeStr, toInt, etc…
 } from "../../../utils/notificationApi";
 
 const FALLBACK_AVATAR = "/arellano.png";
@@ -100,6 +99,7 @@ function iconForNotifType(type?: string | null) {
   if (t.includes("inquiry") || t.includes("message")) return "💬";
   if (t.includes("announcement")) return "📣";
   if (t.includes("gym")) return "🏋️";
+  if (t.includes("owner")) return "🧾";
   return "🔔";
 }
 
@@ -273,14 +273,16 @@ export default function AdminHeader({
   };
 
   // =========================
-  // Notifications (ADMIN role)
+  // Notifications (ADMIN bucket)
+  // Shows ONLY recipient_role=admin AND recipient_id=current user (enforced by backend)
   // =========================
   const refreshUnread = React.useCallback(async () => {
     if (!token) return;
     try {
-const c = await getUnreadNotificationsCount();
+      const c = await getUnreadNotificationsCount({ role: "admin" });
       setUnreadCount(Number(c) || 0);
     } catch {
+      // ignore
     }
   }, [token]);
 
@@ -289,7 +291,7 @@ const c = await getUnreadNotificationsCount();
     setNotifLoading(true);
     setNotifErr("");
     try {
-      const paged = await listNotifications({ page: 1, per_page: 20, recipient_role: "admin" });
+      const paged = await listNotifications({ page: 1, per_page: 20, role: "admin" });
       setNotifications(Array.isArray(paged?.data) ? paged.data : []);
     } catch {
       setNotifErr("Failed to load notifications.");
@@ -447,7 +449,7 @@ const c = await getUnreadNotificationsCount();
                     type="button"
                     onClick={async () => {
                       try {
-await markAllNotificationsRead();
+                        await markAllNotificationsRead({ role: "admin" });
                         setNotifications((prev) => prev.map((x) => ({ ...x, is_read: true })));
                         setUnreadCount(0);
                       } catch {
@@ -492,19 +494,46 @@ await markAllNotificationsRead();
 
               <div style={{ marginTop: 10 }}>
                 {notifLoading && (
-                  <div style={{ padding: 10, borderRadius: 12, background: t.soft2, border: `1px solid ${t.border}`, fontWeight: 850, color: t.mutedText }}>
+                  <div
+                    style={{
+                      padding: 10,
+                      borderRadius: 12,
+                      background: t.soft2,
+                      border: `1px solid ${t.border}`,
+                      fontWeight: 850,
+                      color: t.mutedText,
+                    }}
+                  >
                     Loading…
                   </div>
                 )}
 
                 {!notifLoading && notifErr && (
-                  <div style={{ padding: 10, borderRadius: 12, background: t.soft2, border: `1px solid ${t.border}`, fontWeight: 850, color: t.mutedText }}>
+                  <div
+                    style={{
+                      padding: 10,
+                      borderRadius: 12,
+                      background: t.soft2,
+                      border: `1px solid ${t.border}`,
+                      fontWeight: 850,
+                      color: t.mutedText,
+                    }}
+                  >
                     {notifErr}
                   </div>
                 )}
 
                 {!notifLoading && !notifErr && notifications.length === 0 && (
-                  <div style={{ padding: 10, borderRadius: 12, background: t.soft2, border: `1px solid ${t.border}`, fontWeight: 850, color: t.mutedText }}>
+                  <div
+                    style={{
+                      padding: 10,
+                      borderRadius: 12,
+                      background: t.soft2,
+                      border: `1px solid ${t.border}`,
+                      fontWeight: 850,
+                      color: t.mutedText,
+                    }}
+                  >
                     All caught up!
                   </div>
                 )}
@@ -524,7 +553,11 @@ await markAllNotificationsRead();
                         type="button"
                         onClick={async () => {
                           // optimistic
-                          setNotifications((prev) => prev.map((x) => (Number(x.notification_id ?? x.id) === id ? { ...x, is_read: true } : x)));
+                          setNotifications((prev) =>
+                            prev.map((x) =>
+                              Number(x.notification_id ?? x.id) === id ? { ...x, is_read: true } : x
+                            )
+                          );
                           setUnreadCount((c) => Math.max(0, c - (unread ? 1 : 0)));
 
                           try {
@@ -534,8 +567,8 @@ await markAllNotificationsRead();
                             loadNotifs();
                           }
 
-                          // OPTIONAL: navigate if backend provides a url/route in meta
-                          const url = n?.meta?.url || n?.meta?.route || n?.meta?.link;
+                          // navigate (prefer top-level url, fallback to meta)
+                          const url = n?.url || n?.meta?.url || n?.meta?.route || n?.meta?.link;
                           if (url) {
                             setNotifOpen(false);
                             navigate(String(url));
@@ -572,10 +605,30 @@ await markAllNotificationsRead();
                         </div>
 
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 950, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <div
+                            style={{
+                              fontWeight: 950,
+                              fontSize: 13,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {title || "Notification"}
                           </div>
-                          <div style={{ marginTop: 3, fontWeight: 800, fontSize: 12, color: t.mutedText, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>
+                          <div
+                            style={{
+                              marginTop: 3,
+                              fontWeight: 800,
+                              fontSize: 12,
+                              color: t.mutedText,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical" as any,
+                            }}
+                          >
                             {body}
                           </div>
                         </div>
