@@ -20,14 +20,12 @@ export const OWNER_INQUIRY_TABS = [
   { key: "all", label: "All" },
   { key: INQUIRY_STATUS.OPEN, label: "Open" },
   { key: INQUIRY_STATUS.ANSWERED, label: "Answered" },
-  { key: INQUIRY_STATUS.CLOSED, label: "Closed" },
 ];
 
 export const USER_INQUIRY_TABS = [
   { key: "all", label: "All" },
   { key: INQUIRY_STATUS.OPEN, label: "Open" },
   { key: INQUIRY_STATUS.ANSWERED, label: "Answered" },
-  { key: INQUIRY_STATUS.CLOSED, label: "Closed" },
 ];
 
 export async function askGymInquiry(gymId, payload) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gym;
 use App\Models\GymInquiry;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -33,6 +34,20 @@ class GymInquiryController extends Controller
         return $paginator;
     }
 
+    private function resolveOwnerRecipientId(?Gym $gym): ?int
+    {
+        if ($gym && !empty($gym->owner_id)) {
+            return (int) $gym->owner_id;
+        }
+
+        $fallbackAdminId = User::whereIn('role', ['superadmin', 'admin'])
+            ->orderByRaw("CASE WHEN role = 'superadmin' THEN 0 ELSE 1 END")
+            ->orderBy('user_id')
+            ->value('user_id');
+
+        return !empty($fallbackAdminId) ? (int) $fallbackAdminId : null;
+    }
+
     public function ask(Request $request, $gymId)
     {
         $user = Auth::user();
@@ -53,11 +68,14 @@ class GymInquiryController extends Controller
             'question' => $request->input('question'),
             'attachment_url' => $request->input('attachment_url'),
             'user_read_at' => now(),
+            'owner_read_at' => null,
         ]);
 
-        if (!empty($gym->owner_id)) {
+        $recipientId = $this->resolveOwnerRecipientId($gym);
+
+        if (!empty($recipientId)) {
             NotificationService::create([
-                'recipient_id' => (int) $gym->owner_id,
+                'recipient_id' => (int) $recipientId,
                 'recipient_role' => 'owner',
                 'type' => 'INQUIRY_RECEIVED',
                 'title' => 'New inquiry received',
@@ -65,7 +83,10 @@ class GymInquiryController extends Controller
                 'gym_id' => (int) $gym->gym_id,
                 'actor_id' => (int) $user->user_id,
                 'url' => '/owner/inquiries?gym_id=' . (int) $gym->gym_id,
-                'meta' => ['inquiry_id' => (int) $row->inquiry_id],
+                'meta' => [
+                    'inquiry_id' => (int) $row->inquiry_id,
+                    'unassigned_owner' => empty($gym->owner_id),
+                ],
             ]);
         }
 
@@ -87,9 +108,8 @@ class GymInquiryController extends Controller
         $gym = Gym::where('gym_id', $row->gym_id)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
 
-        if ($row->status === 'closed') {
-            return response()->json(['message' => 'Inquiry is closed'], 422);
-        }
+        // CHANGE: allow follow-up even if closed (reopen)
+        // (removed the "Inquiry is closed" 422 check)
 
         $request->validate([
             'message' => ['required', 'string', 'min:1', 'max:1500'],
@@ -98,7 +118,12 @@ class GymInquiryController extends Controller
 
         $msg = trim((string) $request->input('message'));
 
-        $append = "\n\n[User follow-up " . now()->toDateTimeString() . "]\n" . $msg;
+        // CHANGE: tag when it was previously closed
+        $tag = $row->status === 'closed'
+            ? "User follow-up (reopened) " . now()->toDateTimeString()
+            : "User follow-up " . now()->toDateTimeString();
+
+        $append = "\n\n[{$tag}]\n" . $msg;
         $newQuestion = (string) ($row->question ?? '') . $append;
 
         $row->update([
@@ -109,9 +134,11 @@ class GymInquiryController extends Controller
             'owner_read_at' => null,
         ]);
 
-        if (!empty($gym->owner_id)) {
+        $recipientId = $this->resolveOwnerRecipientId($gym);
+
+        if (!empty($recipientId)) {
             NotificationService::create([
-                'recipient_id' => (int) $gym->owner_id,
+                'recipient_id' => (int) $recipientId,
                 'recipient_role' => 'owner',
                 'type' => 'INQUIRY_UPDATED',
                 'title' => 'Inquiry updated',
@@ -119,7 +146,10 @@ class GymInquiryController extends Controller
                 'gym_id' => (int) $gym->gym_id,
                 'actor_id' => (int) $user->user_id,
                 'url' => '/owner/inquiries?gym_id=' . (int) $gym->gym_id,
-                'meta' => ['inquiry_id' => (int) $row->inquiry_id],
+                'meta' => [
+                    'inquiry_id' => (int) $row->inquiry_id,
+                    'unassigned_owner' => empty($gym->owner_id),
+                ],
             ]);
         }
 
@@ -241,7 +271,6 @@ class GymInquiryController extends Controller
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
         if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
-        if ($row->status === 'closed') return response()->json(['message' => 'Inquiry is closed'], 422);
 
         $request->validate(['answer' => ['required', 'string', 'min:1', 'max:1500']]);
 
@@ -298,17 +327,7 @@ class GymInquiryController extends Controller
             'owner_read_at' => now(),
         ]);
 
-        NotificationService::create([
-            'recipient_id' => (int) $row->user_id,
-            'recipient_role' => 'user',
-            'type' => 'INQUIRY_CLOSED',
-            'title' => 'Inquiry closed',
-            'message' => 'Your inquiry to "' . ($gym->name ?? 'a gym') . '" was closed.',
-            'gym_id' => (int) $gym->gym_id,
-            'actor_id' => (int) $user->user_id,
-            'url' => '/home/inquiries',
-            'meta' => ['inquiry_id' => (int) $row->inquiry_id],
-        ]);
+        // CHANGE: removed INQUIRY_CLOSED notification spam
 
         $inq = $row->fresh()->load(['user.userProfile', 'gym', 'closedByOwner']);
         $inq = $this->attachUserProfilePhotoUrl($inq);

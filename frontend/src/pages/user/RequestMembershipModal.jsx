@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { X, AlertCircle, Send, CalendarDays } from "lucide-react";
 import "./modaluser.css";
 import Swal from "sweetalert2";
-import { api } from "../../utils/apiClient";
+import { createOrUpdateMembershipIntent } from "../../utils/membershipApi";
 
 function toInputDate(value) {
   if (!value) return "";
@@ -36,6 +36,14 @@ export default function RequestMembershipModal({ gym, onClose, onSuccess }) {
     note: "",
   });
 
+  useEffect(() => {
+    setForm((p) => {
+      const first = planOptions[0]?.value || "monthly";
+      const ok = planOptions.some((o) => String(o.value) === String(p.plan_type));
+      return { ...p, plan_type: ok ? p.plan_type : first };
+    });
+  }, [planOptions]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,17 +64,20 @@ export default function RequestMembershipModal({ gym, onClose, onSuccess }) {
 
     const payload = {
       plan_type: form.plan_type,
-      desired_start_date: form.desired_start_date || null,
-      note: form.note || null,
+      notes: form.note || null,
     };
 
     try {
       setLoading(true);
-      await api.post(`/gyms/${gymId}/membership/intent`, payload);
-      Swal.fire("Sent!", "Your membership intent was sent to the gym owner.", "success");
+      await createOrUpdateMembershipIntent(gymId, payload);
+      await Swal.fire("Sent!", "Your membership request was sent to the gym owner.", "success");
       onSuccess?.();
+      onClose?.();
     } catch (err) {
-      const msg = err?.response?.data?.message || "Failed to send membership intent.";
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to send membership request.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -151,14 +162,16 @@ export default function RequestMembershipModal({ gym, onClose, onSuccess }) {
                 ) : (
                   <>
                     <Send size={18} />
-                    Send Intent
+                    Send Request
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          <div className="modal-footnote">This will notify the gym owner. Payment is handled directly at the gym.</div>
+          <div className="modal-footnote">
+            This will notify the gym owner. Payment is handled directly at the gym.
+          </div>
         </form>
       </div>
     </div>

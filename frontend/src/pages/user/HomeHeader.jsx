@@ -17,7 +17,6 @@ import {
   MessageCircle,
   Settings,
   LogOut,
-  Bookmark,
 } from "lucide-react";
 
 import { FALLBACK_AVATAR, initials } from "../../utils/userHomeApi";
@@ -31,6 +30,14 @@ import {
 
 const TOKEN_KEY = "token";
 
+function safeStr(v) {
+  return v == null ? "" : String(v);
+}
+function safeNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function iconForNotifType(type) {
   const t = String(type || "").toLowerCase();
   if (t.includes("workout")) return Flame;
@@ -41,26 +48,55 @@ function iconForNotifType(type) {
   return Bell;
 }
 
+function notifTitle(n) {
+  // backend sends these for collapsed inquiry groups
+  return safeStr(n?.collapsed_title) || safeStr(n?.title) || "Notification";
+}
+
+function notifMessage(n) {
+  return safeStr(n?.collapsed_message) || safeStr(n?.message) || "";
+}
+
+function notifBadgeCount(n) {
+  const c = safeNum(n?.collapsed_count);
+  return c > 1 ? c : 0;
+}
+
+function notifIsUnread(n) {
+  // for collapsed inquiry rows, use collapsed_count (unread in that group)
+  const isCollapsed = n?.collapsed === true || String(n?.collapsed) === "true";
+  if (isCollapsed) return safeNum(n?.collapsed_count) > 0;
+  // for normal rows, use is_read
+  return !n?.is_read && (n?.unread === true || n?.unread == null); // keeps your older API compat
+}
+
+function notifId(n) {
+  // support both shapes: {notification_id} (backend) or {id} (older normalize)
+  const id = safeNum(n?.notification_id || n?.id);
+  return id;
+}
+
+function notifUrl(n) {
+  return safeStr(n?.url);
+}
+
 export default function HomeHeader({
   appLogo,
   fallbackLogo,
   searchQuery,
   setSearchQuery,
-  onClearSearch, // clears query + removes ?q=
+  onClearSearch,
   goBestMatch,
 
-  // profile info
   avatarSrc,
   displayName,
   displayEmail,
 
-  // role switching
   isOwnerPlus,
   switchModes,
   labelForUiMode,
   handleSwitchUi,
 
-  // logout
   handleLogout,
 }) {
   const navigate = useNavigate();
@@ -75,7 +111,7 @@ export default function HomeHeader({
   const token = localStorage.getItem(TOKEN_KEY);
 
   // =========================
-  // Notifications (REAL)
+  // Notifications
   // =========================
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(false);
@@ -85,7 +121,7 @@ export default function HomeHeader({
   const refreshUnread = useCallback(async () => {
     if (!token) return;
     try {
-      const c = await getUnreadNotificationsCount();
+      const c = await getUnreadNotificationsCount(); // should call /notifications/unread-count?role=user
       setUnreadCount(Number(c) || 0);
     } catch {
       // ignore
@@ -101,10 +137,15 @@ export default function HomeHeader({
       setNotifications(Array.isArray(paged?.data) ? paged.data : []);
     } catch {
       setNotifErr("Failed to load notifications.");
+      setNotifications([]);
     } finally {
       setNotifLoading(false);
     }
   }, [token]);
+
+  const refreshAllNotifs = useCallback(async () => {
+    await Promise.allSettled([refreshUnread(), loadNotifs()]);
+  }, [refreshUnread, loadNotifs]);
 
   useEffect(() => {
     refreshUnread();
@@ -215,7 +256,7 @@ export default function HomeHeader({
             </span>
           </Link>
 
-          {/* ✅ Notifications (REAL) */}
+          {/* ✅ Notifications (UPDATED) */}
           <div className="uhv-notif-wrap" ref={notifRef}>
             <button
               type="button"
@@ -244,8 +285,7 @@ export default function HomeHeader({
                       onClick={async () => {
                         try {
                           await markAllNotificationsRead();
-                          setNotifications((prev) => prev.map((x) => ({ ...x, unread: false })));
-                          setUnreadCount(0);
+                          await refreshAllNotifs();
                         } catch {
                           // ignore
                         }
@@ -271,33 +311,60 @@ export default function HomeHeader({
                   {!notifLoading &&
                     !notifErr &&
                     notifications.map((n) => {
+                      const id = notifId(n);
                       const Icon = iconForNotifType(n.type);
+                      const title = notifTitle(n);
+                      const message = notifMessage(n);
+                      const badge = notifBadgeCount(n);
+                      const unread = notifIsUnread(n);
+                      const url = notifUrl(n);
+
                       return (
                         <button
-                          key={n.id}
+                          key={id || Math.random()}
                           type="button"
-                          className={"uhv-notif-item" + (n.unread ? " unread" : "")}
+                          className={"uhv-notif-item" + (unread ? " unread" : "")}
                           onClick={async () => {
-                            // optimistic
+                            // Optimistic: update unread badge + row
+                            if (unreadCount > 0 && unread) {
+                              setUnreadCount((c) => Math.max(0, c - 1));
+                            }
+
+                            // set local unread off (works for both shapes)
                             setNotifications((prev) =>
-                              prev.map((x) => (x.id === n.id ? { ...x, unread: false } : x))
+                              prev.map((x) => {
+                                const xid = notifId(x);
+                                if (xid !== id) return x;
+                                // keep both compat flags
+                                return { ...x, unread: false, is_read: true, collapsed_count: 0 };
+                              })
                             );
-                            setUnreadCount((c) => Math.max(0, c - (n.unread ? 1 : 0)));
 
                             try {
-                              await markNotificationRead(n.id);
+                              // IMPORTANT: markRead will mark whole inquiry group read if this is an inquiry notif
+                              await markNotificationRead(id);
                             } catch {
-                              refreshUnread();
-                              loadNotifs();
+                              // fallback: reload truth
+                              await refreshAllNotifs();
+                            }
+
+                            // Navigate (this is what you were missing)
+                            if (url) {
+                              setNotifOpen(false);
+                              navigate(url);
                             }
                           }}
                         >
                           <div className="uhv-notif-icon">
                             <Icon size={14} />
                           </div>
+
                           <div className="uhv-notif-body">
-                            <p>{n.title}</p>
-                            <span>{n.message}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <p style={{ margin: 0 }}>{title}</p>
+                              {badge > 0 ? <span className="uhv-notif-pill">{badge}</span> : null}
+                            </div>
+                            {message ? <span>{message}</span> : null}
                           </div>
                         </button>
                       );

@@ -25,3 +25,29 @@ export async function listApprovedGyms(params = {}) {
   const res = await api.get("/gyms", { params: cleanParams(params) });
   return res.data;
 }
+
+
+// (update) membership util constants section only — add NEEDS_INFO + tabs if you want it visible
+export const MEMBERSHIP_STATUS = {
+  INTENT: "intent",
+  NEEDS_INFO: "needs_info",
+  ACTIVE: "active",
+  EXPIRED: "expired",
+  CANCELLED: "cancelled",
+  REJECTED: "rejected",
+};
+
+export const OWNER_TABS = [
+  { key: MEMBERSHIP_STATUS.INTENT, label: "Intent" },
+  { key: MEMBERSHIP_STATUS.NEEDS_INFO, label: "Needs Info" },
+  { key: MEMBERSHIP_STATUS.ACTIVE, label: "Active" },
+  { key: MEMBERSHIP_STATUS.EXPIRED, label: "Expired" },
+];
+
+export const OWNER_MEMBER_TABS = [
+  { key: "all", label: "All" },
+  { key: MEMBERSHIP_STATUS.INTENT, label: "Intent" },
+  { key: MEMBERSHIP_STATUS.NEEDS_INFO, label: "Needs Info" },
+  { key: MEMBERSHIP_STATUS.ACTIVE, label: "Active" },
+  { key: MEMBERSHIP_STATUS.EXPIRED, label: "Expired" },
+];

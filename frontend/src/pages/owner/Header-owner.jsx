@@ -1,4 +1,3 @@
-// src/components/header/HeaderOwner.jsx
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -23,6 +22,7 @@ import {
   getUnreadNotificationsCount,
   markNotificationRead,
   markAllNotificationsRead,
+  getNotificationUrl,
 } from "../../utils/notificationApi";
 
 const API_BASE = "https://exersearch.test";
@@ -59,11 +59,9 @@ function labelForUiMode(mode) {
   return "";
 }
 
-function safeRole(s) {
-  return String(s || "").toLowerCase();
-}
-
 export default function HeaderOwner() {
+  const ROLE = "owner";
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -88,7 +86,6 @@ export default function HeaderOwner() {
 
   const isOwnerPlus = hasAtLeastRole(effectiveUser?.role, "owner");
 
-  // detect where we are (important for avatar priority)
   const currentUi = useMemo(() => {
     const p = String(location.pathname || "");
     if (p.startsWith("/owner")) return "owner";
@@ -96,7 +93,6 @@ export default function HeaderOwner() {
     return "user";
   }, [location.pathname]);
 
-  // Switch UI options: from owner -> user and (if superadmin role) admin
   const switchModes = useMemo(() => {
     if (!isOwnerPlus) return [];
     const lvl = roleLevel(effectiveUser?.role);
@@ -105,9 +101,6 @@ export default function HeaderOwner() {
     return modes.filter((m) => m !== currentUi);
   }, [isOwnerPlus, effectiveUser?.role, currentUi]);
 
-  // =========================
-  // Notifications (backend)
-  // =========================
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifErr, setNotifErr] = useState("");
@@ -116,21 +109,15 @@ export default function HeaderOwner() {
   const refreshUnread = useCallback(async () => {
     if (!token) return;
     try {
-      // NOTE: our utils accept 0 args; backend should scope by token.
-      // If your backend returns mixed roles, we’ll correct via list fallback.
-      const c = await getUnreadNotificationsCount();
+      const c = await getUnreadNotificationsCount({ role: ROLE });
       setUnreadCount(Number(c) || 0);
     } catch {
-      // fallback: compute from list
       try {
-        const paged = await listNotifications({ page: 1, per_page: 50 });
-        const ownerOnly = (paged?.data || []).filter(
-          (n) => safeRole(n?.recipient_role) === "owner"
-        );
-        const unread = ownerOnly.filter((n) => !n.is_read).length;
+        const paged = await listNotifications({ role: ROLE, page: 1, per_page: 50 });
+        const unread = (paged?.data || []).filter((n) => !n.is_read).length;
         setUnreadCount(unread);
       } catch {
-        // ignore
+        setUnreadCount(0);
       }
     }
   }, [token]);
@@ -140,14 +127,8 @@ export default function HeaderOwner() {
     setNotifLoading(true);
     setNotifErr("");
     try {
-      const paged = await listNotifications({ page: 1, per_page: 20 });
-
-      // Enforce owner-only in UI (prevents accidental cross-role display)
-      const ownerOnly = (paged?.data || []).filter(
-        (n) => safeRole(n?.recipient_role) === "owner"
-      );
-
-      setNotifications(ownerOnly);
+      const paged = await listNotifications({ role: ROLE, page: 1, per_page: 20 });
+      setNotifications(paged?.data || []);
     } catch {
       setNotifErr("Failed to load notifications.");
       setNotifications([]);
@@ -156,7 +137,6 @@ export default function HeaderOwner() {
     }
   }, [token]);
 
-  // load unread on mount + focus
   useEffect(() => {
     refreshUnread();
     const onFocus = () => refreshUnread();
@@ -203,7 +183,6 @@ export default function HeaderOwner() {
     return () => (mounted = false);
   }, []);
 
-  // ✅ IMPORTANT FIX: in /owner UI, ALWAYS prefer owner_profile photo first
   const avatarSrc = useMemo(() => {
     const u = effectiveUser;
     if (!u) return FALLBACK_AVATAR;
@@ -300,8 +279,7 @@ export default function HeaderOwner() {
     { to: "/owner/view-gyms", icon: Building2, label: "View Gyms", chipClass: "uhv-chip--fire" },
   ];
 
-  const hasUnreadDot =
-    unreadCount > 0 || notifications.some((n) => !n?.is_read);
+  const hasUnreadDot = unreadCount > 0 || notifications.some((n) => !n?.is_read);
 
   return (
     <>
@@ -354,7 +332,6 @@ export default function HeaderOwner() {
             </Link>
           ))}
 
-          {/* Notifications */}
           <div className="uhv-notif-wrap" ref={notifRef}>
             <button
               type="button"
@@ -382,12 +359,10 @@ export default function HeaderOwner() {
                       className="uhv-notif-clear"
                       onClick={async () => {
                         try {
-                          await markAllNotificationsRead();
+                          await markAllNotificationsRead({ role: ROLE });
                           setNotifications((prev) => (prev || []).map((x) => ({ ...x, is_read: true })));
                           setUnreadCount(0);
-                        } catch {
-                          // ignore
-                        }
+                        } catch {}
                       }}
                     >
                       Mark all as read
@@ -416,7 +391,6 @@ export default function HeaderOwner() {
                         onClick={async () => {
                           const id = n.notification_id ?? n.id;
 
-                          // optimistic
                           setNotifications((prev) =>
                             (prev || []).map((x) =>
                               (x.notification_id ?? x.id) === id ? { ...x, is_read: true } : x
@@ -425,14 +399,13 @@ export default function HeaderOwner() {
                           setUnreadCount((c) => Math.max(0, c - (!n.is_read ? 1 : 0)));
 
                           try {
-                            await markNotificationRead(id);
+                            await markNotificationRead(id, { role: ROLE });
                           } catch {
                             refreshUnread();
                             loadNotifs();
                           }
 
-                          // optional: navigate if your notif has a link in meta
-                          const href = n?.meta?.href || n?.meta?.url || "";
+                          const href = getNotificationUrl(n) || n?.meta?.href || n?.meta?.url || "";
                           if (href) {
                             setNotifOpen(false);
                             navigate(String(href));
@@ -450,7 +423,6 @@ export default function HeaderOwner() {
             )}
           </div>
 
-          {/* Profile */}
           <div className="uhv-profile-wrap" ref={profileRef}>
             <button
               type="button"
@@ -512,7 +484,11 @@ export default function HeaderOwner() {
                     View Gyms
                   </Link>
 
-                  <Link to="/owner/gym-application" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                  <Link
+                    to="/owner/gym-application"
+                    className="uhv-profile-menu-item"
+                    onClick={() => setProfileOpen(false)}
+                  >
                     <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#f59e0b" }}>
                       <FilePlus2 size={15} />
                     </div>

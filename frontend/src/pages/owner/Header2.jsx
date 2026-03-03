@@ -22,6 +22,7 @@ import {
   getUnreadNotificationsCount,
   markNotificationRead,
   markAllNotificationsRead,
+  getNotificationUrl,
 } from "../../utils/notificationApi";
 
 const API_BASE = "https://exersearch.test";
@@ -57,11 +58,10 @@ function labelForUiMode(mode) {
   if (mode === "owner") return "Owner UI";
   return "";
 }
-function safeRole(s) {
-  return String(s || "").toLowerCase();
-}
 
 export default function HeaderOwnerStatic() {
+  const ROLE = "owner";
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -100,9 +100,6 @@ export default function HeaderOwnerStatic() {
     return modes.filter((m) => m !== currentUi);
   }, [isOwnerPlus, effectiveUser?.role, currentUi]);
 
-  // =========================
-  // Notifications (backend)
-  // =========================
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifErr, setNotifErr] = useState("");
@@ -111,16 +108,16 @@ export default function HeaderOwnerStatic() {
   const refreshUnread = useCallback(async () => {
     if (!token) return;
     try {
-      // utils are 0-arg; backend should scope by token.
-      const c = await getUnreadNotificationsCount();
+      const c = await getUnreadNotificationsCount({ role: ROLE });
       setUnreadCount(Number(c) || 0);
     } catch {
-      // fallback compute from list
       try {
-        const paged = await listNotifications({ page: 1, per_page: 50 });
-        const ownerOnly = (paged?.data || []).filter((n) => safeRole(n?.recipient_role) === "owner");
-        setUnreadCount(ownerOnly.filter((n) => !n.is_read).length);
-      } catch {}
+        const paged = await listNotifications({ role: ROLE, page: 1, per_page: 50 });
+        const unread = (paged?.data || []).filter((n) => !n.is_read).length;
+        setUnreadCount(unread);
+      } catch {
+        setUnreadCount(0);
+      }
     }
   }, [token]);
 
@@ -129,12 +126,8 @@ export default function HeaderOwnerStatic() {
     setNotifLoading(true);
     setNotifErr("");
     try {
-      const paged = await listNotifications({ page: 1, per_page: 20 });
-
-      // enforce owner-only display
-      const ownerOnly = (paged?.data || []).filter((n) => safeRole(n?.recipient_role) === "owner");
-
-      setNotifications(ownerOnly);
+      const paged = await listNotifications({ role: ROLE, page: 1, per_page: 20 });
+      setNotifications(paged?.data || []);
     } catch {
       setNotifErr("Failed to load notifications.");
       setNotifications([]);
@@ -189,7 +182,6 @@ export default function HeaderOwnerStatic() {
     return () => (mounted = false);
   }, []);
 
-  // ✅ IMPORTANT FIX: in /owner UI, ALWAYS prefer owner profile first
   const avatarSrc = useMemo(() => {
     const u = effectiveUser;
     if (!u) return FALLBACK_AVATAR;
@@ -347,7 +339,7 @@ export default function HeaderOwnerStatic() {
                       className="oh-pop__textBtn"
                       onClick={async () => {
                         try {
-                          await markAllNotificationsRead();
+                          await markAllNotificationsRead({ role: ROLE });
                           setNotifications((prev) => (prev || []).map((x) => ({ ...x, is_read: true })));
                           setUnreadCount(0);
                         } catch {}
@@ -377,7 +369,6 @@ export default function HeaderOwnerStatic() {
                         onClick={async () => {
                           const id = n.notification_id ?? n.id;
 
-                          // optimistic
                           setNotifications((prev) =>
                             (prev || []).map((x) =>
                               (x.notification_id ?? x.id) === id ? { ...x, is_read: true } : x
@@ -386,14 +377,13 @@ export default function HeaderOwnerStatic() {
                           setUnreadCount((c) => Math.max(0, c - (!n.is_read ? 1 : 0)));
 
                           try {
-                            await markNotificationRead(id);
+                            await markNotificationRead(id, { role: ROLE });
                           } catch {
                             refreshUnread();
                             loadNotifs();
                           }
 
-                          // optional deep link (if you store it in meta)
-                          const href = n?.meta?.href || n?.meta?.url || "";
+                          const href = getNotificationUrl(n) || n?.meta?.href || n?.meta?.url || "";
                           if (href) {
                             setNotifOpen(false);
                             navigate(String(href));
@@ -482,7 +472,6 @@ export default function HeaderOwnerStatic() {
                     Gym Application
                   </Link>
 
-                  {/* ✅ removed "(Soon)" */}
                   <Link to="/owner/profile" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
                     <div className="oh-miIcon" style={{ background: "#eff6ff", color: "#2563eb" }}>
                       <UserCircle size={16} />
@@ -538,7 +527,7 @@ export default function HeaderOwnerStatic() {
           GYM APPLICATION
         </Link>
 
-\        <Link className="oh-mobileLink" to="/owner/profile" onClick={() => setMobileMenuOpen(false)}>
+        <Link className="oh-mobileLink" to="/owner/profile" onClick={() => setMobileMenuOpen(false)}>
           PROFILE
         </Link>
 

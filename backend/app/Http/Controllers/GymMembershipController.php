@@ -60,14 +60,47 @@ class GymMembershipController extends Controller
             NotificationService::create([
                 'recipient_id' => (int) $gym->owner_id,
                 'recipient_role' => 'owner',
-                'type' => 'MEMBERSHIP_INTENT',
+                'type' => 'MEMBERSHIP_REQUESTED',
                 'title' => 'New membership request',
                 'message' => ($user->name ?? 'A user') . ' requested membership for "' . ($gym->name ?? 'your gym') . '".',
                 'gym_id' => (int) $gym->gym_id,
                 'actor_id' => (int) $user->user_id,
                 'url' => '/owner/memberships?gym_id=' . (int) $gym->gym_id,
-                'meta' => ['membership_id' => (int) $membership->membership_id],
+                'meta' => [
+                    'membership_id' => (int) $membership->membership_id,
+                    'unassigned_owner' => false,
+                ],
             ]);
+        } else {
+            NotificationService::create([
+                'recipient_id' => 0,
+                'recipient_role' => 'owner',
+                'type' => 'MEMBERSHIP_REQUESTED',
+                'title' => 'New membership request',
+                'message' => ($user->name ?? 'A user') . ' requested membership for "' . ($gym->name ?? 'your gym') . '".',
+                'gym_id' => (int) $gym->gym_id,
+                'actor_id' => (int) $user->user_id,
+                'url' => '/owner/memberships?gym_id=' . (int) $gym->gym_id,
+                'meta' => [
+                    'membership_id' => (int) $membership->membership_id,
+                    'unassigned_owner' => true,
+                ],
+            ]);
+
+            NotificationService::notifyAdmins(
+                'MEMBERSHIP_REQUESTED',
+                'New membership request (unassigned gym)',
+                ($user->name ?? 'A user') . ' requested membership for "' . ($gym->name ?? 'a gym') . '" (no owner assigned).',
+                [
+                    'gym_id' => (int) $gym->gym_id,
+                    'actor_id' => (int) $user->user_id,
+                    'url' => '/admin/gyms/' . (int) $gym->gym_id,
+                    'meta' => [
+                        'membership_id' => (int) $membership->membership_id,
+                        'unassigned_owner' => true,
+                    ],
+                ]
+            );
         }
 
         return response()->json([
@@ -113,8 +146,8 @@ class GymMembershipController extends Controller
 
         if (!$m) return response()->json(['message' => 'Membership not found'], 404);
 
-        if (!in_array((string) $m->status, ['active', 'intent'])) {
-            return response()->json(['message' => 'Only active/intent memberships can be cancelled'], 409);
+        if (!in_array((string) $m->status, ['active', 'intent', 'needs_info'], true)) {
+            return response()->json(['message' => 'Only active/intent/needs_info memberships can be cancelled'], 409);
         }
 
         $gym = Gym::where('gym_id', $m->gym_id)->first();
@@ -125,19 +158,22 @@ class GymMembershipController extends Controller
             'cancelled_at' => now(),
         ]);
 
-        if (!empty($gym->owner_id)) {
-            NotificationService::create([
-                'recipient_id' => (int) $gym->owner_id,
-                'recipient_role' => 'owner',
-                'type' => 'MEMBERSHIP_CANCELLED',
-                'title' => 'Membership cancelled',
-                'message' => ($user->name ?? 'A user') . ' cancelled membership for "' . ($gym->name ?? 'your gym') . '".',
-                'gym_id' => (int) $gym->gym_id,
-                'actor_id' => (int) $user->user_id,
-                'url' => '/owner/memberships?gym_id=' . (int) $gym->gym_id,
-                'meta' => ['membership_id' => (int) $m->membership_id],
-            ]);
-        }
+        $ownerRecipientId = !empty($gym->owner_id) ? (int) $gym->owner_id : 0;
+
+        NotificationService::create([
+            'recipient_id' => (int) $ownerRecipientId,
+            'recipient_role' => 'owner',
+            'type' => 'MEMBERSHIP_CANCELLED',
+            'title' => 'Membership cancelled',
+            'message' => ($user->name ?? 'A user') . ' cancelled membership for "' . ($gym->name ?? 'your gym') . '".',
+            'gym_id' => (int) $gym->gym_id,
+            'actor_id' => (int) $user->user_id,
+            'url' => '/owner/memberships?gym_id=' . (int) $gym->gym_id,
+            'meta' => [
+                'membership_id' => (int) $m->membership_id,
+                'unassigned_owner' => empty($gym->owner_id),
+            ],
+        ]);
 
         return response()->json([
             'message' => 'Membership cancelled',
@@ -149,14 +185,14 @@ class GymMembershipController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'], true)) return response()->json(['message' => 'Forbidden'], 403);
 
         $gym = Gym::where('gym_id', $gymId)->first();
         if (!$gym) return response()->json(['message' => 'Gym not found'], 404);
         if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
         $request->validate([
-            'status' => ['nullable', Rule::in(['intent', 'active', 'expired', 'cancelled', 'rejected'])],
+            'status' => ['nullable', Rule::in(['intent', 'needs_info', 'active', 'expired', 'cancelled', 'rejected'])],
             'q' => ['nullable', 'string', 'max:200'],
         ]);
 
@@ -169,7 +205,7 @@ class GymMembershipController extends Controller
             $search = $request->query('q');
             $q->whereHas('user', function ($uq) use ($search) {
                 $uq->where('name', 'ilike', "%{$search}%")
-                   ->orWhere('email', 'ilike', "%{$search}%");
+                    ->orWhere('email', 'ilike', "%{$search}%");
             });
         }
 
@@ -183,7 +219,7 @@ class GymMembershipController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'], true)) return response()->json(['message' => 'Forbidden'], 403);
 
         $membership = GymMembership::where('membership_id', $membershipId)->first();
         if (!$membership) return response()->json(['message' => 'Membership not found'], 404);
@@ -199,8 +235,8 @@ class GymMembershipController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        if (!in_array($membership->status, ['intent', 'expired'])) {
-            return response()->json(['message' => 'Only intent/expired memberships can be activated'], 409);
+        if (!in_array((string)$membership->status, ['intent', 'needs_info', 'expired'], true)) {
+            return response()->json(['message' => 'Only intent/needs_info/expired memberships can be activated'], 409);
         }
 
         $existingActive = GymMembership::where('gym_id', $membership->gym_id)
@@ -247,7 +283,7 @@ class GymMembershipController extends Controller
     {
         $user = Auth::user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
-        if (!in_array($user->role, ['owner', 'admin', 'superadmin'])) return response()->json(['message' => 'Forbidden'], 403);
+        if (!in_array($user->role, ['owner', 'admin', 'superadmin'], true)) return response()->json(['message' => 'Forbidden'], 403);
 
         $membership = GymMembership::where('membership_id', $membershipId)->first();
         if (!$membership) return response()->json(['message' => 'Membership not found'], 404);
@@ -257,50 +293,96 @@ class GymMembershipController extends Controller
         if ($user->role === 'owner' && (int)$gym->owner_id !== (int)$user->user_id) return response()->json(['message' => 'Forbidden'], 403);
 
         $request->validate([
-            'status' => ['required', Rule::in(['intent', 'active', 'expired', 'cancelled', 'rejected'])],
+            'status' => ['required', Rule::in(['intent', 'needs_info', 'active', 'expired', 'cancelled', 'rejected'])],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date'],
+            'plan_type' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $prev = (string) $membership->status;
-        $next = (string) $request->input('status');
+        $prevStatus = (string) $membership->status;
+        $nextStatus = (string) $request->input('status');
+
+        $prevStart = $membership->start_date ? (string) $membership->start_date : null;
+        $prevEnd = $membership->end_date ? (string) $membership->end_date : null;
+        $prevPlan = $membership->plan_type !== null ? (string) $membership->plan_type : null;
+        $prevNotes = $membership->notes !== null ? (string) $membership->notes : null;
+
+        if ($nextStatus === 'active' && $prevStatus !== 'active') {
+            return response()->json([
+                'message' => 'Use ownerActivate to approve/activate membership (sets dates and sends approval notification).'
+            ], 422);
+        }
 
         $payload = [
-            'status' => $next,
+            'status' => $nextStatus,
             'notes' => $request->input('notes', $membership->notes),
+            'plan_type' => $request->input('plan_type', $membership->plan_type),
         ];
 
         if ($request->filled('start_date')) $payload['start_date'] = $request->input('start_date');
         if ($request->filled('end_date')) $payload['end_date'] = $request->input('end_date');
-        if ($next === 'cancelled') $payload['cancelled_at'] = now();
+
+        if ($nextStatus === 'cancelled') {
+            $payload['cancelled_at'] = now();
+        }
 
         $membership->update($payload);
+        $membership = $membership->fresh();
 
-        if ($prev !== $next) {
-            $type = match ($next) {
-                'rejected' => 'MEMBERSHIP_REJECTED',
-                'cancelled' => 'MEMBERSHIP_CANCELLED',
-                'expired' => 'MEMBERSHIP_EXPIRED',
-                'active' => 'MEMBERSHIP_APPROVED',
-                default => 'MEMBERSHIP_UPDATED',
-            };
+        $newStart = $membership->start_date ? (string) $membership->start_date : null;
+        $newEnd = $membership->end_date ? (string) $membership->end_date : null;
+        $newPlan = $membership->plan_type !== null ? (string) $membership->plan_type : null;
+        $newNotes = $membership->notes !== null ? (string) $membership->notes : null;
 
-            $title = match ($next) {
-                'rejected' => 'Membership rejected',
-                'cancelled' => 'Membership cancelled',
-                'expired' => 'Membership expired',
-                'active' => 'Membership approved',
-                default => 'Membership updated',
-            };
+        $statusChanged = $prevStatus !== $nextStatus;
+        $startChanged = $prevStart !== $newStart;
+        $endChanged = $prevEnd !== $newEnd;
+        $planChanged = $prevPlan !== $newPlan;
+        $notesChanged = $prevNotes !== $newNotes;
 
-            $message = match ($next) {
-                'rejected' => 'Your membership request for "' . ($gym->name ?? 'a gym') . '" was rejected.',
-                'cancelled' => 'Your membership at "' . ($gym->name ?? 'a gym') . '" was cancelled.',
-                'expired' => 'Your membership at "' . ($gym->name ?? 'a gym') . '" has expired.',
-                'active' => 'Your membership at "' . ($gym->name ?? 'a gym') . '" is now active.',
-                default => 'Your membership status at "' . ($gym->name ?? 'a gym') . '" was updated.',
-            };
+        if ($statusChanged || $startChanged || $endChanged || $planChanged || $notesChanged) {
+            $type = 'MEMBERSHIP_UPDATED';
+            $title = 'Membership updated';
+            $message = 'Your membership at "' . ($gym->name ?? 'a gym') . '" was updated.';
+
+            if ($statusChanged) {
+                $type = match ($nextStatus) {
+                    'needs_info' => 'MEMBERSHIP_NEEDS_INFO',
+                    'rejected' => 'MEMBERSHIP_REJECTED',
+                    'cancelled' => 'MEMBERSHIP_CANCELLED',
+                    'expired' => 'MEMBERSHIP_EXPIRED',
+                    default => 'MEMBERSHIP_UPDATED',
+                };
+
+                $title = match ($nextStatus) {
+                    'needs_info' => 'Membership needs more info',
+                    'rejected' => 'Membership rejected',
+                    'cancelled' => 'Membership cancelled',
+                    'expired' => 'Membership expired',
+                    default => 'Membership updated',
+                };
+
+                $noteSuffix = '';
+                $note = trim((string) $request->input('notes', ''));
+                if ($nextStatus === 'needs_info' && $note !== '') {
+                    $noteSuffix = ' Note: ' . $note;
+                }
+
+                $message = match ($nextStatus) {
+                    'needs_info' => 'The gym requested more information for your membership at "' . ($gym->name ?? 'a gym') . '".' . $noteSuffix,
+                    'rejected' => 'Your membership request for "' . ($gym->name ?? 'a gym') . '" was rejected.',
+                    'cancelled' => 'Your membership at "' . ($gym->name ?? 'a gym') . '" was cancelled.',
+                    'expired' => 'Your membership at "' . ($gym->name ?? 'a gym') . '" has expired.',
+                    default => 'Your membership status at "' . ($gym->name ?? 'a gym') . '" was updated.',
+                };
+            } else {
+                if ($endChanged && $prevStatus === 'active' && $nextStatus === 'active') {
+                    $type = 'MEMBERSHIP_EXTENDED';
+                    $title = 'Membership updated';
+                    $message = 'Your membership at "' . ($gym->name ?? 'a gym') . '" was updated.';
+                }
+            }
 
             NotificationService::create([
                 'recipient_id' => (int) $membership->user_id,
@@ -313,15 +395,34 @@ class GymMembershipController extends Controller
                 'url' => '/home/memberships',
                 'meta' => [
                     'membership_id' => (int) $membership->membership_id,
-                    'prev' => $prev,
-                    'next' => $next,
+                    'prev_status' => $prevStatus,
+                    'next_status' => $nextStatus,
+                    'changed' => [
+                        'status' => (bool) $statusChanged,
+                        'start_date' => (bool) $startChanged,
+                        'end_date' => (bool) $endChanged,
+                        'plan_type' => (bool) $planChanged,
+                        'notes' => (bool) $notesChanged,
+                    ],
+                    'prev' => [
+                        'start_date' => $prevStart,
+                        'end_date' => $prevEnd,
+                        'plan_type' => $prevPlan,
+                        'notes' => $prevNotes,
+                    ],
+                    'next' => [
+                        'start_date' => $newStart,
+                        'end_date' => $newEnd,
+                        'plan_type' => $newPlan,
+                        'notes' => $newNotes,
+                    ],
                 ],
             ]);
         }
 
         return response()->json([
             'message' => 'Membership updated',
-            'membership' => $membership->fresh(),
+            'membership' => $membership,
         ]);
     }
 
