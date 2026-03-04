@@ -50,14 +50,20 @@ export default function OwnerLayout() {
     };
   }, [navigate]);
 
+  const pathname = String(location.pathname || "");
+
   const useHeader2 = useMemo(() => {
-    const p = String(location.pathname || "");
     return (
-      p.startsWith("/owner/home") ||
-      p.startsWith("/owner/inbox") ||
-      p.startsWith("/owner/view-stats")
+      pathname.startsWith("/owner/home") ||
+      pathname.startsWith("/owner/inbox") ||
+      pathname.startsWith("/owner/view-stats") ||
+      pathname.startsWith("/owner/view-gyms") // ✅ add this
     );
-  }, [location.pathname]);
+  }, [pathname]);
+
+  const hideFooter = useMemo(() => {
+    return pathname.startsWith("/owner/view-gyms"); // ✅ no footer here
+  }, [pathname]);
 
   if (!ready) return <OwnerLoading />;
 
@@ -65,7 +71,7 @@ export default function OwnerLayout() {
     <>
       {useHeader2 ? <HeaderOwnerStatic /> : <HeaderOwner />}
       <Outlet />
-      <Footer />
+      {!hideFooter && <Footer />}
     </>
   );
 }

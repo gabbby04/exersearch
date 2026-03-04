@@ -199,6 +199,8 @@ class GymOwnerApplicationController extends Controller
                 'longitude' => $application->longitude,
                 'daily_price' => $application->daily_price ?? null,
                 'monthly_price' => $application->monthly_price ?? 0.00,
+                'annual_price' => $application->quarterly_price ?? null, // map quarterly → annual
+
                 'main_image_url' => $application->main_image_url ?? null,
                 'gallery_urls' => $application->gallery_urls ?? [],
                 'gym_type' => $gym?->gym_type ?? 'General',
@@ -215,7 +217,6 @@ class GymOwnerApplicationController extends Controller
                 $gym->update($gymPayload);
             } else {
                 $gym = Gym::create(array_merge($gymPayload, [
-                    'annual_price' => null,
                     'opening_time' => null,
                     'closing_time' => null,
                     'contact_number' => null,

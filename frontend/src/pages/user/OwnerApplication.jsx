@@ -1402,7 +1402,7 @@ export default function OwnerApplication() {
                       ["Amenities", amenityLabel],
                       [
                         "Pricing",
-                        `Day ₱${form.dayPass || 0} | Monthly ₱${form.monthly || 0} | Quarterly ₱${form.quarterly || 0}`,
+                        `Day ₱${form.dayPass || 0} | Monthly ₱${form.monthly || 0} | Annual ₱${form.quarterly || 0}`,
                       ],
                     ],
                   },

@@ -57,6 +57,7 @@ import AdminTemplateDays from "./pages/admin/AdminTemplateDays";
 import AdminTemplateItems from "./pages/admin/AdminTemplateItems";
 import AdminDatabaseBackup from "./pages/admin/AdminDatabaseBackup";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
+import OwnerGymsPage from "./pages/owner/OwnerGymsPage";
 
 import ScrollToTop from "./utils/ScrollToTop";  // ← Changed from ../../utils // ← ADD THIS
 
@@ -108,6 +109,8 @@ function App() {
         </Route>
 
         <Route path="/owner/*" element={<OwnerLayout />}>
+                  <Route path="view-gyms" element={<OwnerGymsPage />} />
+
           <Route path="home" element={<OwnerHome />} />
           <Route path="profile" element={<OwnerProfile />} />
           <Route path="inbox" element={<OwnerInbox />} />
