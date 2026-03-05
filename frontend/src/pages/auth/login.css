@@ -113,12 +113,7 @@
   top: 24px; right: 28px;
   z-index: 10;
 }
-.auth-right__logo-img {
-  height: 40px;
-  width: auto;
-  display: block;
-  opacity: 0.85;
-}
+
 
 /* Center the form vertically; cap width so login doesn't stretch */
 .auth-right__inner {
@@ -243,7 +238,22 @@
 .auth-verify__btns  { display: flex; flex-direction: column; gap: 8px; }
 .auth-verify__ok    { font-size: 11.5px; color: var(--green); margin-top: 8px; animation: au .3s ease; }
 
-.auth-vbtn { width: 100%; padding: 11px; border-radius: var(--r-xl); font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all .2s; }
+.auth-vbtn {
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--r-xl);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all .2s;
+  margin-top: 10px; /* space from the button above */
+}
+
 .auth-vbtn--primary { background: var(--or); border: none; color: #fff; box-shadow: 0 4px 14px var(--or-glow); }
 .auth-vbtn--primary:hover { background: #d4460a; transform: translateY(-2px); }
 .auth-vbtn--outline { background: var(--cream); border: 1.5px solid var(--cream3); color: var(--black); }
@@ -252,6 +262,35 @@
 .auth-vbtn--ghost { background: #fef2f2; border: 1.5px solid #fecaca; color: var(--red); }
 .auth-vbtn--ghost:hover { background: #fee2e2; }
 
+.auth-home-btn {
+  background: var(--cream);
+  border: 2px solid var(--cream3);
+  border-radius: 10px;
+  padding: 9px 16px 9px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.auth-home-btn:hover {
+  color: #d4460a;
+  border-color: #d4460a;
+  background: #fff8f3;
+  box-shadow: 0 3px 12px rgba(212, 70, 10, 0.25);
+ 
+}
+
+.auth-home-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
 /* ══════════════════════
    RESPONSIVE
 ══════════════════════ */
@@ -279,8 +318,8 @@
     padding: 24px 20px 40px;
     margin: 0;
   }
-  .auth-right__logo { top: 16px; right: 16px; }
-  .auth-right__logo-img { height: 32px; }
+
+
   .auth-2col { grid-template-columns: 1fr; gap: 0; }
 }
 

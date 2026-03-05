@@ -11,6 +11,7 @@ import {
   Store,
   ShieldCheck,
   Mail,
+  Home,
   LogOut,
 } from "lucide-react";
 import "./login.css";
@@ -20,7 +21,7 @@ import { allowedUiModes } from "../../utils/roles";
 import { setUiMode } from "../../utils/appMode";
 
 const LOGO_LEFT_SRC = "/src/assets/exersearchlogo.png";
-const LOGO_RIGHT_SRC = "gymlogo.png";
+
 
 function prettyModeLabel(m) {
   if (m === "user") return "User";
@@ -749,7 +750,16 @@ export default function Auth() {
 
       <div className="auth-right">
         <div className="auth-right__logo">
-          <img src={LOGO_RIGHT_SRC} alt="Gym" className="auth-right__logo-img" />
+          <button
+            className="auth-home-btn"
+            type="button"
+            onClick={() => navigate('/')}
+            title="Back to home"
+          >
+            <Home size={15} strokeWidth={2} />
+            Home
+          </button>
+          
         </div>
 
         <div className="auth-right__inner">
