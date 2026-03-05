@@ -141,11 +141,8 @@ const INIT = {
 
 const fmtTime = (val) => HOURS.find((h) => h.value === val)?.label || val;
 
-
-
 function isValidEmail(v) {
   const s = String(v || "").trim();
-  // simple, practical email check
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
@@ -155,7 +152,6 @@ function normalizePhone(v) {
 
 function isValidPHMobile(v) {
   const s = normalizePhone(v);
-
   if (/^09\d{9}$/.test(s)) return true;
   if (/^\+639\d{9}$/.test(s)) return true;
   if (/^639\d{9}$/.test(s)) return true;
@@ -220,7 +216,6 @@ function TimePicker({ value, onChange }) {
 /* ============================
    API helpers (frontend)
    ============================ */
-
 function getTokenMaybe() {
   return localStorage.getItem("token") || "";
 }
@@ -502,6 +497,110 @@ function LeafletMap({ lat, lng, onPinAccepted }) {
   );
 }
 
+/* ============================
+   STATUS SCREENS
+   ============================ */
+function PendingScreen({ form, serverStatus }) {
+  return (
+    <div className="oa-app">
+      <HomeHeader />
+
+      <div className="oa-success">
+        <div className="oa-success-card">
+          <div className="oa-success-icon">
+            <FaCheckCircle />
+          </div>
+
+          <h1>Application Submitted!</h1>
+          <p>
+            Thank you, <strong>{form.fullName || "Owner"}</strong>. We'll review your application within 1–3 business
+            days.
+          </p>
+
+          <div className="oa-summary">
+            {[
+              ["Owner", form.fullName],
+              ["Business", form.businessName],
+              ["Gym", form.gymName],
+              ["City", form.city],
+            ].map(([k, v]) => (
+              <div key={k} className="oa-summary-row">
+                <span>{k}</span>
+                <strong>{v || "—"}</strong>
+              </div>
+            ))}
+
+            <div className="oa-summary-row">
+              <span>Status</span>
+              <span className="oa-badge">
+                {String(serverStatus || "").toLowerCase() === "approved" ||
+                String(serverStatus || "").toLowerCase() === "accepted"
+                  ? "✅ Approved"
+                  : String(serverStatus || "").toLowerCase() === "rejected"
+                  ? "❌ Rejected"
+                  : "⏳ Pending"}
+              </span>
+            </div>
+          </div>
+
+          <Link to="/home" className="oa-btn-primary">
+            Back to Home <FaArrowRight />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApprovedScreen({ form }) {
+  return (
+    <div className="oa-app">
+      <HomeHeader />
+
+      <div className="oa-success">
+        <div className="oa-success-card">
+          <div className="oa-success-icon">
+            <FaCheckCircle />
+          </div>
+
+          <h1>You’re Approved 🎉</h1>
+          <p>
+            Hi <strong>{form.fullName || "Owner"}</strong> — your Gym Owner account is active. You can now access the
+            Owner dashboard and manage your gyms.
+          </p>
+
+          <div className="oa-summary">
+            {[
+              ["Owner", form.fullName],
+              ["Business", form.businessName],
+              ["Gym", form.gymName],
+              ["City", form.city],
+            ].map(([k, v]) => (
+              <div key={k} className="oa-summary-row">
+                <span>{k}</span>
+                <strong>{v || "—"}</strong>
+              </div>
+            ))}
+
+            <div className="oa-summary-row">
+              <span>Status</span>
+              <span className="oa-badge">✅ Approved</span>
+            </div>
+          </div>
+
+          <Link to="/owner/dashboard" className="oa-btn-primary">
+            Go to Owner Dashboard <FaArrowRight />
+          </Link>
+
+          <Link to="/home" className="oa-btn-back" style={{ marginTop: 10, display: "inline-flex" }}>
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OwnerApplication() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(INIT);
@@ -511,6 +610,8 @@ export default function OwnerApplication() {
   const [submitting, setSubmitting] = useState(false);
   const [serverStatus, setServerStatus] = useState(null);
   const [serverApp, setServerApp] = useState(null);
+
+  const [me, setMe] = useState(null);
 
   const [amenities, setAmenities] = useState([]);
   const [photoURLs, setPhotoURLs] = useState([]);
@@ -526,7 +627,6 @@ export default function OwnerApplication() {
   };
 
   // ✅ FIX: amenities clicking
-  // Most common cause: API returns amenity_id not id -> Number(a.id) becomes NaN -> toggle ignored.
   const toggleAmenityId = useCallback((amenityObjOrId) => {
     const aid =
       typeof amenityObjOrId === "object" ? getAmenityId(amenityObjOrId) : Number(amenityObjOrId);
@@ -579,7 +679,6 @@ export default function OwnerApplication() {
     (async () => {
       try {
         const res = await getAmenities();
-        // ✅ support APIs returning {data:[...]} OR [...]
         const list = res?.data ?? res;
         if (!mounted) return;
         setAmenities(Array.isArray(list) ? list : []);
@@ -592,7 +691,6 @@ export default function OwnerApplication() {
     };
   }, []);
 
-  // Prefill from /me + existing application
   useEffect(() => {
     let mounted = true;
 
@@ -603,6 +701,8 @@ export default function OwnerApplication() {
         const meRes = await getMe();
         const user = meRes?.data ?? meRes ?? {};
         if (!mounted) return;
+
+        setMe(user);
 
         const fullNameGuess =
           [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim() || user?.name || "";
@@ -745,10 +845,8 @@ export default function OwnerApplication() {
 
     // STEP 3 validations
     if (step === 3) {
-      // businessReg file required if no server doc
       if (!form.businessReg && !serverApp?.document_path) e.businessReg = "Business registration upload is required.";
 
-      // file type/size checks (frontend)
       if (form.businessReg) {
         const okTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
         if (!okTypes.includes(form.businessReg.type)) {
@@ -758,11 +856,9 @@ export default function OwnerApplication() {
         if (form.businessReg.size > max) e.businessReg = "File too large (max 10MB).";
       }
 
-      // photos required: min 2 total (new + existing)
       const totalPhotos = (form.gymPhotos?.length || 0) + (form.galleryUrls?.length || 0);
       if (totalPhotos < 2) e.gymPhotos = "Minimum 2 photos required.";
 
-      // photo type/size checks
       for (const f of form.gymPhotos || []) {
         if (!String(f.type || "").startsWith("image/")) {
           e.gymPhotos = "Gym photos must be images only.";
@@ -792,9 +888,7 @@ export default function OwnerApplication() {
 
   const handleRegUpload = (e) => {
     const f = e.target.files?.[0];
-    if (f) {
-      set("businessReg", f);
-    }
+    if (f) set("businessReg", f);
   };
 
   const handlePhotos = (e) => {
@@ -855,13 +949,11 @@ export default function OwnerApplication() {
         return;
       }
 
-      // Upload business doc (optional if already exists)
       let document_path = serverApp?.document_path || null;
       if (form.businessReg) {
         document_path = await uploadOwnerApplicationFile(form.businessReg, "docs");
       }
 
-      // Upload new gym photos
       const newlyUploadedGallery = await uploadSelectedGymPhotos();
 
       const mergedGallery = Array.from(
@@ -906,6 +998,7 @@ export default function OwnerApplication() {
         businessReg: null,
       }));
 
+      // ✅ important: show waiting screen immediately
       setSubmitted(true);
     } catch (err) {
       alert(err?.message || "Failed to submit application.");
@@ -930,54 +1023,34 @@ export default function OwnerApplication() {
     return labels.length ? labels.join(", ") : "None";
   }, [amenities, form.amenityIds]);
 
-  if (submitted)
-    return (
-  
-      <div className="oa-app">
-              <HomeHeader />
+  // ✅ ROLE/STATUS GATING (THIS IS WHAT YOU ASKED FOR)
+  const normalizedStatus = String(serverStatus || "").toLowerCase();
+  const isApproved = normalizedStatus === "approved" || normalizedStatus === "accepted";
+  const isPending = normalizedStatus === "pending";
 
-        <div className="oa-success">
-          <div className="oa-success-card">
-            <div className="oa-success-icon">
-              <FaCheckCircle />
-            </div>
-            <h1>Application Submitted!</h1>
-            <p>
-              Thank you, <strong>{form.fullName}</strong>. We'll review your application within 1–3 business days.
-            </p>
+  const roleGuess = String(me?.role ?? me?.user_role ?? me?.type ?? me?.account_type ?? "").toLowerCase();
+  const isOwnerByRole =
+    roleGuess === "owner" ||
+    roleGuess === "gym_owner" ||
+    roleGuess === "gym-owner" ||
+    roleGuess === "gym owner" ||
+    me?.is_owner === true ||
+    me?.isOwner === true;
 
-            <div className="oa-summary">
-              {[
-                ["Owner", form.fullName],
-                ["Business", form.businessName],
-                ["Gym", form.gymName],
-                ["City", form.city],
-              ].map(([k, v]) => (
-                <div key={k} className="oa-summary-row">
-                  <span>{k}</span>
-                  <strong>{v}</strong>
-                </div>
-              ))}
+  // ✅ If already owner OR application accepted -> show approved screen
+  if (isOwnerByRole || isApproved) {
+    return <ApprovedScreen form={form} />;
+  }
 
-              <div className="oa-summary-row">
-                <span>Status</span>
-                <span className="oa-badge">
-                  {serverStatus === "approved"
-                    ? "✅ Approved"
-                    : serverStatus === "rejected"
-                    ? "❌ Rejected"
-                    : "⏳ Pending"}
-                </span>
-              </div>
-            </div>
+  // ✅ If pending on server -> always show waiting page (even after refresh)
+  if (isPending) {
+    return <PendingScreen form={form} serverStatus={serverStatus} />;
+  }
 
-            <Link to="/home" className="oa-btn-primary">
-              Back to Home <FaArrowRight />
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+  // ✅ If just submitted in this session -> show waiting page
+  if (submitted) {
+    return <PendingScreen form={form} serverStatus={serverStatus || "pending"} />;
+  }
 
   return (
     <div className="oa-app">
@@ -994,9 +1067,7 @@ export default function OwnerApplication() {
                   onClick={() => goTo(i)}
                   style={{ cursor: i < step ? "pointer" : "default" }}
                 >
-                  <div className="oa-step-bubble">
-                    {i < step ? <FaCheck size={11} /> : <SIcon size={13} />}
-                  </div>
+                  <div className="oa-step-bubble">{i < step ? <FaCheck size={11} /> : <SIcon size={13} />}</div>
                   <span>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && <div className={`oa-step-line ${i < step ? "done" : ""}`} />}
@@ -1023,10 +1094,7 @@ export default function OwnerApplication() {
 
             <div className="oa-sidebar-progress">
               <div className="oa-sidebar-progress-track">
-                <div
-                  className="oa-sidebar-progress-fill"
-                  style={{ height: `${(step / (STEPS.length - 1)) * 100}%` }}
-                />
+                <div className="oa-sidebar-progress-fill" style={{ height: `${(step / (STEPS.length - 1)) * 100}%` }} />
               </div>
               <div className="oa-sidebar-progress-labels">
                 {STEPS.map((s, i) => (
@@ -1283,7 +1351,9 @@ export default function OwnerApplication() {
                   </div>
 
                   {errors.map && <p className="oa-err-msg">{errors.map}</p>}
-                  <p className="oa-map-hint">💡 If you don’t pin, we’ll try to convert your address into coordinates during submit.</p>
+                  <p className="oa-map-hint">
+                    💡 If you don’t pin, we’ll try to convert your address into coordinates during submit.
+                  </p>
                 </div>
               </div>
             )}
@@ -1335,7 +1405,8 @@ export default function OwnerApplication() {
                   <label>
                     Gym Photos <span className="req">*</span>
                     <span className="label-hint">
-                      Selected {form.gymPhotos.length}/8 — Saved on server {(form.galleryUrls?.length || 0)} — min. 2 total
+                      Selected {form.gymPhotos.length}/8 — Saved on server {(form.galleryUrls?.length || 0)} — min. 2
+                      total
                     </span>
                   </label>
 
@@ -1482,6 +1553,7 @@ export default function OwnerApplication() {
           </div>
         </main>
       </div>
+
 
     </div>
   );

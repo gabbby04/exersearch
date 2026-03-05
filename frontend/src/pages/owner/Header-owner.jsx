@@ -499,7 +499,7 @@ export default function HeaderOwner() {
                     <div className="uhv-pmi-icon" style={{ background: "#eff6ff", color: "#3b82f6" }}>
                       <UserCircle size={15} />
                     </div>
-                    Profile (Soon)
+                    Profile
                   </Link>
 
                   {switchModes.length > 0 && (

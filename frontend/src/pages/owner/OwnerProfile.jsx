@@ -62,17 +62,31 @@ export default function Profile() {
     updated_at: "",
   });
 
-  const [formData, setFormData] = useState({ ...ownerData });
+  const [formData, setFormData] = useState({
+    profile_photo_url: "",
+    contact_number: "",
+    address: "",
+    company_name: "",
+    verified: false,
+    created_at: "",
+    updated_at: "",
+  });
 
   const avatarSrc = useMemo(() => {
     if (localPreview) return localPreview;
     const raw =
-      (isEditingProfile ? formData.profile_photo_url : ownerData.profile_photo_url) ||
-      "";
+      (isEditingProfile
+        ? formData.profile_photo_url
+        : ownerData.profile_photo_url) || "";
     if (!raw) return FALLBACK_AVATAR;
     if (raw.startsWith("http")) return raw;
     return `${API_BASE}${raw}`;
-  }, [localPreview, isEditingProfile, formData.profile_photo_url, ownerData.profile_photo_url]);
+  }, [
+    localPreview,
+    isEditingProfile,
+    formData.profile_photo_url,
+    ownerData.profile_photo_url,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -116,6 +130,7 @@ export default function Profile() {
         setFormData(nextOwner);
         setLocalPreview("");
         setSelectedFile(null);
+        if (fileRef.current) fileRef.current.value = "";
       } catch (err) {
         alertError({
           title: "Failed to load owner profile",
@@ -153,7 +168,12 @@ export default function Profile() {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      alertInfo({ title: "File too large", text: "Max 2MB.", theme, mainColor: MAIN });
+      alertInfo({
+        title: "File too large",
+        text: "Max 2MB.",
+        theme,
+        mainColor: MAIN,
+      });
       return;
     }
 
@@ -176,6 +196,8 @@ export default function Profile() {
     processFile(e.dataTransfer.files?.[0]);
   };
 
+  // ✅ Upload ONLY uploads the image and stores the returned URL into formData.
+  // ✅ It does NOT call upsertMyOwnerProfile (so nothing gets wiped, and nothing is saved yet).
   const uploadAvatar = async () => {
     const file = selectedFile;
 
@@ -203,10 +225,11 @@ export default function Profile() {
         return;
       }
 
-      await upsertMyOwnerProfile({ profile_photo_url: url });
-
-      setOwnerData((p) => ({ ...p, profile_photo_url: url }));
+      // store in form (so Save will include it)
       setFormData((p) => ({ ...p, profile_photo_url: url }));
+
+      // update UI immediately (optional, but feels nicer)
+      setOwnerData((p) => ({ ...p, profile_photo_url: url }));
 
       if (localPreview) URL.revokeObjectURL(localPreview);
       setLocalPreview("");
@@ -214,11 +237,11 @@ export default function Profile() {
       if (fileRef.current) fileRef.current.value = "";
 
       alertSuccess({
-        title: "Photo updated",
-        text: "Owner profile photo updated.",
+        title: "Photo uploaded",
+        text: "Click Save Changes to apply it.",
         theme,
         mainColor: MAIN,
-      }).then(() => window.location.reload());
+      });
     } catch (err) {
       const validation = err?.response?.data?.errors
         ? Object.values(err.response.data.errors).flat().join("\n")
@@ -239,6 +262,7 @@ export default function Profile() {
     setSavingProfile(true);
     try {
       const payload = {
+        // ✅ includes photo url set by uploadAvatar
         profile_photo_url: formData.profile_photo_url || null,
         contact_number: safeStr(formData.contact_number).trim() || null,
         address: safeStr(formData.address).trim() || null,
@@ -247,12 +271,20 @@ export default function Profile() {
 
       await upsertMyOwnerProfile(payload);
 
+      // update local display state instead of reloading
+      setOwnerData((p) => ({
+        ...p,
+        ...payload,
+      }));
+
       alertSuccess({
         title: "Owner profile updated",
         text: "Changes saved.",
         theme,
         mainColor: MAIN,
-      }).then(() => window.location.reload());
+      });
+
+      setIsEditingProfile(false);
     } catch (err) {
       const validation = err?.response?.data?.errors
         ? Object.values(err.response.data.errors).flat().join("\n")
@@ -321,7 +353,7 @@ export default function Profile() {
               <button
                 className="btn-primary"
                 onClick={() => setIsEditingProfile(true)}
-                disabled={uploading}
+                disabled={uploading || savingProfile}
               >
                 <Pencil size={15} /> Edit Owner Profile
               </button>
@@ -343,7 +375,7 @@ export default function Profile() {
                     <button
                       className="btn-primary"
                       onClick={uploadAvatar}
-                      disabled={uploading}
+                      disabled={uploading || savingProfile}
                       style={{ padding: "0.75rem" }}
                     >
                       <Upload size={15} /> {uploading ? "Uploading..." : "Upload"}
@@ -356,7 +388,7 @@ export default function Profile() {
                         setSelectedFile(null);
                         if (fileRef.current) fileRef.current.value = "";
                       }}
-                      disabled={uploading}
+                      disabled={uploading || savingProfile}
                       style={{ padding: "0.75rem" }}
                     >
                       <X size={15} /> Clear

@@ -65,6 +65,7 @@ use App\Http\Controllers\FaqController;
 
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GymAnnouncementController;
+use App\Http\Controllers\AdminDashboardController;
 
 Route::prefix('v1')->group(function () {
 
@@ -335,7 +336,7 @@ Route::prefix('v1')->group(function () {
 
                 Route::get('/admin/settings', [AdminAppSettingsController::class, 'show']);
                 Route::put('/admin/settings', [AdminAppSettingsController::class, 'update']);
-
+                Route::get('/admin/dashboard', [AdminDashboardController::class, 'show']);
                 Route::get('/admin/profile', [AdminProfileController::class, 'show']);
                 Route::put('/admin/profile', [AdminProfileController::class, 'update']);
 

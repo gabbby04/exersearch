@@ -62,7 +62,7 @@ export default function OwnerLayout() {
   }, [pathname]);
 
   const hideFooter = useMemo(() => {
-    return pathname.startsWith("/owner/view-gyms"); // ✅ no footer here
+    return pathname.startsWith("/owner/view-gyms"); 
   }, [pathname]);
 
   if (!ready) return <OwnerLoading />;

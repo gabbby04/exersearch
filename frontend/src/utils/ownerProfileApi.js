@@ -18,9 +18,16 @@ export async function upsertMyOwnerProfile(payload = {}) {
 }
 
 export async function uploadOwnerAvatar(file) {
-  if (!file) throw new Error("file is required");
+  if (!file) throw new Error("file required");
+
   const fd = new FormData();
   fd.append("photo", file);
-  const res = await api.post("/me/avatar/owner", fd);
+
+  const res = await api.post("/me/avatar/owner", fd, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return res.data?.avatar_url || "";
 }
