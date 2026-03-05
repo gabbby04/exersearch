@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+// src/pages/owner/OwnerGymsPage.jsx
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import * as THREE from "three";
+import { gsap } from "gsap";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./Homestyles.css";
+
+import "./../owner/OwnerGymsPage.scss";
 
 import {
   fetchAmenities,
@@ -28,6 +32,7 @@ import {
 
 const RESULTS_ROUTE = "/home/gym-results";
 const MAIN_ORANGE = "#ff8c00";
+const RESULTS_CACHE_KEY = "exersearch_results_cache_v1";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -65,8 +70,28 @@ function getSelectedLocationKey(selectedItems) {
   return k || null;
 }
 
-export default function FindGyms() {
+export default function OwnerGymsPage() {
   const navigate = useNavigate();
+
+  const mountRef = useRef(null);
+
+  const cameraRef = useRef(null);
+  const sceneRef = useRef(null);
+  const rendererRef = useRef(null);
+  const planeRef = useRef(null);
+
+  const rafRef = useRef(0);
+  const timerRef = useRef(0);
+
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const mouseRef = useRef({ x: 0, y: -180 });
+
+  const nearStarsRef = useRef(null);
+  const farStarsRef = useRef(null);
+  const farthestStarsRef = useRef(null);
+
+  const introRef = useRef(null);
+  const xMarkRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -92,6 +117,7 @@ export default function FindGyms() {
   const [optionsError, setOptionsError] = useState(null);
 
   const [prefsLoading, setPrefsLoading] = useState(false);
+  const [hasComputedBefore, setHasComputedBefore] = useState(false);
 
   const [previewEquip, setPreviewEquip] = useState(null);
 
@@ -123,6 +149,15 @@ export default function FindGyms() {
   };
 
   const isSelected = (key) => !!selectedItems[key];
+
+  useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem(RESULTS_CACHE_KEY);
+      setHasComputedBefore(!!cached);
+    } catch {
+      setHasComputedBefore(false);
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -196,7 +231,7 @@ export default function FindGyms() {
 
           setSelectedItems(nextSelected);
         } catch (e) {
-          console.warn("[FindGyms] user preference load skipped:", e?.message || e);
+          console.warn("[OwnerGymsPage] user preference load skipped:", e?.message || e);
         }
       } catch (e) {
         console.error(e);
@@ -217,16 +252,268 @@ export default function FindGyms() {
 
   const grouped = useMemo(() => groupEquipmentsByTypeAndMuscle(equipments), [equipments]);
 
-  const openModal = () => {
-    setIsModalOpen(true);
-    setCurrentStep(0);
-  };
+  useEffect(() => {
+    const mountEl = mountRef.current;
+    if (!mountEl) return;
+
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 50;
+    cameraRef.current = camera;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setClearColor("#070707", 1.0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    rendererRef.current = renderer;
+
+    mountEl.appendChild(renderer.domElement);
+
+    const topLight = new THREE.DirectionalLight(0xffb14a, 1.1);
+    topLight.position.set(0, 1, 1).normalize();
+    scene.add(topLight);
+
+    const bottomLight = new THREE.DirectionalLight(0xff6a00, 0.35);
+    bottomLight.position.set(1, -1, 1).normalize();
+    scene.add(bottomLight);
+
+    const fillA = new THREE.DirectionalLight(0x331100, 0.25);
+    fillA.position.set(-1, -0.5, 0.2).normalize();
+    scene.add(fillA);
+
+    const fillB = new THREE.DirectionalLight(0x220a00, 0.18);
+    fillB.position.set(1, -0.8, 0.1).normalize();
+    scene.add(fillB);
+
+    const geometry = new THREE.PlaneGeometry(400, 400, 70, 70);
+
+    if (geometry.vertices) {
+      geometry.vertices.forEach((v) => {
+        v.x += (Math.random() - 0.5) * 4;
+        v.y += (Math.random() - 0.5) * 4;
+        v.z += (Math.random() - 0.5) * 4;
+
+        v.dx = Math.random() - 0.5;
+        v.dy = Math.random() - 0.5;
+        v.randomDelay = Math.random() * 5;
+      });
+    }
+
+    const TOP = { r: 255, g: 168, b: 60 };
+    const MID = { r: 255, g: 106, b: 0 };
+    const BOT = { r: 0, g: 0, b: 0 };
+
+    const clamp01 = (n) => Math.max(0, Math.min(1, n));
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const yMin = -200;
+    const yMax = 200;
+
+    const colorAtT = (t) => {
+      if (t < 0.55) {
+        const tt = t / 0.55;
+        return {
+          r: Math.round(lerp(BOT.r, MID.r, tt)),
+          g: Math.round(lerp(BOT.g, MID.g, tt)),
+          b: Math.round(lerp(BOT.b, MID.b, tt)),
+        };
+      }
+      const tt = (t - 0.55) / 0.45;
+      return {
+        r: Math.round(lerp(MID.r, TOP.r, tt)),
+        g: Math.round(lerp(MID.g, TOP.g, tt)),
+        b: Math.round(lerp(MID.b, TOP.b, tt)),
+      };
+    };
+
+    const faceCenterY = (face) => {
+      const a = geometry.vertices[face.a];
+      const b = geometry.vertices[face.b];
+      const c = geometry.vertices[face.c];
+      return (a.y + b.y + c.y) / 3;
+    };
+
+    if (geometry.faces) {
+      for (let i = 0; i < geometry.faces.length; i++) {
+        const face = geometry.faces[i];
+        const cy = faceCenterY(face);
+
+        const tLinear = (cy - yMin) / (yMax - yMin);
+        const t = clamp01(Math.pow(tLinear, 2.6));
+        const c = colorAtT(t);
+        face.color.setStyle(`rgb(${c.r},${c.g},${c.b})`);
+        face.baseColor = { ...c };
+      }
+    }
+
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      side: THREE.DoubleSide,
+      vertexColors: THREE.FaceColors,
+      flatShading: true,
+      shininess: 12,
+    });
+
+    const plane = new THREE.Mesh(geometry, material);
+    planeRef.current = plane;
+    plane.position.y = 40;
+    plane.rotation.x = -0.12;
+    scene.add(plane);
+
+    function createStars(amount, yDistance, color = "#ff8c1a") {
+      const starGeometry = new THREE.Geometry();
+
+      const starMaterial = new THREE.PointsMaterial({
+        color,
+        opacity: 0.7,
+        transparent: true,
+        size: 2.2,
+        sizeAttenuation: true,
+      });
+
+      for (let i = 0; i < amount; i++) {
+        const vertex = new THREE.Vector3();
+        vertex.z = (Math.random() - 0.5) * 1500;
+        vertex.y = yDistance;
+        vertex.x = (Math.random() - 0.5) * 1500;
+        starGeometry.vertices.push(vertex);
+      }
+
+      return new THREE.Points(starGeometry, starMaterial);
+    }
+
+    const farthestStars = createStars(900, 420, "#ff6a00");
+    const farStars = createStars(900, 370, "#ff8c1a");
+    const nearStars = createStars(900, 290, "#ffb14a");
+
+    farStars.rotation.x = 0.25;
+    nearStars.rotation.x = 0.25;
+
+    farthestStarsRef.current = farthestStars;
+    farStarsRef.current = farStars;
+    nearStarsRef.current = nearStars;
+
+    scene.add(farthestStars);
+    scene.add(farStars);
+    scene.add(nearStars);
+
+    const renderLoop = () => {
+      rafRef.current = requestAnimationFrame(renderLoop);
+
+      timerRef.current += 0.01;
+      const t = timerRef.current;
+
+      const verts = plane.geometry.vertices || [];
+      for (let i = 0; i < verts.length; i++) {
+        verts[i].x -= (Math.sin(t + verts[i].randomDelay) / 40) * verts[i].dx;
+        verts[i].y += (Math.sin(t + verts[i].randomDelay) / 40) * verts[i].dy;
+      }
+
+      const raycaster = raycasterRef.current;
+      const normalizedMouse = mouseRef.current;
+
+      raycaster.setFromCamera(normalizedMouse, camera);
+      const intersects = raycaster.intersectObjects([plane]);
+
+      if (intersects.length > 0 && plane.geometry.faces) {
+        plane.geometry.faces.forEach((face) => {
+          const base = face.baseColor || { r: 0, g: 0, b: 0 };
+
+          face.color.r *= 255;
+          face.color.g *= 255;
+          face.color.b *= 255;
+
+          face.color.r += (base.r - face.color.r) * 0.02;
+          face.color.g += (base.g - face.color.g) * 0.02;
+          face.color.b += (base.b - face.color.b) * 0.02;
+
+          face.color.setStyle(
+            `rgb(${Math.floor(face.color.r)},${Math.floor(face.color.g)},${Math.floor(face.color.b)})`
+          );
+        });
+
+        intersects[0].face.color.setStyle("#ffb14a");
+        plane.geometry.colorsNeedUpdate = true;
+      }
+
+      plane.geometry.verticesNeedUpdate = true;
+      plane.geometry.elementsNeedUpdate = true;
+
+      farthestStars.rotation.y -= 0.00001;
+      farStars.rotation.y -= 0.00005;
+      nearStars.rotation.y -= 0.00011;
+
+      renderer.render(scene, camera);
+    };
+
+    renderLoop();
+
+    const onResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+
+    const onMouseMove = (event) => {
+      mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    };
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("mousemove", onMouseMove);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("mousemove", onMouseMove);
+
+      cancelAnimationFrame(rafRef.current);
+
+      try {
+        scene.remove(plane);
+        plane.geometry.dispose();
+        plane.material.dispose();
+
+        [nearStars, farStars, farthestStars].forEach((s) => {
+          scene.remove(s);
+          s.geometry.dispose();
+          s.material.dispose();
+        });
+
+        renderer.dispose();
+        if (renderer.domElement?.parentNode) {
+          renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
+      } catch {}
+    };
+  }, []);
 
   const closeModal = () => {
     if (savingPhase || rankingPhase) return;
     setIsModalOpen(false);
     setPreviewEquip(null);
     setShowSuggestions(false);
+
+    const camera = cameraRef.current;
+    const plane = planeRef.current;
+    if (!camera || !plane) return;
+
+    const intro = introRef.current;
+    const xMark = xMarkRef.current;
+
+    const tl = gsap.timeline();
+    tl.to(xMark, { duration: 0.5, opacity: 0, ease: "power3.inOut" }, 0);
+    tl.to(camera.rotation, { duration: 3, x: 0, ease: "power3.inOut" }, 0);
+    tl.to(camera.position, { duration: 3, z: 50, ease: "power3.inOut" }, 0);
+    tl.to(camera.position, { duration: 2.5, y: 0, ease: "power3.inOut" }, 0);
+    tl.to(plane.scale, { duration: 3, x: 1, ease: "power3.inOut" }, 0);
+    tl.to(intro, { duration: 0.5, opacity: 1, ease: "power3.in" }, ">-0.2");
   };
 
   const nextStep = () => {
@@ -239,22 +526,26 @@ export default function FindGyms() {
 
   const addSelected = (key) => {
     if (key.startsWith("location:")) {
-      const next = {};
-      Object.keys(selectedItems).forEach((k) => {
-        if (!k.startsWith("location:")) next[k] = true;
+      setSelectedItems((prev) => {
+        const next = {};
+        Object.keys(prev).forEach((k) => {
+          if (!k.startsWith("location:")) next[k] = true;
+        });
+        next[key] = true;
+        return next;
       });
-      next[key] = true;
-      setSelectedItems(next);
       return;
     }
 
     if (key.startsWith("budget:")) {
-      const next = {};
-      Object.keys(selectedItems).forEach((k) => {
-        if (!k.startsWith("budget:")) next[k] = true;
+      setSelectedItems((prev) => {
+        const next = {};
+        Object.keys(prev).forEach((k) => {
+          if (!k.startsWith("budget:")) next[k] = true;
+        });
+        next[key] = true;
+        return next;
       });
-      next[key] = true;
-      setSelectedItems(next);
       return;
     }
 
@@ -320,6 +611,11 @@ export default function FindGyms() {
 
       setProgress(100);
 
+      try {
+        sessionStorage.removeItem(RESULTS_CACHE_KEY);
+      } catch {}
+
+      setHasComputedBefore(false);
       setSavingPhase(false);
       setRankingPhase(false);
       setProgress(0);
@@ -530,7 +826,7 @@ export default function FindGyms() {
                     key={e.equipment_id}
                     className="option equip-card"
                     style={picked ? selectedStyle : undefined}
-                    onClick={() => addSelected(key)}
+                    onClick={() => !(savingPhase || rankingPhase) && addSelected(key)}
                   >
                     <div className="equip-topbar">
                       <strong className="equip-title">{e.name}</strong>
@@ -754,6 +1050,36 @@ export default function FindGyms() {
     );
   };
 
+  const handleShiftCamera = () => {
+    const camera = cameraRef.current;
+    const plane = planeRef.current;
+
+    if (!camera || !plane) return;
+
+    const intro = introRef.current;
+    const xMark = xMarkRef.current;
+
+    const tl = gsap.timeline();
+
+    tl.to(intro, { duration: 0.5, opacity: 0, ease: "power3.in" }, 0);
+    tl.to(camera.rotation, { duration: 3, x: Math.PI / 2, ease: "power3.inOut" }, 0);
+    tl.to(camera.position, { duration: 2.5, z: 20, ease: "power3.inOut" }, 0);
+    tl.to(camera.position, { duration: 3, y: 120, ease: "power3.inOut" }, 0);
+    tl.to(plane.scale, { duration: 3, x: 2, ease: "power3.inOut" }, 0);
+
+    tl.to(xMark, { duration: 2, opacity: 1, ease: "power3.inOut" }, ">-0.2");
+    tl.call(() => {
+      setIsModalOpen(true);
+      setCurrentStep(0);
+    }, [], "<");
+  };
+
+  const handleGoToPreviousResults = () => {
+    navigate(RESULTS_ROUTE, {
+      replace: false,
+    });
+  };
+
   const isLastStep = currentStep === sections.length - 1;
 
   const showOverlay = savingPhase || rankingPhase;
@@ -764,14 +1090,54 @@ export default function FindGyms() {
 
   return (
     <div className="find-gyms-page">
-      <section className="section-hero">
-        <div className="hero-overlay">
-          <h1>FIND THE GYM THAT FITS YOUR LIFESTYLE</h1>
-          <button onClick={openModal} className="hero-btn">
-            Set Preference
-          </button>
+      <div className="star-intro-root">
+        <div className="three-mount" ref={mountRef} />
+
+        <div className="x-mark" ref={xMarkRef} onClick={closeModal}>
+          <div className="container">
+            <div className="left" />
+            <div className="right" />
+          </div>
         </div>
-      </section>
+
+        <div className="intro-container" ref={introRef}>
+          <h2 className="fancy-text">Exersearch</h2>
+          <h1>
+            FIND THE BEST GYM
+            <br />
+            FOR YOUR GOALS
+          </h1>
+<div
+  style={{
+    display: "flex",
+    gap: "14px",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  {/* MAIN SEARCH BUTTON */}
+  <div className="button shift-camera-button" onClick={handleShiftCamera}>
+    <div className="border">
+      <div className="left-plane" />
+      <div className="right-plane" />
+    </div>
+    <div className="text">Search Now</div>
+  </div>
+
+  {/* PREVIOUS RESULTS BUTTON */}
+  {hasComputedBefore && (
+    <div className="button shift-camera-button" onClick={handleGoToPreviousResults}>
+      <div className="border">
+        <div className="left-plane" />
+        <div className="right-plane" />
+      </div>
+      <div className="text">Previous Result</div>
+    </div>
+  )}
+</div>
+        </div>
+      </div>
 
       {isModalOpen && (
         <div className="fg-modal-bg" onClick={closeModal}>

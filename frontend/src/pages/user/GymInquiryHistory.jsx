@@ -9,10 +9,9 @@ import InquiryComposeModal from "./InquiryComposeModal";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-/* ---------------- helpers ---------------- */
+/* ---------------- helpers ---------------- */ 
 const PH_TZ = "Asia/Manila";
 
-// ✅ change this to your real backend base (prod)
 const API_BASE = "https://exersearch.test";
 
 function safeStr(v) {
@@ -455,11 +454,7 @@ export default function GymInquiryHistory() {
 
   return (
     <div className="ih-page">
-      <div className="ih-bg" aria-hidden="true">
-        <div className="wave"></div>
-        <div className="wave"></div>
-        <div className="wave"></div>
-      </div>
+
 
       <div className="app" ref={listRef}>
         {/* TOP HEADER */}
@@ -512,7 +507,9 @@ export default function GymInquiryHistory() {
         <div className="wrapper">
           {/* LEFT LIST */}
           <div className="conversation-area">
-            <div className="ih-left-header">
+<div className="ih-left-header">
+
+  <div className="ih-left-top">
               <div className="ih-left-title">
                 <div className="ih-left-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -526,7 +523,20 @@ export default function GymInquiryHistory() {
                   <div className="ih-left-sub">{loading ? "Loading…" : `${filteredLeft.length} shown`}</div>
                 </div>
               </div>
-            </div>
+
+
+  </div>
+
+  <div className="ih-left-search">
+    <input
+      type="text"
+      placeholder="Search conversations"
+      value={searchLeft}
+      onChange={(e) => setSearchLeft(e.target.value)}
+    />
+  </div>
+
+</div>
 
             {loading ? (
               <div className="ih-empty">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import HeaderUser from "./Header-user";
+import HeaderUserStatic from "./HomeHeader";
 import Footer from "./Footer";
 import UserLoading from "./UserLoading";
 import { api } from "../../utils/apiClient";
@@ -12,12 +13,18 @@ const ROLE_LEVEL = {
   superadmin: 4,
 };
 
+const USER_LAYOUT_LOADED_KEY = "user_layout_loaded_once";
+
 function hasAtLeastRole(role, required) {
   return (ROLE_LEVEL[role] || 0) >= (ROLE_LEVEL[required] || 0);
 }
 
 export default function UserLayout() {
   const [ready, setReady] = useState(false);
+  const [showLoader] = useState(() => {
+    return !sessionStorage.getItem(USER_LAYOUT_LOADED_KEY);
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,7 +39,10 @@ export default function UserLayout() {
           return;
         }
 
-        const minDelay = new Promise((r) => setTimeout(r, 800));
+        const minDelay = showLoader
+          ? new Promise((r) => setTimeout(r, 800))
+          : Promise.resolve();
+
         const meReq = api.get("/me");
 
         const [meRes] = await Promise.all([meReq, minDelay]);
@@ -44,6 +54,8 @@ export default function UserLayout() {
         }
 
         if (!alive) return;
+
+        sessionStorage.setItem(USER_LAYOUT_LOADED_KEY, "1");
         setReady(true);
       } catch (err) {
         if (err?.response?.status === 503) {
@@ -51,6 +63,7 @@ export default function UserLayout() {
           return;
         }
         localStorage.removeItem("token");
+        sessionStorage.removeItem(USER_LAYOUT_LOADED_KEY);
         navigate("/login", { replace: true });
       }
     };
@@ -59,21 +72,30 @@ export default function UserLayout() {
     return () => {
       alive = false;
     };
-  }, [navigate]);
+  }, [navigate, showLoader]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  if (!ready) return <UserLoading />;
+  if (!ready && showLoader) return <UserLoading />;
+  if (!ready) return null;
 
   const hideHeader = location.pathname === "/home";
+  const useHomeHeader =
+    location.pathname.includes("/inquiries") ||
+    location.pathname.includes("/find-gyms");
+
+  const hideFooter = location.pathname.includes("/find-gyms");
 
   return (
     <>
-      {!hideHeader && <HeaderUser />}
+      {!hideHeader &&
+        (useHomeHeader ? <HeaderUserStatic /> : <HeaderUser />)}
+
       <Outlet />
-      <Footer />
+
+      {!hideFooter && <Footer />}
     </>
   );
 }
