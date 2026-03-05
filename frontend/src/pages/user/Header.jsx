@@ -1,70 +1,100 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './HF.css';
+import './HeaderFooter.css';
 import logo from '../../assets/exersearchlogo.png';
 
-export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+const LEFT_LINKS  = [
+  { to: '/about',        label: 'About Us' },
+  { to: '/why-exersearch',      label: 'Why Exersearch' },
+  { to: '/how-it-works', label: 'How It Works' },
+  { to: '/reviews',      label: 'Reviews' },
+  
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
+];
+const RIGHT_LINKS = [
+  { to: '/contact-us',       label: 'Contact' },
+  { to: '/faqs',       label: 'FAQs' },
+  { to: '/philosophy', label: 'Our Philosophy' },
+
+];
+
+export default function LandingHeader() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled,  setScrolled]  = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.pageYOffset > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
 
   return (
     <>
-      {/* Fixed Logo - Always visible, never moves */}
-      <div className={`top-logo ${isScrolled ? 'scrolled' : ''}`}>
-        <Link to="/">
-          <img src={logo} alt="ExerSearch Logo" />
-        </Link>
-      </div>
+      <header className={`lnd-bar ${scrolled ? 'lnd-bar--light' : 'lnd-bar--dark'}`}>
+        <div className="lnd-bar__inner">
 
-      {/* Scroll-triggered Header */}
-      <header className={`header ${isScrolled ? 'header--scrolled' : ''}`}>
-        <div className="logo">
-          <Link to="/">
-            <img src={logo} alt="Logo" />
+          {/* LEFT — 3 nav links */}
+          <nav className="lnd-nav lnd-nav--left">
+            {LEFT_LINKS.map(({ to, label }) => (
+              <Link key={to} to={to} className="lnd-nav__item">{label}</Link>
+            ))}
+          </nav>
+
+          {/* CENTER — logo absolutely centered on viewport */}
+          <Link to="/" className="lnd-wordmark" onClick={() => setMenuOpen(false)}>
+            <img src={logo} alt="ExerSearch" className="lnd-wordmark__img" />
           </Link>
-        </div>
 
-        <nav className="nav-links">
-          <Link to="/login">LOGIN</Link>
-        </nav>
+          {/* RIGHT — 2 nav links + divider + buttons */}
+          <div className="lnd-right">
+            <nav className="lnd-nav lnd-nav--right">
+              {RIGHT_LINKS.map(({ to, label }) => (
+                <Link key={to} to={to} className="lnd-nav__item">{label}</Link>
+              ))}
+            </nav>
+            <div className="lnd-divider" />
+            <div className="lnd-bar__ctas">
+              <Link to="/login"  className="lnd-pill lnd-pill--ghost">Log in</Link>
+              <Link to="/signup" className="lnd-pill lnd-pill--solid">Get started</Link>
+            </div>
+          </div>
 
-        <div className="hamburger" onClick={toggleMobileMenu}>
-          <span></span>
-          <span></span>
-          <span></span>
+          {/* Mobile toggle */}
+          <button
+            className={`lnd-tog ${menuOpen ? 'lnd-tog--x' : ''}`}
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Toggle menu"
+            type="button"
+          >
+            <span /><span /><span />
+          </button>
+
         </div>
       </header>
 
-      {/* Secondary Navigation */}
-      <div className={`secondary-nav ${isScrolled ? 'secondary-nav--scrolled' : ''}`}>
-        <div className="secondary-nav-container">
-          <Link to="/reviews" className="secondary-nav-link">Reviews</Link>
-          <Link to="/how-it-works" className="secondary-nav-link">How It Works</Link>
-          <Link to="/apps" className="secondary-nav-link">About Us</Link>
-          <Link to="/philosophy" className="secondary-nav-link">Our Philosophy</Link>
-          <Link to="/advertise" className="secondary-nav-link">FAQs</Link>
+      {/* Mobile drawer */}
+      <div className={`lnd-sheet ${menuOpen ? 'lnd-sheet--open' : ''}`}>
+        <div className="lnd-sheet__body">
+          <nav className="lnd-sheet__nav">
+            {[...LEFT_LINKS, ...RIGHT_LINKS].map(({ to, label }) => (
+              <Link key={to} to={to} className="lnd-sheet__row" onClick={() => setMenuOpen(false)}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="lnd-sheet__btns">
+            <Link to="/login"  className="lnd-pill lnd-pill--ghost lnd-pill--wide" onClick={() => setMenuOpen(false)}>Log in</Link>
+            <Link to="/signup" className="lnd-pill lnd-pill--solid lnd-pill--wide" onClick={() => setMenuOpen(false)}>Get started</Link>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-        <Link to="/gym" onClick={() => setMobileMenuOpen(false)}>GYM</Link>
-        <Link to="/nearby" onClick={() => setMobileMenuOpen(false)}>NEARBY</Link>
-        <Link to="/login" onClick={() => setMobileMenuOpen(false)}>LOGIN</Link>
-      </div>
+      {menuOpen && <div className="lnd-scrim" onClick={() => setMenuOpen(false)} />}
     </>
   );
 }
