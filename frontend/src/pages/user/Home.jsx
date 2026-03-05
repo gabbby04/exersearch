@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "./UserHome.css";
-import "./HF.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
 import { useAuth } from "../../authcon";
 

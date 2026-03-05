@@ -61,6 +61,8 @@ const XIcon = ({ size = 16 }) => (
     <path d="M18.244 2H21l-6.6 7.54L22 22h-6.828l-5.35-6.99L3.6 22H1l7.06-8.07L2 2h6.828l4.84 6.32L18.244 2z"/>
   </svg>
 );
+
+
 const SOCIALS = [
   { 
     name: 'Facebook', 
@@ -93,6 +95,7 @@ const SOCIALS = [
     icon: Mail,
     color: '#EA4335'
   },
+  
 ];
 
 export default function Footer() {

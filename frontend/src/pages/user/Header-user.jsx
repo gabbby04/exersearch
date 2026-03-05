@@ -1,7 +1,6 @@
 // src/components/header/HeaderUser.jsx
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
-import "./HF.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
 import { useAuth } from "../../authcon";
 import { Link, useNavigate, useLocation } from "react-router-dom";

@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import "./HF.css";
+
 
 import {
   Search,
