@@ -129,6 +129,7 @@ img {
   gap: var(--gap);
   padding: 0 24px 0 0;
   align-items: flex-start;
+  min-height: 0;
 }
 
 .conversation-area {
@@ -147,6 +148,15 @@ img {
   position: relative;
   box-shadow: none;
   height: 100%;
+  min-height: 0;
+}
+
+.ih-conversation-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 88px;
 }
 
 .detail-area {
@@ -162,6 +172,7 @@ img {
   flex-direction: column;
   box-shadow: var(--card-shadow);
   height: calc(100% - var(--float-offset) - 16px);
+  min-height: 0;
 }
 
 .chat-area {
@@ -176,6 +187,7 @@ img {
   box-shadow: var(--card-shadow);
   height: calc(100% - var(--float-offset) - 16px);
   min-width: 0;
+  min-height: 0;
 }
 
 .search-bar {
@@ -245,6 +257,7 @@ img {
   padding: 14px 18px 12px;
   background: var(--panel-bg);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .ih-left-top {
@@ -487,6 +500,7 @@ img {
   padding: 14px 16px;
   background: var(--panel-bg);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .chat-area-title {
@@ -504,6 +518,7 @@ img {
   flex-grow: 1;
   overflow: auto;
   padding-top: 8px;
+  min-height: 0;
 }
 
 .chat-msg-profile {
@@ -585,6 +600,7 @@ img {
   left: 0;
   gap: 10px;
   margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .chat-area-footer input {
@@ -625,11 +641,13 @@ img {
   align-items: center;
   padding: 18px 18px 10px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .detail-changes {
   padding: 10px 18px 0;
   overflow: auto;
+  min-height: 0;
 }
 
 .detail-title {
@@ -933,28 +951,28 @@ img {
   background-repeat: no-repeat;
 }
 
-.conversation-area,
+.ih-conversation-list,
 .chat-area-main,
 .detail-changes {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
 }
 
-.conversation-area::-webkit-scrollbar,
+.ih-conversation-list::-webkit-scrollbar,
 .chat-area-main::-webkit-scrollbar,
 .detail-changes::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.conversation-area::-webkit-scrollbar-track,
+.ih-conversation-list::-webkit-scrollbar-track,
 .chat-area-main::-webkit-scrollbar-track,
 .detail-changes::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 999px;
 }
 
-.conversation-area::-webkit-scrollbar-thumb,
+.ih-conversation-list::-webkit-scrollbar-thumb,
 .chat-area-main::-webkit-scrollbar-thumb,
 .detail-changes::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.16);
@@ -963,12 +981,13 @@ img {
   background-clip: padding-box;
 }
 
-.conversation-area::-webkit-scrollbar-thumb:hover,
+.ih-conversation-list::-webkit-scrollbar-thumb:hover,
 .chat-area-main::-webkit-scrollbar-thumb:hover,
 .detail-changes::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.22);
   background-clip: padding-box;
 }
+
 .ih-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -976,15 +995,15 @@ img {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 128px 24px 28px; /* moved lower */
+  padding: 128px 24px 28px;
   overflow-y: auto;
   z-index: 9999;
 }
 
 .ih-modal {
   width: min(1240px, 100%);
-  min-height: unset; /* remove forced tall height */
-  max-height: calc(100vh - 180px); /* shorter modal */
+  min-height: unset;
+  max-height: calc(100vh - 180px);
   background: rgba(255, 255, 255, 0.98);
   border-radius: 24px;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -994,6 +1013,7 @@ img {
   display: flex;
   flex-direction: column;
 }
+
 .ih-modal-body {
   flex: 1 1 auto;
   padding: 18px 24px 20px;

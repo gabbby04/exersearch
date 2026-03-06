@@ -715,7 +715,6 @@
 @media (max-width: 375px) {
   .header { padding: 0 0.75rem; height: 54px; }
   .mobile-menu { top: 54px; max-height: calc(100dvh - 54px); }
-  .top-logo img { height: 26px; }
   .mobile-menu a { padding: 0.875rem 1.5rem; font-size: 12px; }
   .uhv-notif { width: 32px; height: 32px; }
 }

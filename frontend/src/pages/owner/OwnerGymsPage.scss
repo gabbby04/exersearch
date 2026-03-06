@@ -36,11 +36,11 @@ $red-orange: #ff3c00;
   position: relative;
   margin: 0;
   overflow: hidden;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
   height: 100vh;
-
-  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial,
-    sans-serif;
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
   .three-mount {
     position: absolute;

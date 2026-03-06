@@ -1,3 +1,18 @@
+.gym-results-page,
+.gym-results-page *{
+  box-sizing: border-box;
+}
+
+html,
+body{
+  width: 100%;
+  max-width: 100%;
+}
+
+body{
+  margin: 0;
+}
+
 .gym-results-page{
   --brand: #d23f0b;
   --brand2: #c23209;
@@ -18,6 +33,9 @@
 
   background: var(--bg);
   color: var(--text);
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
 }
 
 /* =========================
@@ -25,6 +43,7 @@
 ========================= */
 .gr-header-full{
   width: 100%;
+  max-width: 100%;
   margin: 0;
   border-radius: 0;
   overflow: hidden;
@@ -59,10 +78,18 @@
 ========================= */
 .gr-split{
   display: grid;
-  grid-template-columns: 520px 1fr;
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
   padding-top: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.gr-left,
+.gr-right{
+  min-width: 0;
 }
 
 .gr-left{
@@ -70,10 +97,15 @@
   top: calc(var(--appHeaderH) + 10px);
   height: calc(100vh - (var(--appHeaderH) + 20px));
   padding-left: 16px;
+  width: 100%;
+  min-width: 0;
+  align-self: start;
 }
 
 .gr-map-card{
   height: 100%;
+  width: 100%;
+  min-width: 0;
   border-radius: 18px;
   overflow: hidden;
   background: var(--card);
@@ -88,6 +120,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   border-bottom: 1px solid #f2f2f2;
 }
 
@@ -95,12 +128,19 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
+}
+
+.gr-map-top__left strong{
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .gr-map-top__sub{
   font-size: 0.78rem;
   color: #7b7b7b;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .gr-map-btn{
@@ -112,6 +152,7 @@
   background: var(--brand);
   color: #fff;
   transition: transform 0.12s ease, opacity 0.12s ease;
+  flex: 0 0 auto;
 }
 
 .gr-map-btn:hover{
@@ -122,16 +163,21 @@
 .gr-map{
   flex: 1;
   min-height: 420px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gr-right{
   padding-right: 16px;
   padding-top: 14px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gr-right .container{
   max-width: none !important;
   width: 100%;
+  min-width: 0;
   padding-left: 20px !important;
   padding-right: 20px !important;
 }
@@ -145,17 +191,23 @@
   z-index: 60;
   margin-top: 10px;
   padding-top: 18px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gym-results-page .filter-bar .container{
   background: transparent;
+  width: 100%;
+  min-width: 0;
 }
 
 .gym-results-page .filter-controls{
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gym-results-page .filter-group{
@@ -167,8 +219,9 @@
   border: 1px solid #eee;
   box-shadow: 0 8px 18px rgba(0,0,0,0.05);
   border-radius: 10px;
-  flex: 0 0 auto;
-  min-width: auto;
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .gym-results-page .filter-group label{
@@ -177,6 +230,7 @@
   font-size: 0.72rem;
   white-space: nowrap;
   letter-spacing: 0.2px;
+  flex: 0 0 auto;
 }
 
 .gym-results-page .filter-controls select{
@@ -187,7 +241,8 @@
   font-weight: 800;
   color: #222;
   font-size: 0.85rem;
-  min-width: 120px;
+  min-width: 0;
+  width: 100%;
   max-width: 100%;
 }
 
@@ -207,7 +262,8 @@
   cursor: pointer;
   transition: transform .12s ease, background .12s ease, color .12s ease;
   white-space: nowrap;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-width: 100%;
 }
 
 .gym-results-page .clear-filters-btn:hover{
@@ -221,18 +277,22 @@
 ========================= */
 .results-section{
   padding-top: 14px;
+  width: 100%;
+  min-width: 0;
 }
 
 .results-grid{
   display: grid;
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   align-items: stretch;
+  width: 100%;
+  min-width: 0;
 }
 
 @media (max-width: 1400px){
   .results-grid{
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -252,6 +312,9 @@
   transform: translateY(10px);
   opacity: 0;
   transition: transform .35s ease, opacity .35s ease, box-shadow .2s ease, border-color .2s ease;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .result-card.show{
@@ -284,10 +347,12 @@
   height: 190px;
   overflow: hidden;
   background: #f4f4f4;
+  width: 100%;
 }
 
 .card-image img{
   width: 100%;
+  max-width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
@@ -297,6 +362,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
+  max-width: calc(100% - 24px);
   background: var(--brand) !important;
   color: #fff !important;
   font-weight: 900;
@@ -315,6 +381,7 @@
 
 .card-content{
   padding: 14px 14px 16px;
+  min-width: 0;
 }
 
 .card-content h3{
@@ -322,6 +389,7 @@
   font-weight: 900;
   color: #141414;
   letter-spacing: -0.3px;
+  word-break: break-word;
 }
 
 .gym-location{
@@ -329,6 +397,7 @@
   color: #6a6a6a;
   font-weight: 800;
   font-size: 0.88rem;
+  word-break: break-word;
 }
 
 .gym-rating-row{
@@ -338,6 +407,7 @@
   padding-bottom: 10px;
   border-bottom: 1px solid #f2f2f2;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .gym-rating-row .rating{
@@ -356,6 +426,7 @@
   font-weight: 700;
   line-height: 1.35;
   min-height: 40px;
+  word-break: break-word;
 }
 
 .gym-amenities{
@@ -363,6 +434,7 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 12px;
+  min-width: 0;
 }
 
 .gym-results-page .amenity-tag{
@@ -373,6 +445,8 @@
   padding: 7px 10px;
   border-radius: 12px;
   font-size: 0.78rem;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .card-actions{
@@ -381,10 +455,12 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 8px;
+  min-width: 0;
 }
 
 .gym-results-page .see-more-btn{
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   text-align: center;
   background: var(--brand) !important;
   border: 2px solid var(--brand) !important;
@@ -404,6 +480,7 @@
 .favorite-btn{
   width: 44px;
   height: 44px;
+  min-width: 44px;
   border-radius: 14px;
   border: 2px solid #e7e7e7;
   background: #fff;
@@ -412,6 +489,7 @@
   justify-content: center;
   cursor: pointer;
   transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  flex: 0 0 auto;
 }
 
 .favorite-btn:hover{
@@ -452,15 +530,15 @@
 }
 
 /* =========================
-   CTA SECTION (FIXED: FULL SECTION = SAME DARK COLOR)
-   - Section background is DARK (same as the middle panel)
-   - Container is TRANSPARENT so it doesn't look like a separate block color band
+   CTA SECTION
 ========================= */
 .gym-results-page .cta-section{
   margin-top: 40px;
   padding: 80px 0;
   border-top: none;
   background: linear-gradient(120deg, #140503 0%, #2a0e07 60%, #5a1606 100%);
+  width: 100%;
+  max-width: 100%;
 }
 
 .gym-results-page .cta-section .container{
@@ -470,6 +548,8 @@
   box-shadow: none;
   border-radius: 0;
   max-width: 1100px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gym-results-page .cta-section h2{
@@ -496,6 +576,7 @@
   box-shadow: 0 16px 40px rgba(0,0,0,0.35);
   transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
   text-decoration: none;
+  max-width: 100%;
 }
 
 .gym-results-page .cta-section .cta-btn:hover{
@@ -621,54 +702,7 @@
 }
 
 /* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 1100px){
-  .gym-results-page{
-    --appHeaderH: 106px;
-    --filterOffset: 10px;
-  }
-
-  .gr-split{
-    grid-template-columns: 1fr;
-  }
-
-  .gr-left{
-    position: relative;
-    top: auto;
-    height: 420px;
-    padding: 0 16px;
-  }
-
-  .gr-right{
-    padding-right: 0;
-  }
-
-  .gr-header-inner{
-    padding: 26px 16px;
-  }
-
-  .gym-results-page .filter-controls{
-    flex-wrap: wrap;
-  }
-
-  .gym-results-page .filter-group{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .gym-results-page .filter-controls select{
-    min-width: 0;
-    width: 100%;
-  }
-
-  .gym-results-page .cta-section{
-    padding: 60px 0;
-  }
-}
-/* =========================
-   FILTER TOGGLE (MOBILE/TABLET)
-   - On small screens, filters become a slide-down drawer
+   FILTER TOGGLE / DRAWER
 ========================= */
 .gym-results-page .filter-toggle{
   display: none;
@@ -709,9 +743,8 @@
   border: 1px solid rgba(210,63,11,0.22);
 }
 
-/* Drawer panel */
 .gym-results-page .filter-drawer{
-  display: none; /* enabled via media query */
+  display: none;
   width: 100%;
   margin-top: 10px;
   background: #fff;
@@ -719,8 +752,6 @@
   border-radius: 16px;
   box-shadow: 0 18px 46px rgba(0,0,0,0.12);
   overflow: hidden;
-
-  /* closed by default */
   max-height: 0;
   opacity: 0;
   transform: translateY(-6px);
@@ -728,7 +759,7 @@
 }
 
 .gym-results-page .filter-drawer.is-open{
-  max-height: 600px; /* enough height for filter content */
+  max-height: 600px;
   opacity: 1;
   transform: translateY(0);
 }
@@ -752,262 +783,8 @@
 }
 
 /* =========================
-   RESPONSIVE — TABLET
+   MOBILE BOTTOM SHEET
 ========================= */
-@media (max-width: 1024px){
-  .gym-results-page{
-    --appHeaderH: 96px;
-    --filterOffset: 8px;
-  }
-
-  .gr-split{
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .gr-left{
-    position: relative;
-    top: auto;
-    height: 420px;
-    padding: 0 16px;
-  }
-
-  .gr-right{
-    padding: 0 16px;
-  }
-
-  .gr-right .container{
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-
-  .results-grid{
-    grid-template-columns: repeat(2, minmax(240px, 1fr));
-    gap: 14px;
-  }
-
-  .card-image{
-    height: 180px;
-  }
-}
-
-/* =========================
-   RESPONSIVE — MOBILE (iPhone)
-   - Make header tighter
-   - Map shorter
-   - Results 1 column
-   - Replace sticky floating filter bar with toggle + drawer
-========================= */
-@media (max-width: 640px){
-  .gym-results-page{
-    --appHeaderH: 92px;      /* adjust if your app header is taller on mobile */
-    --filterOffset: 0px;
-  }
-
-  .gr-header-inner{
-    padding: 22px 14px;
-  }
-
-  .gr-header-inner h1{
-    font-size: 1.35rem;
-    line-height: 1.1;
-  }
-
-  .gr-header-inner p{
-    font-size: 0.95rem;
-  }
-
-  .gr-split{
-    padding-top: 10px;
-  }
-
-  .gr-left{
-    height: 320px;
-    padding: 0 12px;
-  }
-
-  .gr-map{
-    min-height: 280px;
-  }
-
-  .gr-right{
-    padding: 0 12px;
-  }
-
-  .results-grid{
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .result-card{
-    border-radius: 16px;
-  }
-
-  .card-image{
-    height: 170px;
-  }
-
-  .card-content{
-    padding: 12px 12px 14px;
-  }
-
-  /* Filter bar becomes NON-blocking */
-  .gym-results-page .filter-bar{
-    position: relative !important;
-    top: auto !important;
-    z-index: 1;
-    padding-top: 12px;
-    margin-top: 6px;
-  }
-
-  /* Hide inline floating filters; show toggle + drawer instead */
-  .gym-results-page .filter-bar .filter-controls{
-    display: none;
-  }
-
-  .gym-results-page .filter-toggle{
-    display: inline-flex;
-    position: relative;
-  }
-
-  .gym-results-page .filter-drawer{
-    display: block;
-  }
-
-  /* Make badges/buttons a touch smaller */
-  .gym-results-page .see-more-btn{
-    padding: 11px 12px;
-    border-radius: 13px;
-  }
-
-  .favorite-btn{
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
-  }
-
-  .gym-results-page .cta-section{
-    padding: 54px 0;
-  }
-
-  .gym-results-page .cta-section .container{
-    padding: 0 14px;
-  }
-}
-
-/* =========================
-   EXTRA SMALL (tiny phones)
-========================= */
-@media (max-width: 390px){
-  .gr-header-inner h1{
-    font-size: 1.22rem;
-  }
-
-  .gym-results-page .card-badge{
-    padding: 7px 9px;
-    border-radius: 11px;
-    font-size: 0.78rem;
-  }
-
-  .gym-results-page .amenity-tag{
-    font-size: 0.74rem;
-    padding: 6px 9px;
-  }
-}/* =========================================================
-   STOP FILTER BAR FROM FLOATING ON TABLET + MOBILE
-   (override sticky + offsets)
-========================================================= */
-
-/* Tablet and below */
-@media (max-width: 1024px){
-  .gym-results-page .filter-bar{
-    position: static !important;   /* kills sticky */
-    top: auto !important;
-    z-index: auto !important;
-    margin-top: 12px;
-    padding-top: 12px;
-  }
-
-  /* If your filter bar/container had any sticky behavior too */
-  .gym-results-page .filter-bar .container{
-    position: static !important;
-    top: auto !important;
-  }
-}
-
-/* Mobile */
-@media (max-width: 640px){
-  .gym-results-page .filter-bar{
-    position: static !important;
-    top: auto !important;
-    z-index: auto !important;
-    margin-top: 10px;
-    padding-top: 10px;
-  }
-
-  /* optional: stack filter controls nicely on phones */
-  .gym-results-page .filter-controls{
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .gym-results-page .filter-group{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .gym-results-page .filter-controls select{
-    width: 100%;
-    min-width: 0;
-  }
-
-  .gym-results-page .clear-filters-btn{
-    width: 100%;
-  }
-}/* =========================================
-   FIX: SHOW FILTERS ON TABLET + MOBILE
-   (in case they were hidden by drawer CSS)
-========================================= */
-@media (max-width: 1024px){
-  .gym-results-page .filter-bar{
-    position: static !important;
-    top: auto !important;
-    z-index: auto !important;
-  }
-
-  /* force the controls to render */
-  .gym-results-page .filter-bar .filter-controls{
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .gym-results-page .filter-group{
-    flex: 1 1 240px;       /* nice wrapping on tablet */
-    min-width: 240px;
-    width: auto;
-  }
-
-  .gym-results-page .filter-controls select{
-    width: 100%;
-    min-width: 0;
-  }
-
-  .gym-results-page .clear-filters-btn{
-    flex: 1 1 240px;
-    width: auto;
-  }
-}
-
-@media (max-width: 640px){
-  .gym-results-page .filter-group,
-  .gym-results-page .clear-filters-btn{
-    flex: 1 1 100%;
-    min-width: 0;
-    width: 100%;
-  }
-}/* Mobile bottom-sheet dropdown (no overflow) */
 .gr-sheet-backdrop{
   position: fixed;
   inset: 0;
@@ -1035,6 +812,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -1050,6 +828,7 @@
   font-weight: 900;
   padding: 8px 10px;
   border-radius: 12px;
+  flex: 0 0 auto;
 }
 
 .gr-sheet__list{
@@ -1077,4 +856,249 @@
 .gr-sheet__item.is-active{
   border-color: rgba(210,63,11,0.55);
   box-shadow: 0 10px 24px rgba(210,63,11,0.12);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1100px){
+  .gym-results-page{
+    --appHeaderH: 106px;
+    --filterOffset: 10px;
+  }
+
+  .gr-split{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .gr-left{
+    position: sticky;
+    top: calc(var(--appHeaderH) + 10px);
+    height: calc(100vh - (var(--appHeaderH) + 20px));
+    padding: 0 16px;
+  }
+
+  .gr-right{
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .gr-header-inner{
+    padding: 26px 16px;
+  }
+
+  .gym-results-page .filter-controls{
+    flex-wrap: wrap;
+  }
+
+  .gym-results-page .filter-group{
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .gym-results-page .filter-controls select{
+    min-width: 0;
+    width: 100%;
+  }
+
+  .gym-results-page .cta-section{
+    padding: 60px 0;
+  }
+}
+
+@media (max-width: 1024px){
+  .gym-results-page{
+    --appHeaderH: 96px;
+    --filterOffset: 8px;
+  }
+
+  .gr-split{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .gr-left{
+    position: sticky;
+    top: calc(var(--appHeaderH) + 10px);
+    height: calc(100vh - (var(--appHeaderH) + 20px));
+    padding: 0 16px;
+  }
+
+  .gr-right{
+    padding: 0 16px;
+  }
+
+  .gr-right .container{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .results-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .card-image{
+    height: 180px;
+  }
+
+  .gym-results-page .filter-bar{
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .gym-results-page .filter-bar .container{
+    position: static !important;
+    top: auto !important;
+  }
+
+  .gym-results-page .filter-bar .filter-controls{
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .gym-results-page .filter-group{
+    flex: 1 1 240px;
+    min-width: 240px;
+    width: auto;
+  }
+
+  .gym-results-page .filter-controls select{
+    width: 100%;
+    min-width: 0;
+  }
+
+  .gym-results-page .clear-filters-btn{
+    flex: 1 1 240px;
+    width: auto;
+  }
+}
+
+@media (max-width: 640px){
+  .gym-results-page{
+    --appHeaderH: 92px;
+    --filterOffset: 0px;
+  }
+
+  .gr-header-inner{
+    padding: 22px 14px;
+  }
+
+  .gr-header-inner h1{
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+
+  .gr-header-inner p{
+    font-size: 0.95rem;
+  }
+
+  .gr-split{
+    padding-top: 10px;
+  }
+
+  .gr-left{
+    position: relative;
+    top: auto;
+    height: 320px;
+    padding: 0 12px;
+  }
+
+  .gr-map{
+    min-height: 280px;
+  }
+
+  .gr-right{
+    padding: 0 12px;
+  }
+
+  .gr-right .container{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .results-grid{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .result-card{
+    border-radius: 16px;
+  }
+
+  .card-image{
+    height: 170px;
+  }
+
+  .card-content{
+    padding: 12px 12px 14px;
+  }
+
+  .gym-results-page .filter-bar{
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  .gym-results-page .filter-controls{
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .gym-results-page .filter-group,
+  .gym-results-page .clear-filters-btn{
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .gym-results-page .filter-controls select{
+    width: 100%;
+    min-width: 0;
+  }
+
+  .gym-results-page .see-more-btn{
+    padding: 11px 12px;
+    border-radius: 13px;
+  }
+
+  .favorite-btn{
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 13px;
+  }
+
+  .gym-results-page .cta-section{
+    padding: 54px 0;
+  }
+
+  .gym-results-page .cta-section .container{
+    padding: 0 14px;
+  }
+}
+
+@media (max-width: 390px){
+  .gr-header-inner h1{
+    font-size: 1.22rem;
+  }
+
+  .gym-results-page .card-badge{
+    padding: 7px 9px;
+    border-radius: 11px;
+    font-size: 0.78rem;
+  }
+
+  .gym-results-page .amenity-tag{
+    font-size: 0.74rem;
+    padding: 6px 9px;
+  }
 }

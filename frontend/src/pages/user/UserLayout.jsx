@@ -86,8 +86,6 @@ export default function UserLayout() {
     location.pathname.includes("/inquiries") ||
     location.pathname.includes("/find-gyms");
 
-  const hideFooter = location.pathname.includes("/find-gyms");
-
   return (
     <>
       {!hideHeader &&
@@ -95,7 +93,7 @@ export default function UserLayout() {
 
       <Outlet />
 
-      {!hideFooter && <Footer />}
+      <Footer />
     </>
   );
 }

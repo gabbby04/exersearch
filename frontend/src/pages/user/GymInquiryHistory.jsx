@@ -9,9 +9,7 @@ import InquiryComposeModal from "./InquiryComposeModal";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-/* ---------------- helpers ---------------- */ 
 const PH_TZ = "Asia/Manila";
-
 const API_BASE = "https://exersearch.test";
 
 function safeStr(v) {
@@ -25,12 +23,10 @@ function toDateSafe(value) {
   let s = String(value).trim();
   if (!s) return null;
 
-  // Laravel common: "YYYY-MM-DD HH:mm:ss" (no timezone) → treat as UTC
   if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s)) {
     s = s.replace(" ", "T") + "Z";
   }
 
-  // ISO without timezone → force UTC
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(s)) {
     s = s + "Z";
   }
@@ -64,44 +60,19 @@ function fmtPHDateTime(d) {
   return dt.toLocaleString("en-PH", { timeZone: PH_TZ });
 }
 
-function statusLabel(s) {
-  const x = safeStr(s).toLowerCase();
-  if (x === "open") return "Open";
-  if (x === "answered") return "Answered";
-  if (x === "closed") return "Closed";
-  return x || "—";
-}
-
-/* ====== URL helper that supports:
-   - full urls (https://...)
-   - escaped Laravel paths like "\/storage\/gyms\/gallery\/x.png"
-   - normal relative "/storage/..."
-   - normalizes double slashes so:
-     https://exersearch.test/storage/gyms/gallery/x.png
-*/
 function absUrl(u) {
   if (!u) return "";
   let s = String(u).trim();
   if (!s) return "";
 
-  // unescape "\/" -> "/"
   s = s.replace(/\\\//g, "/");
 
-  // already absolute
   if (/^https?:\/\//i.test(s)) return s;
 
-  // ensure leading slash for relative paths
   if (!s.startsWith("/")) s = "/" + s;
 
-  // join with API_BASE, normalize doubles (but keep https://)
   const joined = `${API_BASE}${s}`;
   return joined.replace(/([^:]\/)\/+/g, "$1");
-}
-
-function fmtMoney(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  return `₱${n.toLocaleString()}`;
 }
 
 function fmtHHMM(v) {
@@ -136,7 +107,6 @@ function pickGymMetaFromGym(gym) {
   return safeStr(g?.address || g?.location || g?.city || g?.barangay || "").trim();
 }
 
-/* ====== split appended owner answers into separate bubbles ====== */
 const OWNER_DELIM = "\n\n---o---\n\n";
 
 function splitOwnerAnswer(answer) {
@@ -159,7 +129,6 @@ function lastOwnerPart(answer) {
   return parts.length ? parts[parts.length - 1] : "";
 }
 
-/* ====== Build thread events per inquiry, keeping chronological order ====== */
 function buildThreadEventsFromInquiry(inq) {
   const events = [];
   const idBase = inq?.inquiry_id ?? inq?.id ?? "x";
@@ -203,7 +172,6 @@ function buildThreadEventsFromInquiry(inq) {
   return events;
 }
 
-/* ====== Gym avatar (main_image_url) with defaulticon.png fallback ====== */
 function pickGymAvatarFromGym(gym) {
   const g = gym || null;
   const raw = safeStr(
@@ -222,7 +190,6 @@ function pickGymAvatarFromGym(gym) {
   return "/defaulticon.png";
 }
 
-/* ---------------- Right panel (FB-style) ---------------- */
 function FbSection({ title, children }) {
   return (
     <div className="fb-section">
@@ -253,20 +220,13 @@ export default function GymInquiryHistory() {
   const [meta, setMeta] = useState(null);
   const navigate = useNavigate();
 
-  // ✅ Active conversation is gym-based
   const [activeGymId, setActiveGymId] = useState(null);
-
   const [searchLeft, setSearchLeft] = useState("");
   const [searchRight, setSearchRight] = useState("");
-
-  // compose modal
   const [composeOpen, setComposeOpen] = useState(false);
   const [sending, setSending] = useState(false);
-
-  // bottom chat composer
   const [chatText, setChatText] = useState("");
   const [chatSending, setChatSending] = useState(false);
-
   const [theme, setTheme] = useState("orange");
 
   const listRef = useRef(null);
@@ -282,7 +242,6 @@ export default function GymInquiryHistory() {
       setRows(newRows);
       setMeta(norm.meta || null);
 
-      // keep activeGymId if still exists; else pick first available
       const current = activeGymId;
       const hasCurrent =
         current != null &&
@@ -303,16 +262,14 @@ export default function GymInquiryHistory() {
 
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     document.body.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // ✅ conversations grouped by gym
   const conversations = useMemo(() => {
-    const map = new Map(); // gymId -> { gymId, gym, items: [] }
+    const map = new Map();
 
     for (const r of rows) {
       const gid = getGymIdFromInquiry(r);
@@ -321,15 +278,14 @@ export default function GymInquiryHistory() {
       if (!map.has(gid)) {
         map.set(gid, { gymId: gid, gym: getGymFromInquiry(r), items: [] });
       }
+
       const bucket = map.get(gid);
 
       if (!bucket.gym) bucket.gym = getGymFromInquiry(r);
-
       bucket.items.push(r);
     }
 
     const list = Array.from(map.values()).map((c) => {
-      // oldest -> newest by created
       c.items.sort((a, b) => {
         const ta = timeMs(a?.created_at || a?.updated_at || 0);
         const tb = timeMs(b?.created_at || b?.updated_at || 0);
@@ -342,7 +298,6 @@ export default function GymInquiryHistory() {
       return { ...c, last, lastAt };
     });
 
-    // newest first by last activity
     list.sort((a, b) => {
       const ta = timeMs(a.lastAt || 0);
       const tb = timeMs(b.lastAt || 0);
@@ -400,7 +355,6 @@ export default function GymInquiryHistory() {
 
   const onOpenCompose = () => setComposeOpen(true);
 
-  // ✅ called by modal (modal calls onSend(gymId, question))
   const onSendFromModal = async (gymId, question) => {
     setSending(true);
     try {
@@ -426,7 +380,6 @@ export default function GymInquiryHistory() {
     setChatSending(true);
     try {
       await askGymInquiry(gid, { question: text });
-
       setChatText("");
       await refresh();
       setActiveGymId(gid);
@@ -443,10 +396,12 @@ export default function GymInquiryHistory() {
     if (!gym) return [];
     const arr = [];
     if (safeStr(gym?.website).trim()) arr.push({ label: "Website", value: safeStr(gym.website) });
-    if (safeStr(gym?.facebook_page).trim())
+    if (safeStr(gym?.facebook_page).trim()) {
       arr.push({ label: "Facebook", value: safeStr(gym.facebook_page) });
-    if (safeStr(gym?.instagram_page).trim())
+    }
+    if (safeStr(gym?.instagram_page).trim()) {
       arr.push({ label: "Instagram", value: safeStr(gym.instagram_page) });
+    }
     return arr;
   }, [gym]);
 
@@ -454,10 +409,7 @@ export default function GymInquiryHistory() {
 
   return (
     <div className="ih-page">
-
-
       <div className="app" ref={listRef}>
-        {/* TOP HEADER */}
         <div className="header">
           <div className="logo">
             <svg viewBox="0 0 513 513" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -505,98 +457,93 @@ export default function GymInquiryHistory() {
         </div>
 
         <div className="wrapper">
-          {/* LEFT LIST */}
           <div className="conversation-area">
-<div className="ih-left-header">
+            <div className="ih-left-header">
+              <div className="ih-left-top">
+                <div className="ih-left-title">
+                  <div className="ih-left-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a4 4 0 01-4 4H7l-4 3V7a4 4 0 014-4h10a4 4 0 014 4z" />
+                      <path d="M7.5 8.5h9M7.5 12h6" />
+                    </svg>
+                  </div>
 
-  <div className="ih-left-top">
-              <div className="ih-left-title">
-                <div className="ih-left-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15a4 4 0 01-4 4H7l-4 3V7a4 4 0 014-4h10a4 4 0 014 4z" />
-                    <path d="M7.5 8.5h9M7.5 12h6" />
-                  </svg>
+                  <div className="ih-left-text">
+                    <div className="ih-left-h1">Inquiries</div>
+                    <div className="ih-left-sub">{loading ? "Loading…" : `${filteredLeft.length} shown`}</div>
+                  </div>
                 </div>
+              </div>
 
-                <div className="ih-left-text">
-                  <div className="ih-left-h1">Inquiries</div>
-                  <div className="ih-left-sub">{loading ? "Loading…" : `${filteredLeft.length} shown`}</div>
+              <div className="ih-left-search">
+                <input
+                  type="text"
+                  placeholder="Search conversations"
+                  value={searchLeft}
+                  onChange={(e) => setSearchLeft(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="ih-conversation-list">
+              {loading ? (
+                <div className="ih-empty">
+                  <div className="ih-empty-title">Loading…</div>
+                  <div className="ih-empty-sub">Fetching your inquiry history</div>
                 </div>
-              </div>
+              ) : filteredLeft.length === 0 ? (
+                <div className="ih-empty">
+                  <div className="ih-empty-title">No inquiries yet</div>
+                  <div className="ih-empty-sub">Tap the plus button to ask a gym.</div>
+                </div>
+              ) : (
+                filteredLeft.map((c) => {
+                  const isActive = c.gymId === activeGymId;
+                  const gymTitle = pickGymTitleFromGym(c.gym, c.gymId);
+                  const last = c.last;
 
+                  const lastPart = lastOwnerPart(last?.answer);
+                  const snippet = safeStr(lastPart || last?.question || "").trim() || "—";
+                  const t = fmtTimeAgo(c.lastAt);
+                  const online = safeStr(last?.status).toLowerCase() === "answered";
+                  const avatar = pickGymAvatarFromGym(c.gym);
 
-  </div>
-
-  <div className="ih-left-search">
-    <input
-      type="text"
-      placeholder="Search conversations"
-      value={searchLeft}
-      onChange={(e) => setSearchLeft(e.target.value)}
-    />
-  </div>
-
-</div>
-
-            {loading ? (
-              <div className="ih-empty">
-                <div className="ih-empty-title">Loading…</div>
-                <div className="ih-empty-sub">Fetching your inquiry history</div>
-              </div>
-            ) : filteredLeft.length === 0 ? (
-              <div className="ih-empty">
-                <div className="ih-empty-title">No inquiries yet</div>
-                <div className="ih-empty-sub">Tap the plus button to ask a gym.</div>
-              </div>
-            ) : (
-              filteredLeft.map((c) => {
-                const isActive = c.gymId === activeGymId;
-                const gymTitle = pickGymTitleFromGym(c.gym, c.gymId);
-                const last = c.last;
-
-                const lastPart = lastOwnerPart(last?.answer);
-                const snippet = safeStr(lastPart || last?.question || "").trim() || "—";
-                const t = fmtTimeAgo(c.lastAt);
-                const online = safeStr(last?.status).toLowerCase() === "answered";
-
-                const avatar = pickGymAvatarFromGym(c.gym);
-
-                return (
-                  <div
-                    key={c.gymId}
-                    className={`msg ${isActive ? "active" : ""} ${online ? "online" : ""}`}
-                    onClick={() => setActiveGymId(c.gymId)}
-                    role="button"
-                    tabIndex={0}
-                  >
+                  return (
                     <div
-                      className="msg-profile group"
-                      style={{
-                        backgroundImage: `url(${avatar})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        backgroundRepeat: "no-repeat",
-                      }}
-                      aria-hidden="true"
-                    />
+                      key={c.gymId}
+                      className={`msg ${isActive ? "active" : ""} ${online ? "online" : ""}`}
+                      onClick={() => setActiveGymId(c.gymId)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div
+                        className="msg-profile group"
+                        style={{
+                          backgroundImage: `url(${avatar})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat",
+                        }}
+                        aria-hidden="true"
+                      />
 
-                    <div className="msg-detail">
-                      <div className="msg-username">{gymTitle}</div>
-                      <div className="msg-content">
-                        <span className="msg-message">{snippet}</span>
-                        <span className="msg-date">{t}</span>
+                      <div className="msg-detail">
+                        <div className="msg-username">{gymTitle}</div>
+                        <div className="msg-content">
+                          <span className="msg-message">{snippet}</span>
+                          <span className="msg-date">{t}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
-            )}
+                  );
+                })
+              )}
+            </div>
 
             <div className="overlay" />
             <button className="add" onClick={onOpenCompose} type="button" aria-label="New inquiry" />
           </div>
 
-          {/* MIDDLE CHAT */}
           <div className="chat-area">
             <div className="chat-area-header">
               <div className="chat-area-title">
@@ -708,10 +655,8 @@ export default function GymInquiryHistory() {
             </div>
           </div>
 
-          {/* RIGHT DETAILS */}
           <div className="detail-area">
             <div className="detail-area-header">
-              {/* ✅ circular profile photo ABOVE gym name */}
               <div
                 className="ih-detail-avatar"
                 style={{
@@ -723,8 +668,12 @@ export default function GymInquiryHistory() {
                 aria-hidden="true"
               />
 
-              <div className="detail-title">{activeConv ? pickGymTitleFromGym(gym, activeConv.gymId) : "Select a gym"}</div>
-              <div className="detail-subtitle">{activeConv ? pickGymMetaFromGym(gym) : "Select an inquiry"}</div>
+              <div className="detail-title">
+                {activeConv ? pickGymTitleFromGym(gym, activeConv.gymId) : "Select a gym"}
+              </div>
+              <div className="detail-subtitle">
+                {activeConv ? pickGymMetaFromGym(gym) : "Select an inquiry"}
+              </div>
             </div>
 
             <div className="detail-changes">
@@ -766,7 +715,6 @@ export default function GymInquiryHistory() {
               </div>
 
               <div className="fb-info">
-                {/* ✅ removed Type + Pricing; moved Phone/Email into Gym Details; removed CONTACT section */}
                 <FbSection title="GYM DETAILS">
                   <FbRow
                     icon="🕒"
@@ -783,7 +731,6 @@ export default function GymInquiryHistory() {
                   <FbRow icon="✉️" label="Email" value={safeStr(gym?.email)} />
                 </FbSection>
 
-                {/* keep socials if you still want them */}
                 {socials.length > 0 && (
                   <FbSection title="LINKS">
                     {socials.map((s) => (
@@ -816,7 +763,6 @@ export default function GymInquiryHistory() {
           </div>
         </div>
 
-        {/* ✅ compose modal */}
         {composeOpen && (
           <InquiryComposeModal
             onClose={() => setComposeOpen(false)}
