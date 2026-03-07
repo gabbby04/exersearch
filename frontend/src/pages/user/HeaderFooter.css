@@ -1111,3 +1111,17 @@
     font-size: 0.6875rem;
   }
 }
+/* active navigation item */
+.lnd-nav__item--active {
+  color: var(--lnd-white);
+}
+
+.lnd-bar--light .lnd-nav__item--active {
+  color: var(--lnd-dark);
+}
+
+/* keep the orange dot visible even when not hovered */
+.lnd-nav__item--active::before {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}

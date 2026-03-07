@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import "./HeaderFooter.css";
 import logo from "../../assets/exersearchlogo.png";
 
@@ -39,9 +39,15 @@ export default function LandingHeader() {
         <div className="lnd-bar__inner">
           <nav className="lnd-nav lnd-nav--left">
             {LEFT_LINKS.map(({ to, label }) => (
-              <Link key={to} to={to} className="lnd-nav__item">
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `lnd-nav__item ${isActive ? "lnd-nav__item--active" : ""}`
+                }
+              >
                 {label}
-              </Link>
+              </NavLink>
             ))}
           </nav>
 
@@ -52,9 +58,15 @@ export default function LandingHeader() {
           <div className="lnd-right">
             <nav className="lnd-nav lnd-nav--right">
               {RIGHT_LINKS.map(({ to, label }) => (
-                <Link key={to} to={to} className="lnd-nav__item">
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `lnd-nav__item ${isActive ? "lnd-nav__item--active" : ""}`
+                  }
+                >
                   {label}
-                </Link>
+                </NavLink>
               ))}
             </nav>
 
@@ -87,14 +99,16 @@ export default function LandingHeader() {
         <div className="lnd-sheet__body">
           <nav className="lnd-sheet__nav">
             {[...LEFT_LINKS, ...RIGHT_LINKS].map(({ to, label }) => (
-              <Link
+              <NavLink
                 key={to}
                 to={to}
-                className="lnd-sheet__row"
+                className={({ isActive }) =>
+                  `lnd-sheet__row ${isActive ? "lnd-sheet__row--active" : ""}`
+                }
                 onClick={() => setMenuOpen(false)}
               >
                 {label}
-              </Link>
+              </NavLink>
             ))}
           </nav>
 

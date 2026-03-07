@@ -377,8 +377,7 @@
 }
 
 .wdp-presc {
-  background: linear-gradient(180deg, #ece9e3 0%, #dfd9d0 100%);
-  border: 0;
+background: linear-gradient(180deg, #EEF1F4 0%, #E3E8EE 100%); border: 0;
   border-radius: 14px;
   padding: 0.95rem 1rem;
   box-shadow:
@@ -444,8 +443,7 @@
   grid-template-columns: 108px 1fr;
   border-radius: 22px;
   overflow: hidden;
-  background: linear-gradient(180deg, #e7e3dd 0%, #ddd6cd 100%);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+background: linear-gradient(180deg, #EEF1F4 0%, #E3E8EE 100%);  border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     0 6px 14px rgba(0, 0, 0, 0.14);
@@ -1945,5 +1943,124 @@
     width: 100%;
     flex-basis: auto;
     height: 180px;
+  }
+}.wdp-tut-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.wdp-tut-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  background: linear-gradient(
+    180deg,
+    rgba(28, 14, 20, 0.96) 0%,
+    rgba(18, 8, 13, 0.98) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.wdp-tut-card-title {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(216, 92, 33, 0.16);
+  border: 1px solid rgba(216, 92, 33, 0.34);
+  color: #ffd6c7;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wdp-tut-imagebtn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  text-align: left;
+}
+
+.wdp-tut-imagewrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    #120b0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wdp-tut-image {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 16 / 9;
+}
+
+.wdp-tut-zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(13, 10, 12, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff1ea;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.wdp-tut-unavailable {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(179, 74, 34, 0.16) 0%,
+    rgba(120, 46, 26, 0.14) 100%
+  );
+  border: 1px solid rgba(213, 92, 46, 0.28);
+  color: #ffb199;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.wdp-tut-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+
+.wdp-tut-actions .wdp-btn-solid {
+  min-width: 260px;
+  justify-content: center;
+  text-decoration: none;
+}
+
+@media (min-width: 900px) {
+  .wdp-tut-grid {
+    grid-template-columns: 1.45fr 0.95fr;
+    gap: 24px;
+    align-items: start;
   }
 }

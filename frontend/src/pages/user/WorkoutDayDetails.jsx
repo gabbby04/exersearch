@@ -17,6 +17,7 @@ import {
 } from "../../utils/workoutPlanApi";
 
 const FALLBACK_EQUIPMENT_IMG = "https://i.imghippo.com/files/XIsw8670efM.jpg";
+const FALLBACK_TUTORIAL_URL = "https://www.youtube.com/@ExerSearch";
 
 function prettyLabel(s = "") {
   return String(s)
@@ -94,6 +95,64 @@ function toEqSet(equipments = []) {
   return set;
 }
 
+function getYoutubeVideoId(url = "") {
+  const s = String(url || "").trim();
+  if (!s) return "";
+
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&]+)/i,
+    /youtu\.be\/([^?&]+)/i,
+    /youtube\.com\/embed\/([^?&]+)/i,
+    /youtube\.com\/shorts\/([^?&]+)/i,
+    /youtube\.com\/live\/([^?&]+)/i,
+  ];
+
+  for (const p of patterns) {
+    const m = s.match(p);
+    if (m?.[1]) return m[1];
+  }
+
+  try {
+    const u = new URL(s);
+    const v = u.searchParams.get("v");
+    if (v) return v;
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function getYoutubeThumbnail(url = "") {
+  const id = getYoutubeVideoId(url);
+  if (!id) return "";
+  return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+}
+
+function isYoutubeUrl(url = "") {
+  const s = String(url || "").toLowerCase();
+  return s.includes("youtube.com") || s.includes("youtu.be");
+}
+
+function getExerciseTutorial(ex) {
+  const title = ex?.name ? `${ex.name} Tutorial` : "Exercise Tutorial";
+
+  const rawImg = ex?.tutorial_image || ex?.tutorial_image_url || "";
+  const rawVid = String(ex?.tutorial_video_url || "").trim();
+  const hasRealVideo = !!getYoutubeVideoId(rawVid);
+  const finalVideoUrl = hasRealVideo ? rawVid : FALLBACK_TUTORIAL_URL;
+
+  return {
+    title,
+    tutorialImageUrl: rawImg ? imgUrl(rawImg) : "",
+    youtubeThumbnailUrl: hasRealVideo ? getYoutubeThumbnail(rawVid) : "",
+    videoUrl: finalVideoUrl,
+    isYoutube: isYoutubeUrl(finalVideoUrl),
+    hasRealVideo,
+    videoUnavailable: !hasRealVideo,
+  };
+}
+
 function buildChangeSummary(updatedDay) {
   const notices = Array.isArray(updatedDay?.recalibration_notices)
     ? updatedDay.recalibration_notices
@@ -108,8 +167,7 @@ function buildChangeSummary(updatedDay) {
           kind: "replaced",
           slot: prettyLabel(n?.slot_type || "slot"),
           from:
-            n?.from_exercise_name ||
-            `Exercise #${n?.from_exercise_id || ""}`,
+            n?.from_exercise_name || `Exercise #${n?.from_exercise_id || ""}`,
           to: n?.to_exercise_name || `Exercise #${n?.to_exercise_id || ""}`,
           reason: n?.reason || "",
         });
@@ -158,17 +216,6 @@ function countKinds(changes = []) {
     if (c.kind === "dropped") removed++;
   }
   return { swapped, removed };
-}
-
-function getExerciseTutorial(ex) {
-  const title = ex?.name ? `${ex.name} Tutorial` : "Exercise Tutorial";
-  const rawImg = ex?.tutorial_image || ex?.tutorial_image_url || "";
-  const rawVid = ex?.tutorial_video_url || "";
-  return {
-    title,
-    imageUrl: rawImg ? imgUrl(rawImg) : "",
-    videoUrl: String(rawVid || "").trim(),
-  };
 }
 
 function escapeHtml(s = "") {
@@ -372,8 +419,18 @@ export default function WorkoutDayDetails() {
   const [tutorialModal, setTutorialModal] = useState({
     open: false,
     title: "",
-    imageUrl: "",
+    tutorialImageUrl: "",
+    youtubeThumbnailUrl: "",
     videoUrl: "",
+    isYoutube: false,
+    hasRealVideo: false,
+    videoUnavailable: false,
+  });
+
+  const [tutorialZoom, setTutorialZoom] = useState({
+    open: false,
+    src: "",
+    title: "",
   });
 
   const [savedGyms, setSavedGyms] = useState([]);
@@ -416,8 +473,19 @@ export default function WorkoutDayDetails() {
     setTutorialModal({
       open: false,
       title: "",
-      imageUrl: "",
+      tutorialImageUrl: "",
+      youtubeThumbnailUrl: "",
       videoUrl: "",
+      isYoutube: false,
+      hasRealVideo: false,
+      videoUnavailable: false,
+    });
+
+  const closeTutorialZoom = () =>
+    setTutorialZoom({
+      open: false,
+      src: "",
+      title: "",
     });
 
   const closeGymConfirm = () =>
@@ -498,6 +566,7 @@ export default function WorkoutDayDetails() {
       if (e.key === "Escape") {
         if (imgModal.open) closeImgModal();
         if (tutorialModal.open) closeTutorialModal();
+        if (tutorialZoom.open) closeTutorialZoom();
         if (gymConfirm.open) closeGymConfirm();
         if (gymWeekConfirm.open) closeGymWeekConfirm();
         if (swapModal.open) closeSwapModal();
@@ -508,6 +577,7 @@ export default function WorkoutDayDetails() {
   }, [
     imgModal.open,
     tutorialModal.open,
+    tutorialZoom.open,
     gymConfirm.open,
     gymWeekConfirm.open,
     swapModal.open,
@@ -982,7 +1052,8 @@ export default function WorkoutDayDetails() {
                       const eqs = uniqById(eqsRaw, "equipment_id");
 
                       const tut = getExerciseTutorial(ex);
-                      const canShowTut = !!tut.imageUrl;
+                      const canShowTut =
+                        !!tut.tutorialImageUrl || !!tut.videoUrl;
 
                       return (
                         <article
@@ -1056,7 +1127,7 @@ export default function WorkoutDayDetails() {
                                     title={
                                       canShowTut
                                         ? "View tutorial"
-                                        : "No tutorial image yet"
+                                        : "No tutorial yet"
                                     }
                                     onClick={() => {
                                       if (!canShowTut) return;
@@ -1064,8 +1135,14 @@ export default function WorkoutDayDetails() {
                                         open: true,
                                         title:
                                           tut.title || ex?.name || "Tutorial",
-                                        imageUrl: tut.imageUrl,
+                                        tutorialImageUrl:
+                                          tut.tutorialImageUrl || "",
+                                        youtubeThumbnailUrl:
+                                          tut.youtubeThumbnailUrl || "",
                                         videoUrl: tut.videoUrl || "",
+                                        isYoutube: !!tut.isYoutube,
+                                        hasRealVideo: !!tut.hasRealVideo,
+                                        videoUnavailable: !!tut.videoUnavailable,
                                       });
                                     }}
                                     disabled={!canShowTut}
@@ -1450,22 +1527,112 @@ export default function WorkoutDayDetails() {
             </div>
 
             <div className="wdp-modal-scroll">
-              {tutorialModal.imageUrl ? (
-                <div className="wdp-tut-imagewrap">
-                  <img
-                    src={tutorialModal.imageUrl}
-                    alt={tutorialModal.title}
-                    className="wdp-tut-image"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src = FALLBACK_EQUIPMENT_IMG;
-                    }}
-                  />
+              <div className="wdp-tut-grid">
+                <div className="wdp-tut-card">
+                  <div className="wdp-tut-card-title">Tutorial Image</div>
+
+                  <button
+                    type="button"
+                    className="wdp-tut-imagebtn"
+                    onClick={() =>
+                      setTutorialZoom({
+                        open: true,
+                        src:
+                          tutorialModal.tutorialImageUrl ||
+                          FALLBACK_EQUIPMENT_IMG,
+                        title: tutorialModal.title || "Tutorial Image",
+                      })
+                    }
+                    aria-label={`Expand ${
+                      tutorialModal.title || "tutorial image"
+                    }`}
+                  >
+                    <div className="wdp-tut-imagewrap">
+                      <img
+                        src={
+                          tutorialModal.tutorialImageUrl ||
+                          FALLBACK_EQUIPMENT_IMG
+                        }
+                        alt={`${tutorialModal.title} tutorial`}
+                        className="wdp-tut-image"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_EQUIPMENT_IMG;
+                        }}
+                      />
+                      <span className="wdp-tut-zoom">Click to expand</span>
+                    </div>
+                  </button>
                 </div>
-              ) : (
-                <div className="wdp-muted">No tutorial image provided.</div>
-              )}
+
+                <div className="wdp-tut-card">
+                  <div className="wdp-tut-card-title">YouTube</div>
+
+                  {tutorialModal.hasRealVideo &&
+                  tutorialModal.youtubeThumbnailUrl ? (
+                    <div className="wdp-tut-imagewrap">
+                      <img
+                        src={tutorialModal.youtubeThumbnailUrl}
+                        alt={`${tutorialModal.title} YouTube thumbnail`}
+                        className="wdp-tut-image"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : (
+                    <div className="wdp-tut-unavailable">
+                      Video not available yet.
+                    </div>
+                  )}
+
+                  <div className="wdp-tut-actions">
+                    <a
+                      href={tutorialModal.videoUrl || FALLBACK_TUTORIAL_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="wdp-btn-solid"
+                    >
+                      {tutorialModal.hasRealVideo
+                        ? "Watch on YouTube"
+                        : "Visit ExerSearch YouTube"}
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {tutorialZoom.open ? (
+        <div
+          className="wdp-tut-zoom-overlay"
+          onClick={closeTutorialZoom}
+          role="presentation"
+        >
+          <div
+            className="wdp-tut-zoom-box"
+            role="dialog"
+            aria-modal="true"
+            aria-label={tutorialZoom.title || "Expanded tutorial image"}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="wdp-tut-zoom-close"
+              onClick={closeTutorialZoom}
+              aria-label="Close expanded tutorial image"
+            >
+              ✕
+            </button>
+
+            <img
+              src={tutorialZoom.src || FALLBACK_EQUIPMENT_IMG}
+              alt={tutorialZoom.title || "Tutorial"}
+              className="wdp-tut-zoom-img"
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_EQUIPMENT_IMG;
+              }}
+            />
           </div>
         </div>
       ) : null}

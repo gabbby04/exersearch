@@ -14,24 +14,48 @@ body{
 }
 
 .gym-results-page{
-  --brand: #d23f0b;
-  --brand2: #c23209;
+  --brand: #ff6a2a;
+  --brand2: #f2571a;
+  --brand3: #e85a20;
   --brandDark: #2a0e07;
-  --brandDark2: #7a1d08;
+  --brandDark2: #5a1608;
 
-  --card: #ffffff;
-  --bg: #ffffff;
-  --text: #1a1a1a;
-  --muted: #666;
-  --line: #eee;
+  --bg: #0f1420;
+  --bg2: #131a27;
+  --bg3: #161e2c;
+  --bg4: #1a2230;
 
-  --shadow: 0 12px 40px rgba(0,0,0,0.10);
-  --shadowSoft: 0 10px 26px rgba(0,0,0,0.06);
+  --card: #141d29;
+  --card2: #1a2230;
+  --card3: #1e2734;
+
+  --text: #f8fafc;
+  --textStrong: #ffffff;
+  --textSoft: #c8ceda;
+  --muted: #9ea8ba;
+
+  --line: rgba(255,255,255,0.08);
+  --lineSoft: rgba(255,255,255,0.06);
+  --lineStrong: rgba(255,255,255,0.12);
+
+  --glass: rgba(255,255,255,0.04);
+  --glass2: rgba(255,255,255,0.06);
+  --chip: rgba(255,106,42,0.10);
+  --chipBorder: rgba(255,106,42,0.20);
+  --accentRing: rgba(255,106,42,0.24);
+
+  --shadow: 0 22px 56px rgba(0,0,0,0.32);
+  --shadowSoft: 0 14px 36px rgba(0,0,0,0.24);
+  --shadowCard: 0 18px 40px rgba(0,0,0,0.26);
 
   --appHeaderH: 92px;
   --filterOffset: -18px;
 
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 12% 6%, rgba(255,106,42,0.09), transparent 18%),
+    radial-gradient(circle at 86% 12%, rgba(255,106,42,0.07), transparent 16%),
+    radial-gradient(circle at 50% 30%, rgba(255,255,255,0.03), transparent 24%),
+    linear-gradient(180deg, #0d1625 0%, #101827 36%, #131b28 100%) !important;
   color: var(--text);
   width: 100%;
   max-width: 100%;
@@ -39,7 +63,7 @@ body{
 }
 
 /* =========================
-   HEADER (FULL WIDTH, NO RADIUS)
+   HEADER
 ========================= */
 .gr-header-full{
   width: 100%;
@@ -49,28 +73,35 @@ body{
   overflow: hidden;
   color: #fff;
   box-shadow: var(--shadow);
-  border: 1px solid rgba(255,255,255,0.08);
-  background: linear-gradient(90deg, var(--brandDark) 0%, var(--brandDark2) 45%, var(--brand) 100%);
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  padding: 30px 0;
+  background:
+    radial-gradient(circle at 22% 35%, rgba(255,106,42,0.08), transparent 18%),
+    radial-gradient(circle at 78% 30%, rgba(255,106,42,0.11), transparent 20%),
+    linear-gradient(90deg, #091321 0%, #0b111c 30%, #25120b 72%, #6b1f09 100%) !important;
 }
 
 .gr-header-inner{
   max-width: none;
   width: 100%;
-  padding: 30px 24px;
+  padding: 26px 24px 28px !important;
   text-align: center;
 }
 
 .gr-header-inner h1{
-  color: #fff;
+  color: #ffffff;
   font-weight: 900;
+  font-size: 38px;
   letter-spacing: -0.6px;
   margin: 0;
+  text-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
 .gr-header-inner p{
-  color: rgba(255,255,255,0.9);
-  font-weight: 800;
-  margin: 10px 0 0;
+  color: rgba(255,255,255,0.88);
+  font-weight: 700;
+  font-size: 16px;
+  margin: 12px 0 0;
 }
 
 /* =========================
@@ -79,12 +110,13 @@ body{
 .gr-split{
   display: grid;
   grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
-  gap: 18px;
+  gap: 20px;
   align-items: start;
   padding-top: 14px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  background: transparent !important;
 }
 
 .gr-left,
@@ -102,17 +134,53 @@ body{
   align-self: start;
 }
 
+.gr-right{
+  padding-right: 16px;
+  padding-top: 14px;
+  width: 100%;
+  min-width: 0;
+  background: transparent !important;
+}
+
+.gr-right .container{
+  max-width: none !important;
+  width: 100%;
+  min-width: 0;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.gym-results-page .container,
+.gym-results-page .gr-right,
+.gym-results-page .gr-split,
+.gym-results-page .results-section{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* =========================
+   MAP CARD
+========================= */
 .gr-map-card{
   height: 100%;
   width: 100%;
   min-width: 0;
-  border-radius: 18px;
+  border-radius: 22px !important;
   overflow: hidden;
-  background: var(--card);
-  border: 1px solid #eee;
-  box-shadow: var(--shadowSoft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.022)),
+    linear-gradient(180deg, #1a2331 0%, #141c29 100%) !important;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 14px 36px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.035) !important;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(12px);
 }
 
 .gr-map-top{
@@ -121,7 +189,9 @@ body{
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid #f2f2f2;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
 }
 
 .gr-map-top__left{
@@ -134,30 +204,14 @@ body{
 .gr-map-top__left strong{
   min-width: 0;
   overflow-wrap: anywhere;
+  color: #f9fbff;
 }
 
 .gr-map-top__sub{
   font-size: 0.78rem;
-  color: #7b7b7b;
+  color: #b8c1cf;
   font-weight: 700;
   overflow-wrap: anywhere;
-}
-
-.gr-map-btn{
-  border: 0;
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-weight: 900;
-  cursor: pointer;
-  background: var(--brand);
-  color: #fff;
-  transition: transform 0.12s ease, opacity 0.12s ease;
-  flex: 0 0 auto;
-}
-
-.gr-map-btn:hover{
-  transform: translateY(-1px);
-  opacity: 0.96;
 }
 
 .gr-map{
@@ -165,21 +219,62 @@ body{
   min-height: 420px;
   width: 100%;
   min-width: 0;
+  position: relative;
 }
 
-.gr-right{
-  padding-right: 16px;
-  padding-top: 14px;
-  width: 100%;
-  min-width: 0;
+.gr-map::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,18,32,0.02), rgba(10,18,32,0.10));
+  pointer-events: none;
 }
 
-.gr-right .container{
-  max-width: none !important;
-  width: 100%;
-  min-width: 0;
-  padding-left: 20px !important;
-  padding-right: 20px !important;
+.gr-map-btn{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 900;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(255,70,20,0.18);
+  transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+  flex: 0 0 auto;
+}
+
+.gr-map-btn::before,
+.gr-map-btn::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: -1;
+  transition: width .28s ease;
+}
+
+.gr-map-btn::before{
+  left: 0;
+  background: linear-gradient(90deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+}
+
+.gr-map-btn::after{
+  right: 0;
+  background: linear-gradient(270deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+}
+
+.gr-map-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(255,70,20,0.24);
+}
+
+.gr-map-btn:hover::before,
+.gr-map-btn:hover::after{
+  width: 50%;
 }
 
 /* =========================
@@ -189,96 +284,226 @@ body{
   position: sticky;
   top: calc(var(--appHeaderH) + var(--filterOffset)) !important;
   z-index: 60;
-  margin-top: 10px;
-  padding-top: 18px;
+  margin-top: 8px !important;
   width: 100%;
   min-width: 0;
+  padding: 14px 60px 14px 14px !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at 14% 50%, rgba(90,22,8,0.14), transparent 18%),
+    radial-gradient(circle at 84% 36%, rgba(255,106,42,0.05), transparent 14%),
+    linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.012)),
+    linear-gradient(180deg, #141c29 0%, #111827 100%) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow:
+    0 16px 34px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.03) !important;
+  backdrop-filter: blur(12px);
 }
 
 .gym-results-page .filter-bar .container{
-  background: transparent;
+  background: transparent !important;
   width: 100%;
   min-width: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 .gym-results-page .filter-controls{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: center !important;
   width: 100%;
   min-width: 0;
 }
 
 .gym-results-page .filter-group{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  background: #fff;
-  border: 1px solid #eee;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.05);
-  border-radius: 10px;
-  flex: 1 1 220px;
+  position: relative;
+  display: block !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
   min-width: 0;
   max-width: 100%;
+  backdrop-filter: none;
 }
 
 .gym-results-page .filter-group label{
-  font-weight: 800;
-  color: #2b2b2b;
-  font-size: 0.72rem;
-  white-space: nowrap;
-  letter-spacing: 0.2px;
-  flex: 0 0 auto;
+  display: none !important;
+}
+
+.gym-results-page .filter-group::after{
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(255,255,255,0.78);
+  border-bottom: 2px solid rgba(255,255,255,0.78);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .gym-results-page .filter-controls select{
-  border: 1px solid #e6e6e6;
-  background: #fff;
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-weight: 800;
-  color: #222;
-  font-size: 0.85rem;
-  min-width: 0;
-  width: 100%;
-  max-width: 100%;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  padding: 0 42px 0 16px !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)),
+    linear-gradient(180deg, #47566d 0%, #39475d 100%) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  color: #f8fbff !important;
+  font-size: 0.94rem !important;
+  font-weight: 850 !important;
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    inset 0 -1px 0 rgba(0,0,0,0.08) !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+}
+
+.gym-results-page .filter-controls select option{
+  background: #141d29;
+  color: #ffffff;
+}
+
+.gym-results-page .filter-controls select:required:invalid{
+  color: rgba(255,255,255,0.52) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02)),
+    linear-gradient(180deg, #2d394c 0%, #233042 100%) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+.gym-results-page .filter-controls select:not(:required:invalid){
+  color: #f8fbff !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.085), rgba(255,255,255,0.03)),
+    linear-gradient(180deg, #46556c 0%, #3a485e 100%) !important;
+  border: 1px solid rgba(160,68,33,0.36) !important;
+}
+
+.gym-results-page .filter-controls select:hover{
+  border-color: rgba(217,74,22,0.28) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 26px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 0 0 1px rgba(90,22,8,0.10) !important;
 }
 
 .gym-results-page .filter-controls select:focus{
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(210,63,11,0.18);
-  border-color: rgba(210,63,11,0.65);
+  outline: none !important;
+  border-color: rgba(217,74,22,0.52) !important;
+  box-shadow:
+    0 0 0 4px rgba(217,74,22,0.14),
+    0 12px 24px rgba(0,0,0,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.05) !important;
+}
+
+.gym-results-page .filter-group.is-active select,
+.gym-results-page .filter-controls select.active-filter{
+  border-color: rgba(217,74,22,0.34) !important;
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.18),
+    0 0 0 1px rgba(90,22,8,0.20),
+    inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 
 .gym-results-page .clear-filters-btn{
-  border: 2px solid var(--brand) !important;
-  color: var(--brand) !important;
-  background: #fff !important;
-  border-radius: 10px !important;
-  font-weight: 900 !important;
-  padding: 8px 14px !important;
-  cursor: pointer;
-  transition: transform .12s ease, background .12s ease, color .12s ease;
-  white-space: nowrap;
-  flex: 0 1 auto;
-  max-width: 100%;
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+  border: 1px solid rgba(217,74,22,0.26) !important;
+  background:
+    linear-gradient(180deg, rgba(90,22,8,0.44), rgba(217,74,22,0.16)) !important;
+  box-shadow:
+    0 10px 20px rgba(90,22,8,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    background .16s ease,
+    box-shadow .16s ease;
+  z-index: 3;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.gym-results-page .clear-filters-btn::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  z-index: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0));
+  transition: width .30s ease;
+}
+
+.gym-results-page .clear-filters-btn::after{
+  content: "↻";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 900;
+  color: #fff5ef;
+  z-index: 1;
 }
 
 .gym-results-page .clear-filters-btn:hover{
-  background: var(--brand) !important;
-  color: #fff !important;
-  transform: translateY(-1px);
+  transform: translateY(-1px) rotate(-12deg);
+  border-color: rgba(242,87,26,0.42) !important;
+  background:
+    linear-gradient(180deg, rgba(217,74,22,0.85), rgba(90,22,8,0.82)) !important;
+  box-shadow:
+    0 14px 24px rgba(90,22,8,0.24),
+    0 0 0 1px rgba(217,74,22,0.10) !important;
+}
+
+.gym-results-page .clear-filters-btn:hover::before{
+  width: 50%;
 }
 
 /* =========================
    RESULTS GRID
 ========================= */
 .results-section{
-  padding-top: 14px;
+  padding-top: 18px;
   width: 100%;
   min-width: 0;
+  background: transparent !important;
 }
 
 .results-grid{
@@ -290,28 +515,21 @@ body{
   min-width: 0;
 }
 
-@media (max-width: 1400px){
-  .results-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px){
-  .results-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
 .result-card{
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 18px;
-  box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02)),
+    linear-gradient(180deg, #182231 0%, #121b28 100%) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.045),
+    inset 0 -1px 0 rgba(0,0,0,0.08) !important;
   overflow: hidden;
   cursor: pointer;
   transform: translateY(10px);
   opacity: 0;
-  transition: transform .35s ease, opacity .35s ease, box-shadow .2s ease, border-color .2s ease;
+  transition: transform .35s ease, opacity .35s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
   min-width: 0;
   width: 100%;
   max-width: 100%;
@@ -323,13 +541,17 @@ body{
 }
 
 .result-card:hover{
-  box-shadow: 0 16px 40px rgba(0,0,0,0.10);
-  border-color: rgba(210,63,11,0.22);
+  box-shadow:
+    0 24px 50px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,106,42,0.20);
 }
 
 .result-card.is-selected{
-  border-color: rgba(210,63,11,0.55);
-  box-shadow: 0 18px 46px rgba(210,63,11,0.18);
+  border-color: rgba(255,126,66,0.55);
+  box-shadow:
+    0 20px 46px rgba(255,70,20,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .highlight-flash{
@@ -337,17 +559,26 @@ body{
 }
 
 @keyframes grFlash{
-  0%{ box-shadow: 0 0 0 0 rgba(210,63,11,0.0); }
-  30%{ box-shadow: 0 0 0 8px rgba(210,63,11,0.18); }
-  100%{ box-shadow: 0 0 0 0 rgba(210,63,11,0.0); }
+  0%{ box-shadow: 0 0 0 0 rgba(255,106,42,0.00); }
+  30%{ box-shadow: 0 0 0 8px rgba(255,106,42,0.16); }
+  100%{ box-shadow: 0 0 0 0 rgba(255,106,42,0.00); }
 }
 
 .card-image{
   position: relative;
   height: 190px;
   overflow: hidden;
-  background: #f4f4f4;
+  background: #1b2430;
   width: 100%;
+}
+
+.card-image::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6,10,18,0.05) 0%, rgba(6,10,18,0.30) 58%, rgba(6,10,18,0.42) 100%) !important;
+  pointer-events: none;
 }
 
 .card-image img{
@@ -356,6 +587,7 @@ body{
   height: 100%;
   object-fit: cover;
   display: block;
+  filter: saturate(0.92) contrast(0.98) brightness(0.95) !important;
 }
 
 .gym-results-page .card-badge{
@@ -363,39 +595,47 @@ body{
   top: 12px;
   right: 12px;
   max-width: calc(100% - 24px);
-  background: var(--brand) !important;
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
   color: #fff !important;
   font-weight: 900;
   border-radius: 12px;
   padding: 8px 10px;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.16);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .gym-results-page .gr-freevisit-badge{
   left: 12px;
   right: auto;
-  background: #fff !important;
-  color: var(--brand) !important;
-  border: 1px solid rgba(210,63,11,0.22) !important;
+  background: rgba(10,18,32,0.72) !important;
+  color: #fff5ef !important;
+  border: 1px solid rgba(255,106,42,0.18) !important;
+  backdrop-filter: blur(8px);
 }
 
 .card-content{
-  padding: 14px 14px 16px;
+  padding: 16px 14px 16px;
   min-width: 0;
+  color: #f8fbff !important;
+}
+
+.card-content,
+.card-content *{
+  color: inherit;
 }
 
 .card-content h3{
   margin: 2px 0 6px;
-  font-weight: 900;
-  color: #141414;
-  letter-spacing: -0.3px;
+  font-weight: 900 !important;
+  color: #f8fbff !important;
+  letter-spacing: -0.35px !important;
   word-break: break-word;
 }
 
 .gym-location{
   margin: 0 0 10px;
-  color: #6a6a6a;
-  font-weight: 800;
+  color: #b8c1cf !important;
+  font-weight: 800 !important;
   font-size: 0.88rem;
   word-break: break-word;
 }
@@ -405,28 +645,29 @@ body{
   align-items: center;
   gap: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #f2f2f2;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
 
 .gym-rating-row .rating{
-  font-weight: 900;
-  color: #222;
+  font-weight: 900 !important;
+  color: #fff5ef !important;
 }
 
 .gym-rating-row .reviews{
-  font-weight: 800;
-  color: #8a8a8a;
+  font-weight: 850 !important;
+  color: #d8e0ec !important;
 }
 
 .gym-description{
   margin: 0 0 12px;
-  color: #6c6c6c;
-  font-weight: 700;
-  line-height: 1.35;
+  color: #c8ceda !important;
+  font-weight: 700 !important;
+  line-height: 1.45;
   min-height: 40px;
   word-break: break-word;
+  opacity: 1 !important;
 }
 
 .gym-amenities{
@@ -438,15 +679,19 @@ body{
 }
 
 .gym-results-page .amenity-tag{
-  background: rgba(210,63,11,0.10) !important;
-  border: 1px solid rgba(210,63,11,0.22) !important;
-  color: var(--brand) !important;
+  background:
+    linear-gradient(180deg, rgba(90,22,8,0.34), rgba(217,74,22,0.12)) !important;
+  border: 1px solid rgba(217,74,22,0.22) !important;
+  color: #fff5ef !important;
   font-weight: 900;
   padding: 7px 10px;
   border-radius: 12px;
   font-size: 0.78rem;
   max-width: 100%;
   word-break: break-word;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    0 8px 18px rgba(0,0,0,0.10) !important;
 }
 
 .card-actions{
@@ -459,74 +704,211 @@ body{
 }
 
 .gym-results-page .see-more-btn{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   flex: 1 1 auto;
   min-width: 0;
   text-align: center;
-  background: var(--brand) !important;
-  border: 2px solid var(--brand) !important;
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
   color: #fff !important;
   font-weight: 900;
   padding: 12px 12px;
   border-radius: 14px;
   text-decoration: none;
-  transition: transform .12s ease, opacity .12s ease;
+  box-shadow: 0 10px 22px rgba(255,70,20,0.18);
+  transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
+}
+
+.gym-results-page .see-more-btn::before,
+.gym-results-page .see-more-btn::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: -1;
+  transition: width .28s ease;
+}
+
+.gym-results-page .see-more-btn::before{
+  left: 0;
+  background: linear-gradient(90deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+}
+
+.gym-results-page .see-more-btn::after{
+  right: 0;
+  background: linear-gradient(270deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
 }
 
 .gym-results-page .see-more-btn:hover{
   transform: translateY(-1px);
-  opacity: 0.96;
+  opacity: 0.98;
+  box-shadow: 0 14px 28px rgba(255,70,20,0.22);
 }
 
-.favorite-btn{
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+.gym-results-page .see-more-btn:hover::before,
+.gym-results-page .see-more-btn:hover::after{
+  width: 50%;
+}
+/* =========================
+   FAVORITE BUTTON / HEART
+========================= */
+.gym-results-page .favorite-btn{
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
   border-radius: 14px;
-  border: 2px solid #e7e7e7;
-  background: #fff;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+    linear-gradient(180deg, #1b2432 0%, #141c28 100%) !important;
+  color: #f3f6fb !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    background .16s ease,
+    color .16s ease,
+    box-shadow .16s ease;
   flex: 0 0 auto;
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-.favorite-btn:hover{
+.gym-results-page .favorite-btn:hover{
   transform: translateY(-1px);
-  border-color: rgba(210,63,11,0.35);
+  border-color: rgba(255,106,42,0.22) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+    linear-gradient(180deg, #222c3c 0%, #182130 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.22),
+    0 0 0 1px rgba(255,106,42,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 
 .gym-results-page .favorite-btn.liked{
-  background: var(--brand) !important;
-  border-color: var(--brand) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  border-color: #ff6a2a !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 10px 24px rgba(255,70,20,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.18) !important;
 }
 
-.heart-icon{
-  width: 20px;
-  height: 20px;
+.gym-results-page .favorite-btn svg,
+.gym-results-page .favorite-btn .heart-icon{
+  width: 24px !important;
+  height: 24px !important;
+  display: block !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2.4 !important;
+  opacity: 1 !important;
 }
 
+.gym-results-page .favorite-btn svg *,
+.gym-results-page .favorite-btn .heart-icon *{
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2.4 !important;
+}
+
+.gym-results-page .favorite-btn.liked svg,
+.gym-results-page .favorite-btn.liked .heart-icon,
+.gym-results-page .favorite-btn.liked svg *,
+.gym-results-page .favorite-btn.liked .heart-icon *{
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+
+.gym-results-page .favorite-btn:hover svg,
+.gym-results-page .favorite-btn:hover .heart-icon,
+.gym-results-page .favorite-btn:hover svg *,
+.gym-results-page .favorite-btn:hover .heart-icon *{
+  color: #111111 !important;
+  stroke: #111111 !important;
+  fill: none !important;
+}
+.gym-results-page .favorite-btn:hover{
+  transform: translateY(-1px);
+
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  border-color: #ff6a2a !important;
+
+  color: #ffffff !important;
+
+  box-shadow:
+    0 12px 26px rgba(255,70,20,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.18) !important;
+}
+
+/* keep heart white on hover */
+.gym-results-page .favorite-btn:hover svg,
+.gym-results-page .favorite-btn:hover .heart-icon,
+.gym-results-page .favorite-btn:hover svg *,
+.gym-results-page .favorite-btn:hover .heart-icon *{
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+.gym-results-page .favorite-btn.liked{
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  border-color: #ff6a2a !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 10px 24px rgba(255,70,20,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.18) !important;
+}
+
+.gym-results-page .favorite-btn.liked::before,
+.gym-results-page .favorite-btn.liked::after{
+  display: none;
+}
+
+.gym-results-page .favorite-btn.liked svg,
+.gym-results-page .favorite-btn.liked .heart-icon,
+.gym-results-page .favorite-btn.liked svg *,
+.gym-results-page .favorite-btn.liked .heart-icon *{
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+
+/* =========================
+   MISC
+========================= */
 .gr-muted-note{
   margin-top: 0.65rem;
   font-size: 0.7rem;
   font-style: italic;
   font-weight: 600;
-  color: #9c8f85;
+  color: #9ea8ba;
 }
 
 .gr-error{
   padding: 1rem 0;
   font-weight: 800;
-  color: var(--brand);
+  color: #ffd8d8;
 }
 
 .gr-empty{
   padding: 2rem 0;
   font-style: italic;
   font-weight: 700;
-  color: #9c8f85;
+  color: #9ea8ba;
 }
 
 /* =========================
@@ -536,7 +918,10 @@ body{
   margin-top: 40px;
   padding: 80px 0;
   border-top: none;
-  background: linear-gradient(120deg, #140503 0%, #2a0e07 60%, #5a1606 100%);
+  background:
+    radial-gradient(circle at 25% 35%, rgba(255,106,42,0.09), transparent 20%),
+    radial-gradient(circle at 80% 22%, rgba(255,106,42,0.08), transparent 16%),
+    linear-gradient(120deg, #09111b 0%, #0b121c 28%, #28130b 72%, #5d1b08 100%);
   width: 100%;
   max-width: 100%;
 }
@@ -562,27 +947,56 @@ body{
 .gym-results-page .cta-section p{
   margin: 0 0 24px;
   font-weight: 700;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.76);
 }
 
 .gym-results-page .cta-section .cta-btn{
   display: inline-block;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   padding: 12px 24px;
   font-weight: 900;
-  border-radius: 10px;
-  background: var(--brand) !important;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
   color: #fff !important;
-  border: 2px solid var(--brand) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
   box-shadow: 0 16px 40px rgba(0,0,0,0.35);
-  transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+  transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
   text-decoration: none;
   max-width: 100%;
 }
 
+.gym-results-page .cta-section .cta-btn::before,
+.gym-results-page .cta-section .cta-btn::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: -1;
+  transition: width .30s ease;
+}
+
+.gym-results-page .cta-section .cta-btn::before{
+  left: 0;
+  background: linear-gradient(90deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+}
+
+.gym-results-page .cta-section .cta-btn::after{
+  right: 0;
+  background: linear-gradient(270deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+}
+
 .gym-results-page .cta-section .cta-btn:hover{
   transform: translateY(-2px);
-  opacity: 0.96;
+  opacity: 0.98;
   box-shadow: 0 22px 50px rgba(0,0,0,0.40);
+}
+
+.gym-results-page .cta-section .cta-btn:hover::before,
+.gym-results-page .cta-section .cta-btn:hover::after{
+  width: 50%;
 }
 
 /* =========================
@@ -607,7 +1021,7 @@ body{
   height: 14px;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  background: rgba(210,63,11,0.25);
+  background: rgba(255,106,42,0.25);
   animation: grPulse 1.8s ease-in-out infinite;
   opacity: 0.75;
 }
@@ -636,19 +1050,19 @@ body{
   font-weight: 900;
   padding: 6px 10px;
   border-radius: 999px;
-  background: var(--brand);
+  background: #ff6a2a;
   color: #fff;
   box-shadow: 0 10px 18px rgba(0,0,0,0.22);
   transform: translateY(0);
   opacity: 0.96;
-  transition: transform 0.14s ease, opacity 0.14s ease;
+  transition: transform .14s ease, opacity .14s ease;
 }
 
 .gr-pin__dot{
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: var(--brand);
+  background: #ff6a2a;
   border: 3px solid #fff;
   box-shadow: 0 10px 20px rgba(0,0,0,0.22);
 }
@@ -660,7 +1074,7 @@ body{
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 10px solid var(--brand);
+  border-top: 10px solid #ff6a2a;
   filter: drop-shadow(0 10px 14px rgba(0,0,0,0.22));
 }
 
@@ -670,35 +1084,36 @@ body{
 }
 
 .gr-pin-host.selected .gr-pin__bubble{
-  background: var(--brandDark2);
+  background: #5a1608;
 }
 
 .gr-pin-host.selected .gr-pin__dot{
-  background: var(--brandDark2);
+  background: #5a1608;
 }
 
 .gr-pin-host.selected .gr-pin__tip{
-  border-top-color: var(--brandDark2);
+  border-top-color: #5a1608;
 }
 
 .gr-pin-host.selected .gr-pin__pulse{
-  background: rgba(122,29,8,0.28);
+  background: rgba(255,70,20,0.18);
 }
 
 .gr-popup__title{
   font-weight: 900;
   margin-bottom: 4px;
+  color: #ffffff;
 }
 
 .gr-popup__sub{
-  color: #666;
+  color: #9ea8ba;
   font-weight: 700;
   margin-bottom: 6px;
 }
 
 .gr-popup__meta{
   font-weight: 800;
-  color: #222;
+  color: #f8fafc;
 }
 
 /* =========================
@@ -709,9 +1124,9 @@ body{
   width: 46px;
   height: 46px;
   border-radius: 14px;
-  border: 2px solid rgba(255,255,255,0.18);
-  background: rgba(0,0,0,0.18);
-  color: #fff;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -722,7 +1137,7 @@ body{
 .gym-results-page .filter-toggle:hover{
   transform: translateY(-1px);
   opacity: 0.96;
-  background: rgba(0,0,0,0.24);
+  background: rgba(255,255,255,0.12);
 }
 
 .gym-results-page .filter-toggle__badge{
@@ -738,19 +1153,21 @@ body{
   justify-content: center;
   font-size: 0.72rem;
   font-weight: 900;
-  background: #fff;
-  color: var(--brand);
-  border: 1px solid rgba(210,63,11,0.22);
+  background: #ffffff;
+  color: #ff6a2a;
+  border: 1px solid rgba(255,106,42,0.24);
 }
 
 .gym-results-page .filter-drawer{
   display: none;
   width: 100%;
   margin-top: 10px;
-  background: #fff;
-  border: 1px solid #eee;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03)),
+    #141d29;
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
-  box-shadow: 0 18px 46px rgba(0,0,0,0.12);
+  box-shadow: 0 18px 46px rgba(0,0,0,0.24);
   overflow: hidden;
   max-height: 0;
   opacity: 0;
@@ -800,11 +1217,13 @@ body{
 .gr-sheet{
   width: 100%;
   max-width: 520px;
-  background: #fff;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03)),
+    #101827;
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 22px 60px rgba(0,0,0,0.35);
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .gr-sheet__top{
@@ -813,17 +1232,18 @@ body{
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .gr-sheet__title{
   font-weight: 900;
-  color: #111;
+  color: #ffffff;
 }
 
 .gr-sheet__close{
   border: 0;
   background: transparent;
+  color: #f8fafc;
   cursor: pointer;
   font-weight: 900;
   padding: 8px 10px;
@@ -840,8 +1260,9 @@ body{
 .gr-sheet__item{
   width: 100%;
   text-align: left;
-  border: 1px solid #eee;
-  background: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #141d29;
+  color: #f8fbff;
   border-radius: 14px;
   padding: 12px 12px;
   font-weight: 800;
@@ -850,17 +1271,23 @@ body{
 }
 
 .gr-sheet__item:hover{
-  border-color: rgba(210,63,11,0.22);
+  border-color: rgba(255,106,42,0.20);
 }
 
 .gr-sheet__item.is-active{
-  border-color: rgba(210,63,11,0.55);
-  box-shadow: 0 10px 24px rgba(210,63,11,0.12);
+  border-color: rgba(255,126,66,0.65);
+  box-shadow: 0 10px 24px rgba(255,70,20,0.12);
 }
 
 /* =========================
    RESPONSIVE
 ========================= */
+@media (max-width: 1400px){
+  .results-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1100px){
   .gym-results-page{
     --appHeaderH: 106px;
@@ -885,21 +1312,20 @@ body{
   }
 
   .gr-header-inner{
-    padding: 26px 16px;
+    padding: 24px 16px;
+  }
+
+  .gym-results-page .filter-bar{
+    padding: 58px 14px 14px 14px !important;
   }
 
   .gym-results-page .filter-controls{
-    flex-wrap: wrap;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
-  .gym-results-page .filter-group{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .gym-results-page .filter-controls select{
-    min-width: 0;
-    width: 100%;
+  .gym-results-page .clear-filters-btn{
+    top: 12px !important;
+    right: 12px !important;
   }
 
   .gym-results-page .cta-section{
@@ -948,35 +1374,12 @@ body{
     top: auto !important;
     z-index: auto !important;
     margin-top: 12px;
-    padding-top: 12px;
   }
+}
 
-  .gym-results-page .filter-bar .container{
-    position: static !important;
-    top: auto !important;
-  }
-
-  .gym-results-page .filter-bar .filter-controls{
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .gym-results-page .filter-group{
-    flex: 1 1 240px;
-    min-width: 240px;
-    width: auto;
-  }
-
-  .gym-results-page .filter-controls select{
-    width: 100%;
-    min-width: 0;
-  }
-
-  .gym-results-page .clear-filters-btn{
-    flex: 1 1 240px;
-    width: auto;
+@media (max-width: 900px){
+  .results-grid{
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1029,7 +1432,7 @@ body{
   }
 
   .result-card{
-    border-radius: 16px;
+    border-radius: 18px;
   }
 
   .card-image{
@@ -1044,25 +1447,29 @@ body{
     position: static !important;
     top: auto !important;
     z-index: auto !important;
-    padding-top: 10px;
+    padding: 56px 12px 12px 12px !important;
     margin-top: 10px;
+    border-radius: 18px !important;
   }
 
   .gym-results-page .filter-controls{
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .gym-results-page .filter-group,
-  .gym-results-page .clear-filters-btn{
-    flex: 1 1 100%;
-    min-width: 0;
-    width: 100%;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 
   .gym-results-page .filter-controls select{
     width: 100%;
     min-width: 0;
+    height: 46px !important;
+    min-height: 46px !important;
+    font-size: 0.88rem !important;
+    border-radius: 14px !important;
+  }
+
+  .gym-results-page .filter-group::after{
+    right: 14px;
+    width: 9px;
+    height: 9px;
   }
 
   .gym-results-page .see-more-btn{
@@ -1070,11 +1477,28 @@ body{
     border-radius: 13px;
   }
 
-  .favorite-btn{
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
+  .gym-results-page .favorite-btn{
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
     border-radius: 13px;
+  }
+
+  .gym-results-page .favorite-btn svg,
+  .gym-results-page .favorite-btn .heart-icon{
+    width: 23px;
+    height: 23px;
+  }
+
+  .gym-results-page .clear-filters-btn{
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 13px !important;
+  }
+
+  .gym-results-page .clear-filters-btn::after{
+    font-size: 17px;
   }
 
   .gym-results-page .cta-section{
@@ -1101,4 +1525,4 @@ body{
     font-size: 0.74rem;
     padding: 6px 9px;
   }
-}
+} 
