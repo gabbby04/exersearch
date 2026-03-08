@@ -14,35 +14,53 @@ body{
 }
 
 .gym-results-page{
-  --brand: #ff6a2a;
-  --brand2: #f2571a;
-  --brand3: #e85a20;
+  /* =========================
+     BRAND PALETTE
+  ========================= */
+  --black-1: #181718;
+  --black-2: #101820;
+  --black-3: #0d141b;
+
+  --white-1: #f6f8fa;
+  --white-2: #f1f4f8;
+  --white-3: #ebf0f5;
+
+  --orange-1: #ab3200;
+  --orange-2: #fc4a00;
+  --orange-3: #ff5a16;
+
+  /* =========================
+     DARK MODE DEFAULT
+  ========================= */
+  --brand: var(--orange-2);
+  --brand2: var(--orange-3);
+  --brand3: var(--orange-1);
   --brandDark: #2a0e07;
   --brandDark2: #5a1608;
 
-  --bg: #0f1420;
-  --bg2: #131a27;
-  --bg3: #161e2c;
-  --bg4: #1a2230;
+  --bg: #0f141d;
+  --bg2: #101820;
+  --bg3: #0d141b;
+  --bg4: #181718;
 
-  --card: #141d29;
-  --card2: #1a2230;
-  --card3: #1e2734;
+  --card: #141c27;
+  --card2: #101820;
+  --card3: #18212d;
 
-  --text: #f8fafc;
+  --text: #f6f8fa;
   --textStrong: #ffffff;
-  --textSoft: #c8ceda;
+  --textSoft: #d8e0ea;
   --muted: #9ea8ba;
 
-  --line: rgba(255,255,255,0.08);
-  --lineSoft: rgba(255,255,255,0.06);
-  --lineStrong: rgba(255,255,255,0.12);
+  --line: rgba(246,248,250,0.08);
+  --lineSoft: rgba(246,248,250,0.06);
+  --lineStrong: rgba(246,248,250,0.12);
 
-  --glass: rgba(255,255,255,0.04);
-  --glass2: rgba(255,255,255,0.06);
-  --chip: rgba(255,106,42,0.10);
-  --chipBorder: rgba(255,106,42,0.20);
-  --accentRing: rgba(255,106,42,0.24);
+  --glass: rgba(246,248,250,0.04);
+  --glass2: rgba(246,248,250,0.06);
+  --chip: rgba(252,74,0,0.10);
+  --chipBorder: rgba(252,74,0,0.22);
+  --accentRing: rgba(252,74,0,0.24);
 
   --shadow: 0 22px 56px rgba(0,0,0,0.32);
   --shadowSoft: 0 14px 36px rgba(0,0,0,0.24);
@@ -52,35 +70,135 @@ body{
   --filterOffset: -18px;
 
   background:
-    radial-gradient(circle at 12% 6%, rgba(255,106,42,0.09), transparent 18%),
-    radial-gradient(circle at 86% 12%, rgba(255,106,42,0.07), transparent 16%),
-    radial-gradient(circle at 50% 30%, rgba(255,255,255,0.03), transparent 24%),
-    linear-gradient(180deg, #0d1625 0%, #101827 36%, #131b28 100%) !important;
+    radial-gradient(circle at 12% 6%, rgba(252,74,0,0.09), transparent 18%),
+    radial-gradient(circle at 86% 12%, rgba(255,90,22,0.07), transparent 16%),
+    radial-gradient(circle at 50% 30%, rgba(246,248,250,0.03), transparent 24%),
+    linear-gradient(180deg, #0d141b 0%, #101820 36%, #181718 100%) !important;
   color: var(--text);
   width: 100%;
   max-width: 100%;
   overflow: visible;
 }
 
+/* OPTIONAL MANUAL LIGHT MODE SUPPORT
+   Add either:
+   1) .gym-results-page.light-mode
+   2) [data-theme="light"] on a parent
+*/
+.gym-results-page.light-mode,
+[data-theme="light"] .gym-results-page{
+  --brand: var(--orange-2);
+  --brand2: var(--orange-3);
+  --brand3: var(--orange-1);
+  --brandDark: #8a2b05;
+  --brandDark2: #6e2103;
+
+  --bg: #f6f8fa;
+  --bg2: #f1f4f8;
+  --bg3: #ebf0f5;
+  --bg4: #ffffff;
+
+  --card: #ffffff;
+  --card2: #f6f8fa;
+  --card3: #f1f4f8;
+
+  --text: #181718;
+  --textStrong: #101820;
+  --textSoft: #344155;
+  --muted: #66758a;
+
+  --line: rgba(16,24,32,0.10);
+  --lineSoft: rgba(16,24,32,0.07);
+  --lineStrong: rgba(16,24,32,0.14);
+
+  --glass: rgba(16,24,32,0.03);
+  --glass2: rgba(16,24,32,0.05);
+  --chip: rgba(252,74,0,0.09);
+  --chipBorder: rgba(171,50,0,0.18);
+  --accentRing: rgba(252,74,0,0.18);
+
+  --shadow: 0 18px 42px rgba(16,24,32,0.10);
+  --shadowSoft: 0 12px 28px rgba(16,24,32,0.08);
+  --shadowCard: 0 14px 32px rgba(16,24,32,0.10);
+
+  background:
+    radial-gradient(circle at 12% 6%, rgba(252,74,0,0.08), transparent 18%),
+    radial-gradient(circle at 86% 12%, rgba(255,90,22,0.06), transparent 16%),
+    radial-gradient(circle at 50% 30%, rgba(16,24,32,0.025), transparent 24%),
+    linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 45%, #ebf0f5 100%) !important;
+  color: var(--text);
+}
+
+/* automatic light mode if you want it */
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode){
+    --brand: var(--orange-2);
+    --brand2: var(--orange-3);
+    --brand3: var(--orange-1);
+    --brandDark: #8a2b05;
+    --brandDark2: #6e2103;
+
+    --bg: #f6f8fa;
+    --bg2: #f1f4f8;
+    --bg3: #ebf0f5;
+    --bg4: #ffffff;
+
+    --card: #ffffff;
+    --card2: #f6f8fa;
+    --card3: #f1f4f8;
+
+    --text: #181718;
+    --textStrong: #101820;
+    --textSoft: #344155;
+    --muted: #66758a;
+
+    --line: rgba(16,24,32,0.10);
+    --lineSoft: rgba(16,24,32,0.07);
+    --lineStrong: rgba(16,24,32,0.14);
+
+    --glass: rgba(16,24,32,0.03);
+    --glass2: rgba(16,24,32,0.05);
+    --chip: rgba(252,74,0,0.09);
+    --chipBorder: rgba(171,50,0,0.18);
+    --accentRing: rgba(252,74,0,0.18);
+
+    --shadow: 0 18px 42px rgba(16,24,32,0.10);
+    --shadowSoft: 0 12px 28px rgba(16,24,32,0.08);
+    --shadowCard: 0 14px 32px rgba(16,24,32,0.10);
+
+    background:
+      radial-gradient(circle at 12% 6%, rgba(252,74,0,0.08), transparent 18%),
+      radial-gradient(circle at 86% 12%, rgba(255,90,22,0.06), transparent 16%),
+      radial-gradient(circle at 50% 30%, rgba(16,24,32,0.025), transparent 24%),
+      linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 45%, #ebf0f5 100%) !important;
+    color: var(--text);
+  }
+}
+
 /* =========================
    HEADER
 ========================= */
+/* =========================
+   DARK MODE HEADER (FIXED)
+========================= */
+
 .gr-header-full{
   width: 100%;
   max-width: 100%;
-  margin: 0;
+  margin: 40px 0 0;
   border-radius: 0;
   overflow: hidden;
   color: #fff;
   box-shadow: var(--shadow);
   border: 1px solid rgba(255,255,255,0.05) !important;
   padding: 30px 0;
-  background:
-    radial-gradient(circle at 22% 35%, rgba(255,106,42,0.08), transparent 18%),
-    radial-gradient(circle at 78% 30%, rgba(255,106,42,0.11), transparent 20%),
-    linear-gradient(90deg, #091321 0%, #0b111c 30%, #25120b 72%, #6b1f09 100%) !important;
-}
 
+  background:
+    radial-gradient(circle at 85% 40%, rgba(255,90,22,0.55), transparent 42%),
+    radial-gradient(circle at 70% 50%, rgba(252,74,0,0.35), transparent 55%),
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.04), transparent 50%),
+    linear-gradient(135deg, #0d141b 0%, #101820 55%, #181718 100%) !important;
+}
 .gr-header-inner{
   max-width: none;
   width: 100%;
@@ -102,6 +220,48 @@ body{
   font-weight: 700;
   font-size: 16px;
   margin: 12px 0 0;
+}
+
+/* LIGHT MODE HEADER */
+.gym-results-page.light-mode .gr-header-full,
+[data-theme="light"] .gym-results-page .gr-header-full{
+  border: 1px solid rgba(16,24,32,0.08) !important;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(252,74,0,0.10), transparent 20%),
+    radial-gradient(circle at 82% 24%, rgba(171,50,0,0.12), transparent 18%),
+    linear-gradient(135deg, #181718 0%, #101820 34%, #ab3200 68%, #fc4a00 100%) !important;
+  color: #ffffff;
+}
+
+.gym-results-page.light-mode .gr-header-inner h1,
+[data-theme="light"] .gym-results-page .gr-header-inner h1{
+  color: #ffffff;
+  text-shadow: 0 6px 20px rgba(0,0,0,0.22);
+}
+
+.gym-results-page.light-mode .gr-header-inner p,
+[data-theme="light"] .gym-results-page .gr-header-inner p{
+  color: rgba(246,248,250,0.86);
+}
+
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .gr-header-full{
+    border: 1px solid rgba(16,24,32,0.08) !important;
+    background:
+      radial-gradient(circle at 18% 28%, rgba(252,74,0,0.14), transparent 20%),
+      radial-gradient(circle at 82% 24%, rgba(171,50,0,0.10), transparent 18%),
+      linear-gradient(135deg, #ffffff 0%, #f6f8fa 32%, #f1f4f8 65%, #ebf0f5 100%) !important;
+    color: #101820;
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-header-inner h1{
+    color: #101820;
+    text-shadow: none;
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-header-inner p{
+    color: rgba(16,24,32,0.76);
+  }
 }
 
 /* =========================
@@ -239,9 +399,9 @@ body{
   padding: 10px 14px;
   font-weight: 900;
   cursor: pointer;
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%);
+  background: linear-gradient(180deg, var(--orange-3) 0%, var(--orange-2) 100%);
   color: #fff;
-  box-shadow: 0 10px 24px rgba(255,70,20,0.18);
+  box-shadow: 0 10px 24px rgba(252,74,0,0.18);
   transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
   flex: 0 0 auto;
 }
@@ -259,22 +419,74 @@ body{
 
 .gr-map-btn::before{
   left: 0;
-  background: linear-gradient(90deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+  background: linear-gradient(90deg, rgba(90,22,8,0.88), rgba(171,50,0,0.88));
 }
 
 .gr-map-btn::after{
   right: 0;
-  background: linear-gradient(270deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+  background: linear-gradient(270deg, rgba(90,22,8,0.88), rgba(171,50,0,0.88));
 }
 
 .gr-map-btn:hover{
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(255,70,20,0.24);
+  box-shadow: 0 14px 28px rgba(252,74,0,0.24);
 }
 
 .gr-map-btn:hover::before,
 .gr-map-btn:hover::after{
   width: 50%;
+}
+
+.gym-results-page.light-mode .gr-map-card,
+[data-theme="light"] .gym-results-page .gr-map-card{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.98)),
+    linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%) !important;
+  border: 1px solid rgba(16,24,32,0.08);
+  box-shadow:
+    0 14px 36px rgba(16,24,32,0.09),
+    inset 0 1px 0 rgba(255,255,255,0.75) !important;
+}
+
+.gym-results-page.light-mode .gr-map-top,
+[data-theme="light"] .gym-results-page .gr-map-top{
+  border-bottom: 1px solid rgba(16,24,32,0.07);
+  background: linear-gradient(180deg, rgba(16,24,32,0.02), rgba(16,24,32,0.01));
+}
+
+.gym-results-page.light-mode .gr-map-top__left strong,
+[data-theme="light"] .gym-results-page .gr-map-top__left strong{
+  color: #101820;
+}
+
+.gym-results-page.light-mode .gr-map-top__sub,
+[data-theme="light"] .gym-results-page .gr-map-top__sub{
+  color: #66758a;
+}
+
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .gr-map-card{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.98)),
+      linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%) !important;
+    border: 1px solid rgba(16,24,32,0.08);
+    box-shadow:
+      0 14px 36px rgba(16,24,32,0.09),
+      inset 0 1px 0 rgba(255,255,255,0.75) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-map-top{
+    border-bottom: 1px solid rgba(16,24,32,0.07);
+    background: linear-gradient(180deg, rgba(16,24,32,0.02), rgba(16,24,32,0.01));
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-map-top__left strong{
+    color: #101820;
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-map-top__sub{
+    color: #66758a;
+  }
 }
 
 /* =========================
@@ -291,7 +503,7 @@ body{
   border-radius: 22px !important;
   background:
     radial-gradient(circle at 14% 50%, rgba(90,22,8,0.14), transparent 18%),
-    radial-gradient(circle at 84% 36%, rgba(255,106,42,0.05), transparent 14%),
+    radial-gradient(circle at 84% 36%, rgba(255,90,22,0.05), transparent 14%),
     linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.012)),
     linear-gradient(180deg, #141c29 0%, #111827 100%) !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
@@ -393,33 +605,33 @@ body{
   background:
     linear-gradient(180deg, rgba(255,255,255,0.085), rgba(255,255,255,0.03)),
     linear-gradient(180deg, #46556c 0%, #3a485e 100%) !important;
-  border: 1px solid rgba(160,68,33,0.36) !important;
+  border: 1px solid rgba(171,50,0,0.36) !important;
 }
 
 .gym-results-page .filter-controls select:hover{
-  border-color: rgba(217,74,22,0.28) !important;
+  border-color: rgba(252,74,0,0.28) !important;
   transform: translateY(-1px);
   box-shadow:
     0 14px 26px rgba(0,0,0,0.18),
     inset 0 1px 0 rgba(255,255,255,0.05),
-    0 0 0 1px rgba(90,22,8,0.10) !important;
+    0 0 0 1px rgba(171,50,0,0.10) !important;
 }
 
 .gym-results-page .filter-controls select:focus{
   outline: none !important;
-  border-color: rgba(217,74,22,0.52) !important;
+  border-color: rgba(252,74,0,0.52) !important;
   box-shadow:
-    0 0 0 4px rgba(217,74,22,0.14),
+    0 0 0 4px rgba(252,74,0,0.14),
     0 12px 24px rgba(0,0,0,0.16),
     inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 
 .gym-results-page .filter-group.is-active select,
 .gym-results-page .filter-controls select.active-filter{
-  border-color: rgba(217,74,22,0.34) !important;
+  border-color: rgba(252,74,0,0.34) !important;
   box-shadow:
     0 12px 24px rgba(0,0,0,0.18),
-    0 0 0 1px rgba(90,22,8,0.20),
+    0 0 0 1px rgba(171,50,0,0.20),
     inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 
@@ -435,11 +647,11 @@ body{
   font-size: 0 !important;
   line-height: 0 !important;
   color: transparent !important;
-  border: 1px solid rgba(217,74,22,0.26) !important;
+  border: 1px solid rgba(252,74,0,0.26) !important;
   background:
-    linear-gradient(180deg, rgba(90,22,8,0.44), rgba(217,74,22,0.16)) !important;
+    linear-gradient(180deg, rgba(171,50,0,0.44), rgba(252,74,0,0.16)) !important;
   box-shadow:
-    0 10px 20px rgba(90,22,8,0.18),
+    0 10px 20px rgba(171,50,0,0.18),
     inset 0 1px 0 rgba(255,255,255,0.04) !important;
   transition:
     transform .16s ease,
@@ -484,16 +696,151 @@ body{
 
 .gym-results-page .clear-filters-btn:hover{
   transform: translateY(-1px) rotate(-12deg);
-  border-color: rgba(242,87,26,0.42) !important;
+  border-color: rgba(255,90,22,0.42) !important;
   background:
-    linear-gradient(180deg, rgba(217,74,22,0.85), rgba(90,22,8,0.82)) !important;
+    linear-gradient(180deg, rgba(252,74,0,0.85), rgba(171,50,0,0.82)) !important;
   box-shadow:
-    0 14px 24px rgba(90,22,8,0.24),
-    0 0 0 1px rgba(217,74,22,0.10) !important;
+    0 14px 24px rgba(171,50,0,0.24),
+    0 0 0 1px rgba(252,74,0,0.10) !important;
 }
 
 .gym-results-page .clear-filters-btn:hover::before{
   width: 50%;
+}
+
+/* LIGHT FILTERS */
+.gym-results-page.light-mode .filter-bar,
+[data-theme="light"] .gym-results-page .filter-bar{
+  background:
+    radial-gradient(circle at 14% 50%, rgba(171,50,0,0.08), transparent 18%),
+    radial-gradient(circle at 84% 36%, rgba(252,74,0,0.05), transparent 14%),
+    linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,255,255,0.92)),
+    linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%) !important;
+  border: 1px solid rgba(16,24,32,0.08) !important;
+  box-shadow:
+    0 16px 34px rgba(16,24,32,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.80) !important;
+}
+
+.gym-results-page.light-mode .filter-group::after,
+[data-theme="light"] .gym-results-page .filter-group::after{
+  border-right-color: rgba(16,24,32,0.70);
+  border-bottom-color: rgba(16,24,32,0.70);
+}
+
+.gym-results-page.light-mode .filter-controls select,
+[data-theme="light"] .gym-results-page .filter-controls select{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.90), rgba(255,255,255,0.80)),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+  border: 1px solid rgba(16,24,32,0.10) !important;
+  color: #181718 !important;
+  box-shadow:
+    0 10px 22px rgba(16,24,32,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.90) !important;
+}
+
+.gym-results-page.light-mode .filter-controls select option,
+[data-theme="light"] .gym-results-page .filter-controls select option{
+  background: #ffffff;
+  color: #181718;
+}
+
+.gym-results-page.light-mode .filter-controls select:required:invalid,
+[data-theme="light"] .gym-results-page .filter-controls select:required:invalid{
+  color: rgba(24,23,24,0.46) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.94), rgba(241,244,248,0.96)),
+    linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%) !important;
+  border: 1px solid rgba(16,24,32,0.08) !important;
+}
+
+.gym-results-page.light-mode .filter-controls select:not(:required:invalid),
+[data-theme="light"] .gym-results-page .filter-controls select:not(:required:invalid){
+  color: #181718 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,248,250,0.94)),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+  border: 1px solid rgba(171,50,0,0.18) !important;
+}
+
+.gym-results-page.light-mode .clear-filters-btn,
+[data-theme="light"] .gym-results-page .clear-filters-btn{
+  border: 1px solid rgba(171,50,0,0.16) !important;
+  background:
+    linear-gradient(180deg, rgba(255,90,22,0.18), rgba(171,50,0,0.08)) !important;
+  box-shadow:
+    0 10px 18px rgba(16,24,32,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.85) !important;
+}
+
+.gym-results-page.light-mode .clear-filters-btn::after,
+[data-theme="light"] .gym-results-page .clear-filters-btn::after{
+  color: #ab3200;
+}
+
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .filter-bar{
+    background:
+      radial-gradient(circle at 14% 50%, rgba(171,50,0,0.08), transparent 18%),
+      radial-gradient(circle at 84% 36%, rgba(252,74,0,0.05), transparent 14%),
+      linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,255,255,0.92)),
+      linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%) !important;
+    border: 1px solid rgba(16,24,32,0.08) !important;
+    box-shadow:
+      0 16px 34px rgba(16,24,32,0.08),
+      inset 0 1px 0 rgba(255,255,255,0.80) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .filter-group::after{
+    border-right-color: rgba(16,24,32,0.70);
+    border-bottom-color: rgba(16,24,32,0.70);
+  }
+
+  .gym-results-page:not(.dark-mode) .filter-controls select{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.90), rgba(255,255,255,0.80)),
+      linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+    border: 1px solid rgba(16,24,32,0.10) !important;
+    color: #181718 !important;
+    box-shadow:
+      0 10px 22px rgba(16,24,32,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.90) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .filter-controls select option{
+    background: #ffffff;
+    color: #181718;
+  }
+
+  .gym-results-page:not(.dark-mode) .filter-controls select:required:invalid{
+    color: rgba(24,23,24,0.46) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.94), rgba(241,244,248,0.96)),
+      linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%) !important;
+    border: 1px solid rgba(16,24,32,0.08) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .filter-controls select:not(:required:invalid){
+    color: #181718 !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,248,250,0.94)),
+      linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+    border: 1px solid rgba(171,50,0,0.18) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .clear-filters-btn{
+    border: 1px solid rgba(171,50,0,0.16) !important;
+    background:
+      linear-gradient(180deg, rgba(255,90,22,0.18), rgba(171,50,0,0.08)) !important;
+    box-shadow:
+      0 10px 18px rgba(16,24,32,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.85) !important;
+    }
+
+  .gym-results-page:not(.dark-mode) .clear-filters-btn::after{
+    color: #ab3200;
+  }
 }
 
 /* =========================
@@ -544,13 +891,13 @@ body{
   box-shadow:
     0 24px 50px rgba(0,0,0,0.30),
     inset 0 1px 0 rgba(255,255,255,0.05) !important;
-  border-color: rgba(255,106,42,0.20);
+  border-color: rgba(252,74,0,0.20);
 }
 
 .result-card.is-selected{
-  border-color: rgba(255,126,66,0.55);
+  border-color: rgba(255,90,22,0.55);
   box-shadow:
-    0 20px 46px rgba(255,70,20,0.14),
+    0 20px 46px rgba(252,74,0,0.14),
     inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
@@ -559,9 +906,9 @@ body{
 }
 
 @keyframes grFlash{
-  0%{ box-shadow: 0 0 0 0 rgba(255,106,42,0.00); }
-  30%{ box-shadow: 0 0 0 8px rgba(255,106,42,0.16); }
-  100%{ box-shadow: 0 0 0 0 rgba(255,106,42,0.00); }
+  0%{ box-shadow: 0 0 0 0 rgba(252,74,0,0.00); }
+  30%{ box-shadow: 0 0 0 8px rgba(252,74,0,0.16); }
+  100%{ box-shadow: 0 0 0 0 rgba(252,74,0,0.00); }
 }
 
 .card-image{
@@ -595,7 +942,7 @@ body{
   top: 12px;
   right: 12px;
   max-width: calc(100% - 24px);
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  background: linear-gradient(180deg, var(--orange-3) 0%, var(--orange-2) 100%) !important;
   color: #fff !important;
   font-weight: 900;
   border-radius: 12px;
@@ -609,7 +956,7 @@ body{
   right: auto;
   background: rgba(10,18,32,0.72) !important;
   color: #fff5ef !important;
-  border: 1px solid rgba(255,106,42,0.18) !important;
+  border: 1px solid rgba(252,74,0,0.18) !important;
   backdrop-filter: blur(8px);
 }
 
@@ -680,8 +1027,8 @@ body{
 
 .gym-results-page .amenity-tag{
   background:
-    linear-gradient(180deg, rgba(90,22,8,0.34), rgba(217,74,22,0.12)) !important;
-  border: 1px solid rgba(217,74,22,0.22) !important;
+    linear-gradient(180deg, rgba(171,50,0,0.34), rgba(252,74,0,0.12)) !important;
+  border: 1px solid rgba(252,74,0,0.22) !important;
   color: #fff5ef !important;
   font-weight: 900;
   padding: 7px 10px;
@@ -710,14 +1057,14 @@ body{
   flex: 1 1 auto;
   min-width: 0;
   text-align: center;
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  background: linear-gradient(180deg, var(--orange-3) 0%, var(--orange-2) 100%) !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
   color: #fff !important;
   font-weight: 900;
   padding: 12px 12px;
   border-radius: 14px;
   text-decoration: none;
-  box-shadow: 0 10px 22px rgba(255,70,20,0.18);
+  box-shadow: 0 10px 22px rgba(252,74,0,0.18);
   transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
 }
 
@@ -734,24 +1081,175 @@ body{
 
 .gym-results-page .see-more-btn::before{
   left: 0;
-  background: linear-gradient(90deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+  background: linear-gradient(90deg, rgba(90,22,8,0.88), rgba(171,50,0,0.88));
 }
 
 .gym-results-page .see-more-btn::after{
   right: 0;
-  background: linear-gradient(270deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+  background: linear-gradient(270deg, rgba(90,22,8,0.88), rgba(171,50,0,0.88));
 }
 
 .gym-results-page .see-more-btn:hover{
   transform: translateY(-1px);
   opacity: 0.98;
-  box-shadow: 0 14px 28px rgba(255,70,20,0.22);
+  box-shadow: 0 14px 28px rgba(252,74,0,0.22);
 }
 
 .gym-results-page .see-more-btn:hover::before,
 .gym-results-page .see-more-btn:hover::after{
   width: 50%;
 }
+
+/* LIGHT CARD OVERRIDES */
+.gym-results-page.light-mode .result-card,
+[data-theme="light"] .gym-results-page .result-card{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.84)),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+  border: 1px solid rgba(16,24,32,0.08) !important;
+  box-shadow:
+    0 16px 34px rgba(16,24,32,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.86) !important;
+}
+
+.gym-results-page.light-mode .result-card:hover,
+[data-theme="light"] .gym-results-page .result-card:hover{
+  border-color: rgba(252,74,0,0.20);
+  box-shadow:
+    0 20px 42px rgba(16,24,32,0.11),
+    inset 0 1px 0 rgba(255,255,255,0.94) !important;
+}
+
+.gym-results-page.light-mode .card-image,
+[data-theme="light"] .gym-results-page .card-image{
+  background: #e9eef4;
+}
+
+.gym-results-page.light-mode .card-image::after,
+[data-theme="light"] .gym-results-page .card-image::after{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(16,24,32,0.05) 72%, rgba(16,24,32,0.10) 100%) !important;
+}
+
+.gym-results-page.light-mode .card-content,
+.gym-results-page.light-mode .card-content h3,
+[data-theme="light"] .gym-results-page .card-content,
+[data-theme="light"] .gym-results-page .card-content h3{
+  color: #101820 !important;
+}
+
+.gym-results-page.light-mode .gym-location,
+[data-theme="light"] .gym-results-page .gym-location{
+  color: #66758a !important;
+}
+
+.gym-results-page.light-mode .gym-rating-row,
+[data-theme="light"] .gym-results-page .gym-rating-row{
+  border-bottom: 1px solid rgba(16,24,32,0.08) !important;
+}
+
+.gym-results-page.light-mode .gym-rating-row .rating,
+[data-theme="light"] .gym-results-page .gym-rating-row .rating{
+  color: #ab3200 !important;
+}
+
+.gym-results-page.light-mode .gym-rating-row .reviews,
+[data-theme="light"] .gym-results-page .gym-rating-row .reviews{
+  color: #344155 !important;
+}
+
+.gym-results-page.light-mode .gym-description,
+[data-theme="light"] .gym-results-page .gym-description{
+  color: #4f6176 !important;
+}
+
+.gym-results-page.light-mode .amenity-tag,
+[data-theme="light"] .gym-results-page .amenity-tag{
+  background:
+    linear-gradient(180deg, rgba(252,74,0,0.12), rgba(171,50,0,0.05)) !important;
+  border: 1px solid rgba(171,50,0,0.16) !important;
+  color: #ab3200 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.72),
+    0 6px 14px rgba(16,24,32,0.04) !important;
+}
+
+.gym-results-page.light-mode .gr-freevisit-badge,
+[data-theme="light"] .gym-results-page .gr-freevisit-badge{
+  background: rgba(255,255,255,0.84) !important;
+  color: #ab3200 !important;
+  border: 1px solid rgba(171,50,0,0.14) !important;
+}
+
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .result-card{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.84)),
+      linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+    border: 1px solid rgba(16,24,32,0.08) !important;
+    box-shadow:
+      0 16px 34px rgba(16,24,32,0.08),
+      inset 0 1px 0 rgba(255,255,255,0.86) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .result-card:hover{
+    border-color: rgba(252,74,0,0.20);
+    box-shadow:
+      0 20px 42px rgba(16,24,32,0.11),
+      inset 0 1px 0 rgba(255,255,255,0.94) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .card-image{
+    background: #e9eef4;
+  }
+
+  .gym-results-page:not(.dark-mode) .card-image::after{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(16,24,32,0.05) 72%, rgba(16,24,32,0.10) 100%) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .card-content,
+  .gym-results-page:not(.dark-mode) .card-content h3{
+    color: #101820 !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gym-location{
+    color: #66758a !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gym-rating-row{
+    border-bottom: 1px solid rgba(16,24,32,0.08) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gym-rating-row .rating{
+    color: #ab3200 !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gym-rating-row .reviews{
+    color: #344155 !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gym-description{
+    color: #4f6176 !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .amenity-tag{
+    background:
+      linear-gradient(180deg, rgba(252,74,0,0.12), rgba(171,50,0,0.05)) !important;
+    border: 1px solid rgba(171,50,0,0.16) !important;
+    color: #ab3200 !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.72),
+      0 6px 14px rgba(16,24,32,0.04) !important;
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-freevisit-badge{
+    background: rgba(255,255,255,0.84) !important;
+    color: #ab3200 !important;
+    border: 1px solid rgba(171,50,0,0.14) !important;
+  }
+}
+
 /* =========================
    FAVORITE BUTTON / HEART
 ========================= */
@@ -781,28 +1279,59 @@ body{
     inset 0 1px 0 rgba(255,255,255,0.04) !important;
   appearance: none;
   -webkit-appearance: none;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.gym-results-page .favorite-btn::before,
+.gym-results-page .favorite-btn::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: 0;
+  transition: width .28s ease;
+}
+
+.gym-results-page .favorite-btn::before{
+  left: 0;
+  background: linear-gradient(90deg, rgba(90,22,8,0.90), rgba(171,50,0,0.92));
+}
+
+.gym-results-page .favorite-btn::after{
+  right: 0;
+  background: linear-gradient(270deg, rgba(90,22,8,0.90), rgba(171,50,0,0.92));
 }
 
 .gym-results-page .favorite-btn:hover{
   transform: translateY(-1px);
-  border-color: rgba(255,106,42,0.22) !important;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
-    linear-gradient(180deg, #222c3c 0%, #182130 100%) !important;
+  background: linear-gradient(180deg, #ff5a16 0%, #fc4a00 100%) !important;
+  border-color: #fc4a00 !important;
   color: #ffffff !important;
   box-shadow:
-    0 12px 24px rgba(0,0,0,0.22),
-    0 0 0 1px rgba(255,106,42,0.08),
-    inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    0 12px 26px rgba(252,74,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.18) !important;
+}
+
+.gym-results-page .favorite-btn:hover::before,
+.gym-results-page .favorite-btn:hover::after{
+  width: 50%;
 }
 
 .gym-results-page .favorite-btn.liked{
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
-  border-color: #ff6a2a !important;
+  background: linear-gradient(180deg, #ff5a16 0%, #fc4a00 100%) !important;
+  border-color: #fc4a00 !important;
   color: #ffffff !important;
   box-shadow:
-    0 10px 24px rgba(255,70,20,0.22),
+    0 10px 24px rgba(252,74,0,0.22),
     inset 0 1px 0 rgba(255,255,255,0.18) !important;
+}
+
+.gym-results-page .favorite-btn.liked::before,
+.gym-results-page .favorite-btn.liked::after{
+  display: none;
 }
 
 .gym-results-page .favorite-btn svg,
@@ -815,6 +1344,8 @@ body{
   fill: none !important;
   stroke-width: 2.4 !important;
   opacity: 1 !important;
+  position: relative;
+  z-index: 1;
 }
 
 .gym-results-page .favorite-btn svg *,
@@ -838,53 +1369,35 @@ body{
 .gym-results-page .favorite-btn:hover .heart-icon,
 .gym-results-page .favorite-btn:hover svg *,
 .gym-results-page .favorite-btn:hover .heart-icon *{
-  color: #111111 !important;
-  stroke: #111111 !important;
-  fill: none !important;
-}
-.gym-results-page .favorite-btn:hover{
-  transform: translateY(-1px);
-
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
-  border-color: #ff6a2a !important;
-
-  color: #ffffff !important;
-
-  box-shadow:
-    0 12px 26px rgba(255,70,20,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.18) !important;
-}
-
-/* keep heart white on hover */
-.gym-results-page .favorite-btn:hover svg,
-.gym-results-page .favorite-btn:hover .heart-icon,
-.gym-results-page .favorite-btn:hover svg *,
-.gym-results-page .favorite-btn:hover .heart-icon *{
   color: #ffffff !important;
   stroke: #ffffff !important;
   fill: none !important;
 }
-.gym-results-page .favorite-btn.liked{
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
-  border-color: #ff6a2a !important;
-  color: #ffffff !important;
+
+/* light favorite button */
+.gym-results-page.light-mode .favorite-btn,
+[data-theme="light"] .gym-results-page .favorite-btn{
+  border: 1px solid rgba(16,24,32,0.10) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,248,250,0.92)),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+  color: #101820 !important;
   box-shadow:
-    0 10px 24px rgba(255,70,20,0.22),
-    inset 0 1px 0 rgba(255,255,255,0.18) !important;
+    0 10px 20px rgba(16,24,32,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.92) !important;
 }
 
-.gym-results-page .favorite-btn.liked::before,
-.gym-results-page .favorite-btn.liked::after{
-  display: none;
-}
-
-.gym-results-page .favorite-btn.liked svg,
-.gym-results-page .favorite-btn.liked .heart-icon,
-.gym-results-page .favorite-btn.liked svg *,
-.gym-results-page .favorite-btn.liked .heart-icon *{
-  color: #ffffff !important;
-  stroke: #ffffff !important;
-  fill: none !important;
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .favorite-btn{
+    border: 1px solid rgba(16,24,32,0.10) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,248,250,0.92)),
+      linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%) !important;
+    color: #101820 !important;
+    box-shadow:
+      0 10px 20px rgba(16,24,32,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.92) !important;
+  }
 }
 
 /* =========================
@@ -911,6 +1424,29 @@ body{
   color: #9ea8ba;
 }
 
+.gym-results-page.light-mode .gr-muted-note,
+.gym-results-page.light-mode .gr-empty,
+[data-theme="light"] .gym-results-page .gr-muted-note,
+[data-theme="light"] .gym-results-page .gr-empty{
+  color: #66758a;
+}
+
+.gym-results-page.light-mode .gr-error,
+[data-theme="light"] .gym-results-page .gr-error{
+  color: #ab3200;
+}
+
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .gr-muted-note,
+  .gym-results-page:not(.dark-mode) .gr-empty{
+    color: #66758a;
+  }
+
+  .gym-results-page:not(.dark-mode) .gr-error{
+    color: #ab3200;
+  }
+}
+
 /* =========================
    CTA SECTION
 ========================= */
@@ -919,9 +1455,9 @@ body{
   padding: 80px 0;
   border-top: none;
   background:
-    radial-gradient(circle at 25% 35%, rgba(255,106,42,0.09), transparent 20%),
-    radial-gradient(circle at 80% 22%, rgba(255,106,42,0.08), transparent 16%),
-    linear-gradient(120deg, #09111b 0%, #0b121c 28%, #28130b 72%, #5d1b08 100%);
+    radial-gradient(circle at 25% 35%, rgba(255,90,22,0.18), transparent 20%),
+    radial-gradient(circle at 80% 22%, rgba(252,74,0,0.14), transparent 18%),
+    linear-gradient(120deg, #101820 0%, #181718 26%, #ab3200 70%, #ff5a16 100%);
   width: 100%;
   max-width: 100%;
 }
@@ -958,7 +1494,7 @@ body{
   padding: 12px 24px;
   font-weight: 900;
   border-radius: 12px;
-  background: linear-gradient(180deg, #ff6a2a 0%, #f2571a 100%) !important;
+  background: linear-gradient(180deg, #ff5a16 0%, #fc4a00 100%) !important;
   color: #fff !important;
   border: 1px solid rgba(255,255,255,0.10) !important;
   box-shadow: 0 16px 40px rgba(0,0,0,0.35);
@@ -980,12 +1516,12 @@ body{
 
 .gym-results-page .cta-section .cta-btn::before{
   left: 0;
-  background: linear-gradient(90deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+  background: linear-gradient(90deg, rgba(90,22,8,0.88), rgba(171,50,0,0.88));
 }
 
 .gym-results-page .cta-section .cta-btn::after{
   right: 0;
-  background: linear-gradient(270deg, rgba(110,22,10,0.88), rgba(170,52,20,0.88));
+  background: linear-gradient(270deg, rgba(90,22,8,0.88), rgba(171,50,0,0.88));
 }
 
 .gym-results-page .cta-section .cta-btn:hover{
@@ -997,6 +1533,42 @@ body{
 .gym-results-page .cta-section .cta-btn:hover::before,
 .gym-results-page .cta-section .cta-btn:hover::after{
   width: 50%;
+}
+
+/* LIGHT MODE CTA */
+.gym-results-page.light-mode .cta-section,
+[data-theme="light"] .gym-results-page .cta-section{
+  background:
+    radial-gradient(circle at 25% 35%, rgba(255,90,22,0.10), transparent 20%),
+    radial-gradient(circle at 80% 22%, rgba(171,50,0,0.12), transparent 18%),
+    linear-gradient(120deg, #181718 0%, #101820 28%, #ab3200 68%, #fc4a00 100%);
+}
+
+.gym-results-page.light-mode .cta-section h2,
+[data-theme="light"] .gym-results-page .cta-section h2{
+  color: #ffffff;
+}
+
+.gym-results-page.light-mode .cta-section p,
+[data-theme="light"] .gym-results-page .cta-section p{
+  color: rgba(246,248,250,0.82);
+}
+
+@media (prefers-color-scheme: light){
+  .gym-results-page:not(.dark-mode) .cta-section{
+    background:
+      radial-gradient(circle at 25% 35%, rgba(252,74,0,0.10), transparent 20%),
+      radial-gradient(circle at 80% 22%, rgba(171,50,0,0.08), transparent 16%),
+      linear-gradient(120deg, #ffffff 0%, #f6f8fa 28%, #f1f4f8 72%, #ebf0f5 100%);
+  }
+
+  .gym-results-page:not(.dark-mode) .cta-section h2{
+    color: #101820;
+  }
+
+  .gym-results-page:not(.dark-mode) .cta-section p{
+    color: rgba(16,24,32,0.72);
+  }
 }
 
 /* =========================
@@ -1021,7 +1593,7 @@ body{
   height: 14px;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  background: rgba(255,106,42,0.25);
+  background: rgba(252,74,0,0.25);
   animation: grPulse 1.8s ease-in-out infinite;
   opacity: 0.75;
 }
@@ -1050,7 +1622,7 @@ body{
   font-weight: 900;
   padding: 6px 10px;
   border-radius: 999px;
-  background: #ff6a2a;
+  background: #fc4a00;
   color: #fff;
   box-shadow: 0 10px 18px rgba(0,0,0,0.22);
   transform: translateY(0);
@@ -1062,7 +1634,7 @@ body{
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: #ff6a2a;
+  background: #fc4a00;
   border: 3px solid #fff;
   box-shadow: 0 10px 20px rgba(0,0,0,0.22);
 }
@@ -1074,7 +1646,7 @@ body{
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 10px solid #ff6a2a;
+  border-top: 10px solid #fc4a00;
   filter: drop-shadow(0 10px 14px rgba(0,0,0,0.22));
 }
 
@@ -1084,19 +1656,19 @@ body{
 }
 
 .gr-pin-host.selected .gr-pin__bubble{
-  background: #5a1608;
+  background: #ab3200;
 }
 
 .gr-pin-host.selected .gr-pin__dot{
-  background: #5a1608;
+  background: #ab3200;
 }
 
 .gr-pin-host.selected .gr-pin__tip{
-  border-top-color: #5a1608;
+  border-top-color: #ab3200;
 }
 
 .gr-pin-host.selected .gr-pin__pulse{
-  background: rgba(255,70,20,0.18);
+  background: rgba(252,74,0,0.18);
 }
 
 .gr-popup__title{
@@ -1154,8 +1726,8 @@ body{
   font-size: 0.72rem;
   font-weight: 900;
   background: #ffffff;
-  color: #ff6a2a;
-  border: 1px solid rgba(255,106,42,0.24);
+  color: #fc4a00;
+  border: 1px solid rgba(252,74,0,0.24);
 }
 
 .gym-results-page .filter-drawer{
@@ -1271,12 +1843,12 @@ body{
 }
 
 .gr-sheet__item:hover{
-  border-color: rgba(255,106,42,0.20);
+  border-color: rgba(252,74,0,0.20);
 }
 
 .gr-sheet__item.is-active{
-  border-color: rgba(255,126,66,0.65);
-  box-shadow: 0 10px 24px rgba(255,70,20,0.12);
+  border-color: rgba(255,90,22,0.65);
+  box-shadow: 0 10px 24px rgba(252,74,0,0.12);
 }
 
 /* =========================
@@ -1525,4 +2097,79 @@ body{
     font-size: 0.74rem;
     padding: 6px 9px;
   }
-} 
+}
+/* =========================================
+   HEADER BANNER THEMES
+   (override previous header styles)
+========================================= */
+
+
+/* DARK MODE HEADER (Tekrevol style) */
+.gym-results-page .gr-header-full{
+  background:
+    radial-gradient(circle at 70% 40%, rgba(255,90,22,0.35), transparent 50%),
+    linear-gradient(
+      120deg,
+      #0d141b 0%,
+      #101820 30%,
+      #2b0f0b 65%,
+      #7a1e07 100%
+    ) !important;
+}
+
+
+/* LIGHT MODE HEADER (Firewatch sunset style) */
+.gym-results-page.light-mode .gr-header-full,
+[data-theme="light"] .gym-results-page .gr-header-full{
+  background:
+    radial-gradient(circle at 50% 60%, rgba(255,210,80,0.55), transparent 45%),
+    radial-gradient(circle at 70% 30%, rgba(255,140,40,0.45), transparent 50%),
+    linear-gradient(
+      180deg,
+      #ffb326 0%,
+      #ff8f1a 40%,
+      #ff6a00 70%,
+      #c73a00 100%
+    ) !important;
+
+  border:none;
+}
+
+
+/* Title readability */
+.gr-header-inner h1{
+  text-shadow:0 4px 16px rgba(0,0,0,0.35);
+}
+
+.gr-header-inner p{
+  opacity:0.85;
+}
+/* ===============================
+DARK MODE HEADER (EXACT COLOR SCHEME)
+Deep red → burnt orange → orange
+================================ */
+
+.gym-results-page .gr-header-full{
+background:
+radial-gradient(circle at 70% 40%, rgba(255,120,40,0.35), transparent 55%),
+radial-gradient(circle at 85% 50%, rgba(255,90,22,0.45), transparent 60%),
+linear-gradient(
+120deg,
+#5a1a16 0%,
+#7a2319 35%,
+#a43314 65%,
+#ff4a00 100%
+) !important;
+
+border:none;
+}
+
+/* text contrast */
+.gr-header-inner h1{
+color:#ffffff;
+text-shadow:0 3px 12px rgba(0,0,0,0.25);
+}
+
+.gr-header-inner p{
+color:rgba(255,255,255,0.85);
+}

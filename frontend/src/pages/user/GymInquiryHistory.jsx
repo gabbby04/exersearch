@@ -227,7 +227,6 @@ export default function GymInquiryHistory() {
   const [sending, setSending] = useState(false);
   const [chatText, setChatText] = useState("");
   const [chatSending, setChatSending] = useState(false);
-  const [theme, setTheme] = useState("orange");
 
   const [showList, setShowList] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -271,10 +270,6 @@ export default function GymInquiryHistory() {
   useEffect(() => {
     refresh();
   }, []);
-
-  useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
-  }, [theme]);
 
   const conversations = useMemo(() => {
     const map = new Map();
@@ -417,7 +412,9 @@ export default function GymInquiryHistory() {
   const detailAvatar = useMemo(() => pickGymAvatarFromGym(gym), [gym]);
 
   return (
-    <div className={`ih-page ${showList ? "show-list" : ""} ${showDetail ? "show-detail" : ""}`}>
+<div
+  className={`ih-page ${showList ? "show-list" : ""} ${showDetail ? "show-detail" : ""}`}
+>
       <div className="ih-mobile-backdrop" onClick={closePanels} />
 
       <div className="app" ref={listRef}>
@@ -748,35 +745,6 @@ export default function GymInquiryHistory() {
                 onChange={(e) => setSearchRight(e.target.value)}
               />
 
-              <div className="detail-change">
-                Change Color
-                <div className="colors">
-                  <div
-                    className={`color orange ${theme === "orange" ? "selected" : ""}`}
-                    onClick={() => setTheme("orange")}
-                    role="button"
-                    tabIndex={0}
-                  />
-                  <div
-                    className={`color purple ${theme === "purple" ? "selected" : ""}`}
-                    onClick={() => setTheme("purple")}
-                    role="button"
-                    tabIndex={0}
-                  />
-                  <div
-                    className={`color green ${theme === "green" ? "selected" : ""}`}
-                    onClick={() => setTheme("green")}
-                    role="button"
-                    tabIndex={0}
-                  />
-                  <div
-                    className={`color blue ${theme === "blue" ? "selected" : ""}`}
-                    onClick={() => setTheme("blue")}
-                    role="button"
-                    tabIndex={0}
-                  />
-                </div>
-              </div>
 
               <div className="fb-info">
                 <FbSection title="GYM DETAILS">

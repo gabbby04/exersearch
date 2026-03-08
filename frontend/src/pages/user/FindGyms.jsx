@@ -1,4 +1,3 @@
-// src/pages/owner/OwnerGymsPage.jsx
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import * as THREE from "three";
@@ -8,6 +7,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import "./../owner/OwnerGymsPage.scss";
+import "./OwnersGymPage.css";
 
 import {
   fetchAmenities,
@@ -141,11 +141,6 @@ export default function OwnerGymsPage() {
       "Budget Gym - Affordable rates",
       "Franchise Gym - Branded gym",
     ],
-  };
-
-  const selectedStyle = {
-    border: `2px solid ${MAIN_ORANGE}`,
-    background: "rgba(255,140,0,0.12)",
   };
 
   const isSelected = (key) => !!selectedItems[key];
@@ -806,15 +801,15 @@ export default function OwnerGymsPage() {
   const closeEquipPreview = () => setPreviewEquip(null);
 
   const renderEquipmentGroups = (entries) => {
-    if (optionsLoading) return <p style={{ padding: 10 }}>Loading equipments…</p>;
-    if (optionsError) return <p style={{ padding: 10, color: "red" }}>{optionsError}</p>;
-    if (!entries || entries.length === 0) return <p>No equipments found.</p>;
+    if (optionsLoading) return <p className="fg-loading-text">Loading equipments…</p>;
+    if (optionsError) return <p className="fg-error-text">{optionsError}</p>;
+    if (!entries || entries.length === 0) return <p className="fg-empty-text">No equipments found.</p>;
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="fg-stack-14">
         {entries.map(([groupName, list]) => (
           <div key={groupName}>
-            <div style={{ fontWeight: 800, margin: "6px 0 10px", opacity: 0.9 }}>{groupName}</div>
+            <div className="fg-equip-group-title">{groupName}</div>
 
             <div className="options-grid">
               {list.map((e) => {
@@ -824,8 +819,7 @@ export default function OwnerGymsPage() {
                 return (
                   <div
                     key={e.equipment_id}
-                    className="option equip-card"
-                    style={picked ? selectedStyle : undefined}
+                    className={`option equip-card ${picked ? "fg-selected" : ""}`}
                     onClick={() => !(savingPhase || rankingPhase) && addSelected(key)}
                   >
                     <div className="equip-topbar">
@@ -868,73 +862,41 @@ export default function OwnerGymsPage() {
       return (
         <div className="location-section">
           {prefsLoading ? (
-            <p style={{ fontWeight: 800, opacity: 0.8 }}>Loading your saved preferences…</p>
+            <p className="fg-location-loading">Loading your saved preferences…</p>
           ) : null}
 
           <p className="section-title">Set your location:</p>
 
-          <div style={{ position: "relative", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div className="fg-location-search-wrap">
+            <div className="fg-location-search-row">
               <input
                 type="text"
-                className="input-box"
+                className="input-box fg-location-input"
                 placeholder="Enter your address in Pasig City"
                 value={locationInput}
                 onChange={(e) => handleLocationInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") searchLocation();
                 }}
-                style={{ flex: 1, marginBottom: 0 }}
                 disabled={savingPhase || rankingPhase}
               />
 
               <button
-                className="location-btn"
+                className="fg-location-btn"
                 onClick={searchLocation}
                 disabled={savingPhase || rankingPhase}
-                style={{
-                  padding: "0.75rem 1.5rem",
-                  background: MAIN_ORANGE,
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                }}
               >
                 Search
               </button>
             </div>
 
             {showSuggestions && locationSuggestions.length > 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  left: 0,
-                  right: "140px",
-                  background: "white",
-                  border: `2px solid ${MAIN_ORANGE}`,
-                  borderTop: "none",
-                  borderRadius: "0 0 4px 4px",
-                  maxHeight: "200px",
-                  overflowY: "auto",
-                  zIndex: 1000,
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                }}
-              >
+              <div className="fg-suggestions">
                 {locationSuggestions.map((s, idx) => (
                   <div
                     key={idx}
+                    className="fg-suggestion-item"
                     onClick={() => selectSuggestion(s)}
-                    style={{
-                      padding: "0.75rem",
-                      cursor: "pointer",
-                      borderBottom: "1px solid #f0f0f0",
-                      fontSize: "0.9rem",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#fff5e6")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
                   >
                     {s.display_name}
                   </div>
@@ -944,36 +906,15 @@ export default function OwnerGymsPage() {
           </div>
 
           <button
-            className="location-btn"
+            className="fg-location-btn fg-location-btn--full"
             onClick={getCurrentLocation}
             disabled={savingPhase || rankingPhase}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              background: MAIN_ORANGE,
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              marginBottom: "1rem",
-              fontWeight: "bold",
-            }}
           >
             📍 Use My Current Location
           </button>
 
-          <div
-            style={{
-              height: "400px",
-              marginTop: "1rem",
-              border: `2px solid ${MAIN_ORANGE}`,
-              borderRadius: "4px",
-              overflow: "hidden",
-              opacity: savingPhase || rankingPhase ? 0.7 : 1,
-              pointerEvents: savingPhase || rankingPhase ? "none" : "auto",
-            }}
-          >
-            <MapContainer key={mapKey} center={mapCenter} zoom={16} style={{ height: "100%", width: "100%" }}>
+          <div className={`fg-map-wrap ${savingPhase || rankingPhase ? "is-disabled" : ""}`}>
+            <MapContainer key={mapKey} center={mapCenter} zoom={16} className="fg-map-container">
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -982,19 +923,17 @@ export default function OwnerGymsPage() {
             </MapContainer>
           </div>
 
-          <p style={{ fontSize: "0.85rem", color: "#666", marginTop: "0.5rem" }}>
-            Click anywhere on the map to pin your location
-          </p>
+          <p className="fg-location-help">Click anywhere on the map to pin your location</p>
         </div>
       );
     }
 
     if (currentSection === "Amenities") {
-      if (optionsLoading) return <p style={{ padding: 10 }}>Loading amenities…</p>;
-      if (optionsError) return <p style={{ padding: 10, color: "red" }}>{optionsError}</p>;
+      if (optionsLoading) return <p className="fg-loading-text">Loading amenities…</p>;
+      if (optionsError) return <p className="fg-error-text">{optionsError}</p>;
 
       return (
-        <div className="options-grid" style={{ opacity: savingPhase || rankingPhase ? 0.7 : 1 }}>
+        <div className={`options-grid ${savingPhase || rankingPhase ? "fg-dimmed" : ""}`}>
           {amenities.map((a) => {
             const key = `amenity:${a.amenity_id}`;
             const picked = isSelected(key);
@@ -1002,8 +941,7 @@ export default function OwnerGymsPage() {
             return (
               <div
                 key={a.amenity_id}
-                className="option"
-                style={picked ? selectedStyle : undefined}
+                className={`option ${picked ? "fg-selected" : ""}`}
                 onClick={() => !(savingPhase || rankingPhase) && addSelected(key)}
               >
                 <strong>{a.name}</strong>
@@ -1011,7 +949,7 @@ export default function OwnerGymsPage() {
               </div>
             );
           })}
-          {amenities.length === 0 ? <p>No amenities found.</p> : null}
+          {amenities.length === 0 ? <p className="fg-empty-text">No amenities found.</p> : null}
         </div>
       );
     }
@@ -1021,7 +959,7 @@ export default function OwnerGymsPage() {
 
     const options = sectionData[currentSection] || [];
     return (
-      <div className="options-grid" style={{ opacity: savingPhase || rankingPhase ? 0.7 : 1 }}>
+      <div className={`options-grid ${savingPhase || rankingPhase ? "fg-dimmed" : ""}`}>
         {options.map((option, index) => {
           const isObj = typeof option === "object";
           const text = isObj ? option.label : option;
@@ -1038,8 +976,7 @@ export default function OwnerGymsPage() {
           return (
             <div
               key={index}
-              className="option"
-              style={picked ? selectedStyle : undefined}
+              className={`option ${picked ? "fg-selected" : ""}`}
               onClick={() => !(savingPhase || rankingPhase) && addSelected(key)}
             >
               <strong>{text}</strong>
@@ -1107,35 +1044,26 @@ export default function OwnerGymsPage() {
             <br />
             FOR YOUR GOALS
           </h1>
-<div
-  style={{
-    display: "flex",
-    gap: "14px",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    alignItems: "center",
-  }}
->
-  {/* MAIN SEARCH BUTTON */}
-  <div className="button shift-camera-button" onClick={handleShiftCamera}>
-    <div className="border">
-      <div className="left-plane" />
-      <div className="right-plane" />
-    </div>
-    <div className="text">Search Now</div>
-  </div>
 
-  {/* PREVIOUS RESULTS BUTTON */}
-  {hasComputedBefore && (
-    <div className="button shift-camera-button" onClick={handleGoToPreviousResults}>
-      <div className="border">
-        <div className="left-plane" />
-        <div className="right-plane" />
-      </div>
-      <div className="text">Previous Result</div>
-    </div>
-  )}
-</div>
+          <div className="fg-hero-actions">
+            <div className="button shift-camera-button" onClick={handleShiftCamera}>
+              <div className="border">
+                <div className="left-plane" />
+                <div className="right-plane" />
+              </div>
+              <div className="text">Search Now</div>
+            </div>
+
+            {hasComputedBefore && (
+              <div className="button shift-camera-button" onClick={handleGoToPreviousResults}>
+                <div className="border">
+                  <div className="left-plane" />
+                  <div className="right-plane" />
+                </div>
+                <div className="text">Previous Result</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1247,77 +1175,22 @@ export default function OwnerGymsPage() {
             )}
 
             {showOverlay && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(0,0,0,0.55)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 9999,
-                  borderRadius: 12,
-                }}
-              >
-                <div
-                  style={{
-                    width: "min(520px, 92%)",
-                    background: "#111",
-                    color: "white",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    borderRadius: 16,
-                    padding: 18,
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  <div style={{ fontWeight: 950, fontSize: 18 }}>{overlayTitle}</div>
-                  <div style={{ opacity: 0.85, marginTop: 6, fontWeight: 700 }}>{overlaySub}</div>
+              <div className="fg-overlay">
+                <div className="fg-overlay-card">
+                  <div className="fg-overlay-title">{overlayTitle}</div>
+                  <div className="fg-overlay-sub">{overlaySub}</div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14 }}>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: "50%",
-                        border: "3px solid rgba(255,255,255,0.25)",
-                        borderTopColor: MAIN_ORANGE,
-                        animation: "spin 0.9s linear infinite",
-                      }}
-                    />
-                    <div style={{ fontWeight: 900 }}>{progress}%</div>
+                  <div className="fg-overlay-status">
+                    <div className="fg-spinner" />
+                    <div className="fg-overlay-progress-text">{progress}%</div>
                   </div>
 
-                  <div
-                    style={{
-                      height: 10,
-                      background: "rgba(255,255,255,0.12)",
-                      borderRadius: 999,
-                      overflow: "hidden",
-                      marginTop: 10,
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${progress}%`,
-                        background: MAIN_ORANGE,
-                        borderRadius: 999,
-                        transition: "width 180ms ease",
-                      }}
-                    />
+                  <div className="fg-progress-bar">
+                    <div className="fg-progress-fill" style={{ width: `${progress}%` }} />
                   </div>
 
-                  <div style={{ marginTop: 12, fontSize: 12, opacity: 0.8, fontWeight: 700 }}>
-                    Please don’t close this window.
-                  </div>
+                  <div className="fg-overlay-note">Please don’t close this window.</div>
                 </div>
-
-                <style>{`
-                  @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                  }
-                `}</style>
               </div>
             )}
           </div>

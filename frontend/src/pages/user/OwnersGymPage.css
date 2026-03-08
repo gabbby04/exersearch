@@ -1,0 +1,782 @@
+/* =========================
+   THEME TOKENS
+========================= */
+.find-gyms-page {
+  --black-1: #181718;
+  --black-2: #101820;
+  --black-3: #0d141b;
+
+  --white-1: #f6f8fa;
+  --white-2: #f1f4f8;
+  --white-3: #ebf0f5;
+
+  --orange-1: #ab3200;
+  --orange-2: #fc4a00;
+  --orange-3: #ff5a16;
+
+  /* DARK DEFAULT */
+  --fg-accent: var(--orange-2);
+  --fg-accent-strong: var(--orange-3);
+  --fg-accent-deep: var(--orange-1);
+
+  --fg-page-bg:
+    radial-gradient(circle at top, rgba(252, 74, 0, 0.08), transparent 24%),
+    linear-gradient(180deg, #0d141b 0%, #101820 58%, #181718 100%);
+
+  --fg-modal-shell: rgba(9, 14, 20, 0.94);
+  --fg-modal-header-bg: linear-gradient(180deg, #151617 0%, #181718 100%);
+  --fg-modal-footer-bg: linear-gradient(180deg, #151617 0%, #181718 100%);
+  --fg-panel-bg: linear-gradient(180deg, #08111b 0%, #0d141b 100%);
+  --fg-card-bg: rgba(10, 20, 31, 0.96);
+  --fg-input-bg: rgba(13, 20, 27, 0.92);
+
+  --fg-text: var(--white-1);
+  --fg-text-soft: #dfe6ee;
+  --fg-text-muted: rgba(241, 244, 248, 0.7);
+  --fg-heading: #ffffff;
+
+  --fg-border: rgba(246, 248, 250, 0.12);
+  --fg-border-strong: rgba(255, 90, 22, 0.36);
+  --fg-line: rgba(255, 255, 255, 0.12);
+
+  --fg-selected-bg: rgba(252, 74, 0, 0.1);
+  --fg-selected-bg-hover: rgba(255, 90, 22, 0.14);
+
+  --fg-suggestion-bg: #101820;
+  --fg-suggestion-text: #f6f8fa;
+  --fg-suggestion-border: rgba(246, 248, 250, 0.08);
+  --fg-suggestion-hover: rgba(255, 90, 22, 0.12);
+
+  --fg-overlay-bg: linear-gradient(180deg, #101820 0%, #181718 100%);
+  --fg-overlay-text: var(--white-1);
+  --fg-overlay-bar-bg: rgba(246, 248, 250, 0.12);
+
+  --fg-shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+  --fg-card-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+/* =========================
+   LIGHT MODE
+========================= */
+.find-gyms-page.light-mode,
+.find-gyms-page[data-theme="light"],
+html[data-theme="light"] .find-gyms-page,
+body[data-theme="light"] .find-gyms-page {
+  --fg-page-bg:
+    radial-gradient(circle at top, rgba(252, 74, 0, 0.08), transparent 24%),
+    linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 55%, #ebf0f5 100%);
+
+  --fg-modal-shell: rgba(246, 248, 250, 0.98);
+  --fg-modal-header-bg: linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%);
+  --fg-modal-footer-bg: linear-gradient(180deg, #f6f8fa 0%, #f1f4f8 100%);
+  --fg-panel-bg: linear-gradient(180deg, #f6f8fa 0%, #edf2f7 100%);
+  --fg-card-bg: rgba(255, 255, 255, 0.94);
+  --fg-input-bg: rgba(255, 255, 255, 0.98);
+
+  --fg-text: #181718;
+  --fg-text-soft: #101820;
+  --fg-text-muted: rgba(16, 24, 32, 0.62);
+  --fg-heading: #101820;
+
+  --fg-border: rgba(13, 20, 27, 0.08);
+  --fg-border-strong: rgba(252, 74, 0, 0.24);
+  --fg-line: rgba(16, 24, 32, 0.1);
+
+  --fg-selected-bg: rgba(252, 74, 0, 0.07);
+  --fg-selected-bg-hover: rgba(252, 74, 0, 0.1);
+
+  --fg-suggestion-bg: #ffffff;
+  --fg-suggestion-text: #181718;
+  --fg-suggestion-border: rgba(16, 24, 32, 0.08);
+  --fg-suggestion-hover: rgba(252, 74, 0, 0.08);
+
+  --fg-overlay-bg: linear-gradient(180deg, #f6f8fa 0%, #ebf0f5 100%);
+  --fg-overlay-text: #181718;
+  --fg-overlay-bar-bg: rgba(16, 24, 32, 0.1);
+
+  --fg-shadow: 0 18px 42px rgba(16, 24, 32, 0.12);
+  --fg-card-shadow: 0 8px 24px rgba(16, 24, 32, 0.08);
+}
+
+/* =========================
+   ROOT / PAGE
+========================= */
+.find-gyms-page {
+  background: var(--fg-page-bg);
+  color: var(--fg-text);
+}
+
+.find-gyms-page,
+.find-gyms-page * {
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.find-gyms-page .fg-map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================
+   MODAL FRAME
+========================= */
+.find-gyms-page .fg-modal {
+  background: var(--fg-modal-shell);
+  border: 1px solid var(--fg-border-strong);
+  box-shadow: var(--fg-shadow);
+  color: var(--fg-text);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.find-gyms-page .fg-modal-header {
+  background: var(--fg-modal-header-bg);
+  border-bottom: 1px solid var(--fg-border-strong);
+  color: var(--fg-heading);
+}
+
+.find-gyms-page .fg-modal-header h2 {
+  color: var(--fg-accent);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.find-gyms-page .fg-modal-close {
+  color: var(--fg-accent);
+  background: transparent;
+  border: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.find-gyms-page .fg-modal-close:hover:not(:disabled) {
+  transform: scale(1.06);
+  opacity: 0.9;
+}
+
+.find-gyms-page .fg-modal-content {
+  background: var(--fg-panel-bg);
+  color: var(--fg-text);
+}
+
+.find-gyms-page .fg-left-panel,
+.find-gyms-page .fg-right-panel {
+  background: transparent;
+  color: var(--fg-text);
+}
+
+.find-gyms-page .fg-left-panel {
+  border-right: 1px solid var(--fg-border-strong);
+}
+
+.find-gyms-page.light-mode .fg-left-panel,
+.find-gyms-page[data-theme="light"] .fg-left-panel,
+html[data-theme="light"] .find-gyms-page .fg-left-panel,
+body[data-theme="light"] .find-gyms-page .fg-left-panel {
+  border-right: 1px solid rgba(252, 74, 0, 0.22);
+}
+
+.find-gyms-page .fg-right-panel h3 {
+  color: var(--fg-accent);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.find-gyms-page .fg-modal-footer {
+  background: var(--fg-modal-footer-bg);
+  border-top: 1px solid var(--fg-border-strong);
+  color: var(--fg-text-soft);
+}
+
+.find-gyms-page .fg-step-indicator {
+  color: var(--fg-text-muted);
+  font-weight: 800;
+}
+
+/* =========================
+   TEXT / LABELS
+========================= */
+.find-gyms-page .section-title {
+  color: var(--fg-heading) !important;
+  font-weight: 900;
+  opacity: 1;
+  letter-spacing: -0.03em;
+}
+
+.find-gyms-page .fg-location-loading,
+.find-gyms-page .fg-loading-text,
+.find-gyms-page .fg-empty-text {
+  color: var(--fg-text-soft);
+}
+
+.find-gyms-page .fg-error-text {
+  color: var(--orange-2);
+  font-weight: 800;
+}
+
+.find-gyms-page .fg-location-help {
+  color: var(--fg-text-muted);
+}
+
+/* =========================
+   INPUTS / SEARCH
+========================= */
+.find-gyms-page .fg-location-search-wrap {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.find-gyms-page .fg-location-search-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.find-gyms-page .fg-location-input,
+.find-gyms-page .input-box {
+  flex: 1;
+  margin-bottom: 0 !important;
+  background: var(--fg-input-bg);
+  color: var(--fg-text);
+  border: 1px solid var(--fg-border-strong);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.find-gyms-page .fg-location-input::placeholder,
+.find-gyms-page .input-box::placeholder {
+  color: var(--fg-text-muted);
+}
+
+.find-gyms-page.light-mode .fg-location-input,
+.find-gyms-page.light-mode .input-box,
+.find-gyms-page[data-theme="light"] .fg-location-input,
+.find-gyms-page[data-theme="light"] .input-box,
+html[data-theme="light"] .find-gyms-page .fg-location-input,
+html[data-theme="light"] .find-gyms-page .input-box,
+body[data-theme="light"] .find-gyms-page .fg-location-input,
+body[data-theme="light"] .find-gyms-page .input-box {
+  box-shadow: inset 0 1px 2px rgba(16, 24, 32, 0.04);
+}
+
+/* =========================
+   SUGGESTIONS
+========================= */
+.find-gyms-page .fg-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 140px;
+  background: var(--fg-suggestion-bg);
+  border: 1px solid var(--fg-border-strong);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: var(--fg-card-shadow);
+}
+
+.find-gyms-page .fg-suggestion-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--fg-suggestion-border);
+  font-size: 0.9rem;
+  background: var(--fg-suggestion-bg);
+  color: var(--fg-suggestion-text);
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.find-gyms-page .fg-suggestion-item:hover {
+  background: var(--fg-suggestion-hover);
+}
+
+/* =========================
+   SELECTED / OPTIONS / CARDS
+========================= */
+.find-gyms-page .fg-selected,
+.find-gyms-page .option.fg-selected,
+.find-gyms-page .equip-card.fg-selected {
+  border: 2px solid var(--fg-accent) !important;
+  background: var(--fg-selected-bg) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.find-gyms-page .option,
+.find-gyms-page .equip-card,
+.find-gyms-page .fg-selected-item,
+.find-gyms-page .fg-equip-preview {
+  background: var(--fg-card-bg);
+  color: var(--fg-text);
+  border: 1px solid var(--fg-border-strong);
+  box-shadow: var(--fg-card-shadow);
+}
+
+.find-gyms-page .fg-selected-item span,
+.find-gyms-page .option strong,
+.find-gyms-page .equip-title {
+  color: var(--fg-text);
+}
+
+.find-gyms-page .fg-remove-btn,
+.find-gyms-page .fg-equip-preview-close,
+.find-gyms-page .equip-viewBtn {
+  color: var(--fg-accent);
+  background: transparent;
+  border: none;
+}
+
+.find-gyms-page .fg-remove-btn:hover,
+.find-gyms-page .fg-equip-preview-close:hover,
+.find-gyms-page .equip-viewBtn:hover {
+  color: var(--orange-3);
+}
+
+.find-gyms-page .fg-equip-group-title {
+  color: var(--fg-heading);
+  font-weight: 900;
+}
+
+.find-gyms-page .fg-dimmed {
+  opacity: 0.72;
+}
+
+/* =========================
+   MAP
+========================= */
+.find-gyms-page .fg-map-wrap {
+  height: 400px;
+  margin-top: 1rem;
+  border: 1px solid var(--fg-border-strong);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--fg-card-shadow);
+  background: var(--fg-card-bg);
+}
+
+.find-gyms-page .fg-map-wrap.is-disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* =========================
+   OVERLAY
+========================= */
+.find-gyms-page .fg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 20, 27, 0.58);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  border-radius: 12px;
+}
+
+.find-gyms-page.light-mode .fg-overlay,
+.find-gyms-page[data-theme="light"] .fg-overlay,
+html[data-theme="light"] .find-gyms-page .fg-overlay,
+body[data-theme="light"] .find-gyms-page .fg-overlay {
+  background: rgba(16, 24, 32, 0.2);
+  backdrop-filter: blur(3px);
+}
+
+.find-gyms-page .fg-overlay-card {
+  width: min(520px, 92%);
+  background: var(--fg-overlay-bg);
+  color: var(--fg-overlay-text);
+  border: 1px solid var(--fg-border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--fg-shadow);
+}
+
+.find-gyms-page .fg-overlay-title {
+  color: var(--fg-heading);
+  font-weight: 950;
+  font-size: 18px;
+}
+
+.find-gyms-page .fg-overlay-sub {
+  color: var(--fg-text-soft);
+  opacity: 0.9;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.find-gyms-page .fg-overlay-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.find-gyms-page .fg-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid rgba(246, 248, 250, 0.22);
+  border-top-color: var(--fg-accent);
+  animation: fg-spin 0.9s linear infinite;
+}
+
+.find-gyms-page.light-mode .fg-spinner,
+.find-gyms-page[data-theme="light"] .fg-spinner,
+html[data-theme="light"] .find-gyms-page .fg-spinner,
+body[data-theme="light"] .find-gyms-page .fg-spinner {
+  border-color: rgba(16, 24, 32, 0.16);
+  border-top-color: var(--fg-accent);
+}
+
+.find-gyms-page .fg-overlay-progress-text {
+  color: var(--fg-heading);
+  font-weight: 900;
+}
+
+.find-gyms-page .fg-progress-bar {
+  height: 10px;
+  background: var(--fg-overlay-bar-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.find-gyms-page .fg-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ab3200 0%, #fc4a00 58%, #ff5a16 100%);
+  border-radius: 999px;
+  transition: width 180ms ease;
+}
+
+.find-gyms-page .fg-overlay-note {
+  margin-top: 12px;
+  font-size: 12px;
+  opacity: 0.82;
+  font-weight: 700;
+  color: var(--fg-text-muted);
+}
+
+/* =========================
+   SCROLLBAR FOR SELECTED LIST
+========================= */
+.find-gyms-page .fg-selected-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fg-accent) transparent;
+}
+
+.find-gyms-page .fg-selected-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.find-gyms-page .fg-selected-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.find-gyms-page .fg-selected-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ab3200 0%, #fc4a00 100%);
+  border-radius: 999px;
+}
+
+/* =========================
+   CLEAN BUTTON SYSTEM
+========================= */
+.find-gyms-page .fg-location-btn,
+.find-gyms-page .fg-equip-preview-select {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 12px 20px;
+
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--orange-2) !important;
+  -webkit-text-fill-color: currentColor !important;
+
+  border: 2px solid var(--orange-2) !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  overflow: hidden;
+
+  transition:
+    color 0.22s ease,
+    border-color 0.22s ease,
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+/* keep all content above fill */
+.find-gyms-page .fg-location-btn > *,
+.find-gyms-page .fg-equip-preview-select > * {
+  position: relative;
+  z-index: 2;
+  color: inherit !important;
+}
+
+/* plain text node safety */
+.find-gyms-page .fg-location-btn,
+.find-gyms-page .fg-equip-preview-select,
+.find-gyms-page .fg-location-btn:hover,
+.find-gyms-page .fg-equip-preview-select:hover,
+.find-gyms-page .fg-location-btn:hover *,
+.find-gyms-page .fg-equip-preview-select:hover * {
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* left fill */
+.find-gyms-page .fg-location-btn::before,
+.find-gyms-page .fg-equip-preview-select::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  z-index: 1;
+  background: linear-gradient(
+    135deg,
+    var(--orange-1) 0%,
+    var(--orange-2) 58%,
+    var(--orange-3) 100%
+  );
+  transition: width 0.28s ease;
+}
+
+/* right fill */
+.find-gyms-page .fg-location-btn::after,
+.find-gyms-page .fg-equip-preview-select::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 0;
+  z-index: 1;
+  background: linear-gradient(
+    225deg,
+    var(--orange-1) 0%,
+    var(--orange-2) 58%,
+    var(--orange-3) 100%
+  );
+  transition: width 0.28s ease;
+}
+
+.find-gyms-page .fg-location-btn:hover::before,
+.find-gyms-page .fg-location-btn:hover::after,
+.find-gyms-page .fg-equip-preview-select:hover::before,
+.find-gyms-page .fg-equip-preview-select:hover::after {
+  width: 50%;
+}
+
+.find-gyms-page .fg-location-btn:hover,
+.find-gyms-page .fg-equip-preview-select:hover,
+.find-gyms-page .fg-location-btn:hover > *,
+.find-gyms-page .fg-equip-preview-select:hover > * {
+  color: #ffe2d1 !important;
+  -webkit-text-fill-color: #ffe2d1 !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+.find-gyms-page .fg-location-btn:active,
+.find-gyms-page .fg-equip-preview-select:active {
+  transform: translateY(1px);
+  opacity: 0.94;
+}
+
+.find-gyms-page .fg-location-btn--search {
+  min-width: 118px;
+}
+
+.find-gyms-page .fg-location-btn--full {
+  width: 100%;
+}
+
+/* nav buttons kept quieter */
+.find-gyms-page .fg-nav-btn {
+  background: transparent;
+  border: 1px solid var(--fg-border-strong);
+  box-shadow: none;
+}
+
+.find-gyms-page .fg-nav-btn .arrow {
+  border-color: var(--fg-accent);
+}
+
+.find-gyms-page .fg-nav-btn:hover:not(:disabled) {
+  background: var(--fg-selected-bg);
+  border-color: var(--fg-accent);
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+/* =========================
+   RIGHT LIST HOVER
+========================= */
+.find-gyms-page .fg-selected-item {
+  position: relative;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.find-gyms-page .fg-selected-item:hover {
+  background:
+    linear-gradient(145deg, rgba(18, 27, 37, 0.98), rgba(10, 20, 31, 0.98));
+  border-color: rgba(255, 90, 22, 0.42);
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 1px rgba(255, 90, 22, 0.08);
+  transform: translateY(-1px);
+}
+
+.find-gyms-page .fg-selected-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ab3200 0%, #fc4a00 55%, #ff5a16 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.find-gyms-page .fg-selected-item:hover::before {
+  opacity: 1;
+}
+
+.find-gyms-page .fg-selected-item span,
+.find-gyms-page .fg-selected-item .fg-remove-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.find-gyms-page[data-theme="light"] .fg-selected-item:hover,
+.find-gyms-page.light-mode .fg-selected-item:hover,
+html[data-theme="light"] .find-gyms-page .fg-selected-item:hover,
+body[data-theme="light"] .find-gyms-page .fg-selected-item:hover {
+  background:
+    linear-gradient(145deg, rgba(252, 74, 0, 0.06), rgba(255, 90, 22, 0.08));
+  border-color: rgba(252, 74, 0, 0.28);
+  box-shadow:
+    0 10px 22px rgba(252, 74, 0, 0.08),
+    inset 0 0 0 1px rgba(252, 74, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.find-gyms-page[data-theme="light"] .fg-selected-item::before,
+.find-gyms-page.light-mode .fg-selected-item::before,
+html[data-theme="light"] .find-gyms-page .fg-selected-item::before,
+body[data-theme="light"] .find-gyms-page .fg-selected-item::before {
+  background: linear-gradient(180deg, #fc4a00 0%, #ff5a16 100%);
+}
+
+.find-gyms-page .fg-selected-item .fg-remove-btn {
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.find-gyms-page .fg-selected-item:hover .fg-remove-btn {
+  color: #ff5a16;
+  transform: scale(1.08);
+}
+
+/* =========================
+   SMALL UTILITIES
+========================= */
+.fg-stack-14 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fg-hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes fg-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}/* ensure button creates stacking context */
+.find-gyms-page .fg-location-btn,
+.find-gyms-page .fg-equip-preview-select {
+  position: relative;
+  z-index: 0;
+}
+
+/* push orange fill behind text */
+.find-gyms-page .fg-location-btn::before,
+.find-gyms-page .fg-location-btn::after,
+.find-gyms-page .fg-equip-preview-select::before,
+.find-gyms-page .fg-equip-preview-select::after {
+  z-index: -1;
+}
+
+/* keep text above */
+.find-gyms-page .fg-location-btn,
+.find-gyms-page .fg-equip-preview-select {
+  color: #fc4a00;
+}
+
+.find-gyms-page .fg-location-btn:hover,
+.find-gyms-page .fg-equip-preview-select:hover {
+  color: #ffffff !important;
+}/* =========================
+   EQUIPMENT PREVIEW DARK FIX
+========================= */
+
+/* image/media frame */
+.find-gyms-page .fg-equip-preview-image,
+.find-gyms-page .fg-equip-preview-media,
+.find-gyms-page .fg-equip-preview-photo,
+.find-gyms-page .fg-equip-preview-img-wrap,
+.find-gyms-page .fg-equip-preview figure,
+.find-gyms-page .fg-equip-preview .image-wrap {
+  background: #101820 !important;
+  border: 1px solid rgba(255, 90, 22, 0.18);
+}
+
+/* lower white content block */
+.find-gyms-page .fg-equip-preview-description,
+.find-gyms-page .fg-equip-preview-notes,
+.find-gyms-page .fg-equip-preview-content,
+.find-gyms-page .fg-equip-preview-body,
+.find-gyms-page .fg-equip-preview-text {
+  background: rgba(10, 20, 31, 0.96) !important;
+  color: var(--fg-text) !important;
+  border: 1px solid rgba(255, 90, 22, 0.16);
+}
+
+/* if the preview uses generic white cards inside */
+.find-gyms-page .fg-equip-preview > div,
+.find-gyms-page .fg-equip-preview .card,
+.find-gyms-page .fg-equip-preview .panel {
+  background-color: transparent;
+}
+
+/* image itself should not force white background */
+.find-gyms-page .fg-equip-preview img {
+  background: transparent !important;
+  display: block;
+}.find-gyms-page .fg-equip-preview-actions {
+  margin-bottom: 18px;
+}
+
+.find-gyms-page .fg-equip-preview-actions .fg-equip-preview-select {
+  margin-bottom: 6px;
+}

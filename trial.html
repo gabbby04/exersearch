@@ -1,635 +1,770 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gym Inbox Layout</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      * {
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strict Palette Exersearch Mockup</title>
+  <style>
+    :root {
+      --black-1: #181718;
+      --black-2: #101820;
+      --black-3: #0d141b;
 
-      body {
-        padding: 5%;
-        background-color: #f5f5f5;
-        font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      }
+      --white-1: #f6f8fa;
+      --white-2: #f1f4f8;
+      --white-3: #ebf0f5;
 
-      .container {
-        padding: 0;
-        background-color: #fff;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-        height: 700px;
-        border-radius: 18px;
-        overflow: hidden;
-      }
+      --orange-1: #ab3200;
+      --orange-2: #fc4a00;
+      --orange-3: #ff5a16;
+    }
 
-      .row {
-        height: 700px;
-        display: flex;
-        width: 100%;
-      }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: var(--black-1);
+    }
 
-      .menu {
-        width: 280px;
-        min-width: 280px;
-        height: 700px;
-        background: linear-gradient(#4768b5, #35488e);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19);
-        display: flex;
-        flex-direction: column;
-      }
+    body {
+      padding: 24px;
+    }
 
-      .menu-header {
-        padding: 16px 14px 12px 14px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-      }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
 
-      .brand {
-        color: #fff;
-        font-weight: 900;
-        letter-spacing: 0.3px;
-        font-size: 14pt;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
+    .app {
+      min-height: 980px;
+      border: 8px solid;
+      display: grid;
+      grid-template-rows: 84px 1fr;
+      overflow: hidden;
+    }
 
-      .brand .pill {
-        font-size: 9pt;
-        font-weight: 900;
-        padding: 4px 10px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.18);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-      }
+    .dark.app {
+      background: var(--black-1);
+      border-color: var(--orange-2);
+      color: var(--white-1);
+    }
 
-      .menu-search {
-        height: 40px;
-        background: rgba(255, 255, 255, 0.16);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 0 14px;
-        color: rgba(255, 255, 255, 0.92);
-      }
+    .light.app {
+      background: var(--white-1);
+      border-color: var(--orange-1);
+      color: var(--black-3);
+    }
 
-      .menu-search input {
-        background: transparent;
-        border: none;
-        outline: none;
-        width: 100%;
-        height: 38px;
-        color: #fff;
-        font-size: 10.5pt;
-      }
+    .topbar {
+      display: grid;
+      grid-template-columns: 220px 1fr auto auto;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 4px solid;
+    }
 
-      .menu-search input::placeholder {
-        color: rgba(255, 255, 255, 0.75);
-      }
+    .dark .topbar {
+      background: var(--black-2);
+      border-color: var(--orange-3);
+    }
 
-      .gym-items {
-        list-style: none;
-        margin: 0;
-        padding: 10px;
-        overflow: auto;
-        flex: 1;
-      }
+    .light .topbar {
+      background: var(--white-2);
+      border-color: var(--orange-2);
+    }
 
-      .gym-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 12px;
-        border-radius: 14px;
-        color: rgba(255, 255, 255, 0.92);
-        cursor: pointer;
-        position: relative;
-      }
+    .logo {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
 
-      .gym-item:hover {
-        background: rgba(255, 255, 255, 0.12);
-      }
+    .searchbar,
+    .top-pill,
+    .chip,
+    .mini-chip,
+    .stat,
+    .btn,
+    .ghost,
+    .gym-card,
+    .mini-card,
+    .sidebar,
+    .section,
+    .swatch,
+    .calendar-box,
+    .map-box,
+    .list-item {
+      border: 3px solid;
+    }
 
-      .gym-item-active {
-        background: rgba(255, 255, 255, 0.18);
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
-      }
+    .searchbar {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      font-weight: 700;
+    }
 
-      .gym-photo {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-        flex: 0 0 auto;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
-      }
+    .dark .searchbar {
+      background: var(--black-3);
+      border-color: var(--white-3);
+      color: var(--white-3);
+    }
 
-      .gym-meta {
-        min-width: 0;
-        flex: 1;
-      }
+    .light .searchbar {
+      background: var(--white-1);
+      border-color: var(--black-2);
+      color: var(--black-2);
+    }
 
-      .gym-name {
-        font-weight: 900;
-        font-size: 10.5pt;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+    .top-pill {
+      padding: 10px 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
 
-      .gym-sub {
-        margin-top: 4px;
-        font-size: 9pt;
-        opacity: 0.9;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+    .dark .top-pill {
+      background: var(--orange-2);
+      color: var(--white-1);
+      border-color: var(--orange-3);
+    }
 
-      .badge {
-        background: rgba(255, 255, 255, 0.92);
-        color: #2d3b7a;
-        font-weight: 900;
-        font-size: 9pt;
-        padding: 3px 8px;
-        border-radius: 999px;
-        flex: 0 0 auto;
-      }
+    .light .top-pill {
+      background: var(--orange-3);
+      color: var(--white-1);
+      border-color: var(--orange-1);
+    }
 
-      .discussions {
-        width: 360px;
-        min-width: 360px;
-        height: 700px;
-        box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
-        background-color: #87a3ec;
-        display: flex;
-        flex-direction: column;
-      }
+    .shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 0;
+    }
 
-      .discussions .discussion {
-        width: 100%;
-        height: 90px;
-        background-color: #fafafa;
-        border-bottom: solid 1px #e0e0e0;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-      }
+    .sidebar {
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr auto;
+      gap: 16px;
+      border-left: 0;
+      border-bottom: 0;
+    }
 
-      .discussions .search {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #e0e0e0;
-        background: transparent;
-        border-bottom: none;
-        height: 84px;
-      }
+    .dark .sidebar {
+      background: var(--black-2);
+      border-color: var(--white-3);
+    }
 
-      .discussions .search .searchbar {
-        height: 40px;
-        background-color: #fff;
-        width: calc(100% - 44px);
-        padding: 0 16px;
-        border-radius: 50px;
-        border: 1px solid #eeeeee;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
+    .light .sidebar {
+      background: var(--white-2);
+      border-color: var(--black-2);
+    }
 
-      .discussions .search .searchbar input {
-        height: 38px;
-        width: 100%;
-        border: none;
-        outline: none;
-        font-size: 10.5pt;
-        font-family: inherit;
-      }
+    .side-title,
+    .section-title,
+    .card-title,
+    .big-number {
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
 
-      .discussions .message-active {
-        width: 98.5%;
-        height: 90px;
-        background-color: #fff;
-        border-bottom: solid 1px #e0e0e0;
-      }
+    .side-title { font-size: 22px; }
+    .section-title { font-size: 24px; }
+    .card-title { font-size: 28px; }
+    .big-number { font-size: 34px; }
 
-      .discussions .discussion .photo {
-        margin-left: 20px;
-        display: block;
-        width: 45px;
-        height: 45px;
-        background: #e6e7ed;
-        border-radius: 50px;
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-        flex: 0 0 auto;
-      }
+    .chip-grid,
+    .mini-chip-grid,
+    .swatches,
+    .stats,
+    .actions,
+    .list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
-      .desc-contact {
-        height: 43px;
-        width: 55%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+    .chip,
+    .mini-chip,
+    .btn,
+    .ghost,
+    .stat,
+    .list-item {
+      font-weight: 800;
+    }
 
-      .discussions .discussion .name {
-        margin: 0 0 0 20px;
-        font-size: 11pt;
-        color: #515151;
-        font-weight: 900;
-      }
+    .chip { padding: 10px 12px; }
+    .mini-chip { padding: 8px 10px; font-size: 13px; }
+    .btn, .ghost { padding: 12px 14px; }
+    .stat { padding: 14px; min-width: 120px; }
+    .list-item { padding: 10px 12px; }
 
-      .discussions .discussion .message {
-        margin: 6px 0 0 20px;
-        font-size: 9pt;
-        color: #515151;
-        opacity: 0.9;
-      }
+    .dark .chip,
+    .dark .mini-chip,
+    .dark .ghost,
+    .dark .list-item {
+      background: var(--black-3);
+      color: var(--white-2);
+      border-color: var(--white-3);
+    }
 
-      .timer {
-        margin-left: auto;
-        margin-right: 18px;
-        font-size: 11px;
-        padding: 3px 8px;
-        color: #888;
-        background-color: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 15px;
-        flex: 0 0 auto;
-      }
+    .light .chip,
+    .light .mini-chip,
+    .light .ghost,
+    .light .list-item {
+      background: var(--white-1);
+      color: var(--black-2);
+      border-color: var(--black-2);
+    }
 
-      .chat {
-        height: 700px;
-        flex: 1;
-        position: relative;
-        background: #fff;
-      }
+    .dark .chip.active,
+    .dark .mini-chip.active,
+    .dark .btn,
+    .dark .stat.highlight,
+    .dark .list-item.active {
+      background: var(--orange-2);
+      color: var(--white-1);
+      border-color: var(--orange-3);
+    }
 
-      .header-chat {
-        background-color: #fff;
-        height: 90px;
-        box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        padding: 0 22px;
-      }
+    .light .chip.active,
+    .light .mini-chip.active,
+    .light .btn,
+    .light .stat.highlight,
+    .light .list-item.active {
+      background: var(--orange-3);
+      color: var(--white-1);
+      border-color: var(--orange-1);
+    }
 
-      .hc-left {
-        display: flex;
-        align-items: center;
-        min-width: 0;
-        flex: 1;
-      }
+    .dark .stat {
+      background: var(--black-3);
+      color: var(--white-1);
+      border-color: var(--white-3);
+    }
 
-      .hc-user {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 0;
-      }
+    .light .stat {
+      background: var(--white-3);
+      color: var(--black-3);
+      border-color: var(--black-2);
+    }
 
-      .header-chat .icon {
-        color: #515151;
-        font-size: 14pt;
-      }
+    .content {
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 18px;
+      min-width: 0;
+    }
 
-      .hc-titles {
-        min-width: 0;
-      }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
 
-      .header-chat .name {
-        margin: 0;
-        text-transform: uppercase;
-        font-size: 13pt;
-        color: #515151;
-        font-weight: 900;
-      }
+    .section {
+      padding: 18px;
+    }
 
-      .header-chat .sub {
-        margin: 4px 0 0 0;
-        font-size: 9.5pt;
-        color: #7a7a7a;
-        font-weight: 700;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+    .dark .section,
+    .dark .gym-card,
+    .dark .mini-card,
+    .dark .calendar-box,
+    .dark .map-box {
+      background: var(--black-3);
+      color: var(--white-1);
+      border-color: var(--white-3);
+    }
 
-      .header-chat .right {
-        margin-left: auto;
-      }
+    .light .section,
+    .light .gym-card,
+    .light .mini-card,
+    .light .calendar-box,
+    .light .map-box {
+      background: var(--white-3);
+      color: var(--black-3);
+      border-color: var(--black-2);
+    }
 
-      .messages-chat {
-        padding: 25px 35px;
-        height: calc(700px - 90px - 80px);
-        overflow: auto;
-      }
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
 
-      .messages-chat .message {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-      }
+    .dark .eyebrow { color: var(--orange-3); }
+    .light .eyebrow { color: var(--orange-1); }
 
-      .messages-chat .message .photo {
-        display: block;
-        width: 45px;
-        height: 45px;
-        background: #e6e7ed;
-        border-radius: 50px;
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-        flex: 0 0 auto;
-      }
+    .hero-copy {
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 10px 0 16px;
+    }
 
-      .messages-chat .text {
-        margin: 0 14px;
-        background-color: #f6f6f6;
-        padding: 15px;
-        border-radius: 12px;
-        max-width: 72%;
-      }
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
 
-      .text-only {
-        margin-left: 45px;
-      }
+    .gym-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
 
-      .time {
-        font-size: 10px;
-        color: lightgrey;
-        margin-bottom: 10px;
-        margin-left: 85px;
-      }
+    .gym-card {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
 
-      .response-time {
-        float: right;
-        margin-right: 40px !important;
-      }
+    .rating-row,
+    .meta-row,
+    .price-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-weight: 800;
+    }
 
-      .response {
-        margin-left: auto;
-      }
+    .dark .accent-text { color: var(--orange-3); }
+    .light .accent-text { color: var(--orange-1); }
 
-      .response .text {
-        background-color: #e3effd !important;
-      }
+    .muted {
+      font-weight: 700;
+    }
 
-      .footer-chat {
-        height: 80px;
-        display: flex;
-        align-items: center;
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #fff;
-        border-top: 2px solid #eee;
-        padding: 0 18px;
-        gap: 12px;
-      }
+    .dark .muted { color: var(--white-3); }
+    .light .muted { color: var(--black-2); }
 
-      .write-message {
-        border: none !important;
-        outline: none;
-        width: 100%;
-        height: 50px;
-        padding: 10px 12px;
-        font-size: 11pt;
-        background: transparent;
-        font-family: inherit;
-      }
+    .mini-card {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+      min-height: 148px;
+    }
 
-      .footer-chat .send {
-        color: #fff;
-        background-color: #4f6ebd;
-        padding: 12px;
-        border-radius: 50px;
-        font-size: 14pt;
-        flex: 0 0 auto;
-      }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
 
-      .clickable {
-        cursor: pointer;
-      }
-    </style>
-  </head>
+    .calendar-box, .map-box {
+      min-height: 210px;
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
 
-  <body>
-    <div class="container">
-      <div class="row">
-        <aside class="menu">
-          <div class="menu-header">
-            <div class="brand">
-              <span>Gyms</span>
-              <span class="pill">Owner Inbox</span>
-            </div>
-            <div class="menu-search">
-              <i class="fa fa-search" aria-hidden="true"></i>
-              <input type="text" placeholder="Search gyms..." />
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .day {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      border: 2px solid;
+    }
+
+    .dark .day {
+      background: var(--black-2);
+      color: var(--white-1);
+      border-color: var(--white-3);
+    }
+
+    .light .day {
+      background: var(--white-1);
+      color: var(--black-3);
+      border-color: var(--black-2);
+    }
+
+    .dark .day.active { background: var(--orange-2); border-color: var(--orange-3); }
+    .light .day.active { background: var(--orange-3); border-color: var(--orange-1); color: var(--white-1); }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      flex: 1;
+    }
+
+    .map-node {
+      min-height: 34px;
+      border: 2px solid;
+    }
+
+    .dark .map-node { background: var(--black-2); border-color: var(--white-3); }
+    .light .map-node { background: var(--white-1); border-color: var(--black-2); }
+
+    .dark .map-node.hot { background: var(--orange-2); border-color: var(--orange-3); }
+    .dark .map-node.warm { background: var(--orange-1); border-color: var(--orange-3); }
+    .light .map-node.hot { background: var(--orange-3); border-color: var(--orange-1); }
+    .light .map-node.warm { background: var(--orange-2); border-color: var(--orange-1); }
+
+    .swatches {
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 58px;
+      height: 58px;
+    }
+
+    .swatch.b1 { background: var(--black-1); border-color: var(--white-3); }
+    .swatch.b2 { background: var(--black-2); border-color: var(--white-3); }
+    .swatch.b3 { background: var(--black-3); border-color: var(--white-3); }
+    .swatch.w1 { background: var(--white-1); border-color: var(--black-2); }
+    .swatch.w2 { background: var(--white-2); border-color: var(--black-2); }
+    .swatch.w3 { background: var(--white-3); border-color: var(--black-2); }
+    .swatch.o1 { background: var(--orange-1); border-color: var(--orange-3); }
+    .swatch.o2 { background: var(--orange-2); border-color: var(--orange-1); }
+    .swatch.o3 { background: var(--orange-3); border-color: var(--orange-1); }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-weight: 800;
+    }
+
+    .legend span {
+      padding: 8px 10px;
+      border: 2px solid;
+    }
+
+    .dark .legend span {
+      background: var(--black-2);
+      color: var(--white-1);
+      border-color: var(--white-3);
+    }
+
+    .light .legend span {
+      background: var(--white-1);
+      color: var(--black-3);
+      border-color: var(--black-2);
+    }
+
+    @media (max-width: 1200px) {
+      .board { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      .shell,
+      .hero,
+      .gym-grid,
+      .split,
+      .grid-two { grid-template-columns: 1fr; }
+
+      .topbar { grid-template-columns: 1fr; }
+      .app { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <section class="app dark">
+      <header class="topbar">
+        <div class="logo">Exersearch</div>
+        <div class="searchbar">Search gyms, classes, trainers</div>
+        <div class="top-pill">Nearby • 12 results</div>
+        <div class="top-pill">Dark mode</div>
+      </header>
+      <div class="shell">
+        <aside class="sidebar">
+          <div>
+            <div class="side-title">Filters</div>
+            <div class="muted">Strict palette demo using only your exact hex values.</div>
+          </div>
+
+          <div>
+            <div class="eyebrow">Goals</div>
+            <div class="chip-grid">
+              <div class="chip active">Strength</div>
+              <div class="chip">Weight Loss</div>
+              <div class="chip">Powerlifting</div>
+              <div class="chip">Recovery</div>
             </div>
           </div>
 
-          <ul class="gym-items">
-            <li class="gym-item gym-item-active">
-              <div
-                class="gym-photo"
-                style="background-image:url(https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <div class="gym-meta">
-                <div class="gym-name">IronForge Gym</div>
-                <div class="gym-sub">3 open inquiries</div>
-              </div>
-              <div class="badge">3</div>
-            </li>
+          <div>
+            <div class="eyebrow">Amenities</div>
+            <div class="mini-chip-grid">
+              <div class="mini-chip active">24/7</div>
+              <div class="mini-chip">Showers</div>
+              <div class="mini-chip">Parking</div>
+              <div class="mini-chip">Women Only</div>
+              <div class="mini-chip">Coaching</div>
+              <div class="mini-chip">Sauna</div>
+            </div>
+          </div>
 
-            <li class="gym-item">
-              <div
-                class="gym-photo"
-                style="background-image:url(https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <div class="gym-meta">
-                <div class="gym-name">Pulse Fitness</div>
-                <div class="gym-sub">No pending</div>
+          <div>
+            <div class="section mini-card">
+              <div class="eyebrow">Palette</div>
+              <div class="swatches">
+                <div class="swatch b1"></div>
+                <div class="swatch b2"></div>
+                <div class="swatch b3"></div>
+                <div class="swatch w1"></div>
+                <div class="swatch w2"></div>
+                <div class="swatch w3"></div>
+                <div class="swatch o1"></div>
+                <div class="swatch o2"></div>
+                <div class="swatch o3"></div>
               </div>
-            </li>
+              <div class="legend">
+                <span>#181718</span><span>#101820</span><span>#0d141b</span>
+                <span>#f6f8fa</span><span>#f1f4f8</span><span>#ebf0f5</span>
+                <span>#ab3200</span><span>#fc4a00</span><span>#ff5a16</span>
+              </div>
+            </div>
+          </div>
 
-            <li class="gym-item">
-              <div
-                class="gym-photo"
-                style="background-image:url(https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <div class="gym-meta">
-                <div class="gym-name">Titan Strength</div>
-                <div class="gym-sub">1 open inquiry</div>
-              </div>
-              <div class="badge">1</div>
-            </li>
-
-            <li class="gym-item">
-              <div
-                class="gym-photo"
-                style="background-image:url(https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <div class="gym-meta">
-                <div class="gym-name">Urban Core</div>
-                <div class="gym-sub">2 answered today</div>
-              </div>
-            </li>
-
-            <li class="gym-item">
-              <div
-                class="gym-photo"
-                style="background-image:url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <div class="gym-meta">
-                <div class="gym-name">Flex District</div>
-                <div class="gym-sub">No pending</div>
-              </div>
-            </li>
-          </ul>
+          <div class="actions">
+            <div class="btn">Apply Filters</div>
+            <div class="ghost">Reset</div>
+          </div>
         </aside>
 
-        <section class="discussions">
-          <div class="discussion search">
-            <div class="searchbar">
-              <i class="fa fa-search" aria-hidden="true"></i>
-              <input type="text" placeholder="Search inquiries..." />
-            </div>
-          </div>
-
-          <div class="discussion message-active">
-            <div
-              class="photo"
-              style="background-image:url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=800&q=60)"
-            ></div>
-            <div class="desc-contact">
-              <p class="name">Megan Leib</p>
-              <p class="message">Do you have student discounts?</p>
-            </div>
-            <div class="timer">12 sec</div>
-          </div>
-
-          <div class="discussion">
-            <div
-              class="photo"
-              style="background-image:url(https://i.pinimg.com/originals/a9/26/52/a926525d966c9479c18d3b4f8e64b434.jpg)"
-            ></div>
-            <div class="desc-contact">
-              <p class="name">Dave Corlew</p>
-              <p class="message">Is free first visit available?</p>
-            </div>
-            <div class="timer">3 min</div>
-          </div>
-
-          <div class="discussion">
-            <div
-              class="photo"
-              style="background-image:url(https://images.unsplash.com/photo-1497551060073-4c5ab6435f12?auto=format&fit=crop&w=800&q=60)"
-            ></div>
-            <div class="desc-contact">
-              <p class="name">Jerome Seiber</p>
-              <p class="message">What time do you close on Sundays?</p>
-            </div>
-            <div class="timer">42 min</div>
-          </div>
-
-          <div class="discussion">
-            <div
-              class="photo"
-              style="background-image:url(https://images.unsplash.com/photo-1541747157478-3222166cf342?auto=format&fit=crop&w=800&q=60)"
-            ></div>
-            <div class="desc-contact">
-              <p class="name">Billy Southard</p>
-              <p class="message">Can I bring a guest?</p>
-            </div>
-            <div class="timer">1 day</div>
-          </div>
-
-          <div class="discussion">
-            <div
-              class="photo"
-              style="background-image:url(https://images.unsplash.com/photo-1553514029-1318c9127859?auto=format&fit=crop&w=800&q=60)"
-            ></div>
-            <div class="desc-contact">
-              <p class="name">Elsie Amador</p>
-              <p class="message">Do you have lockers?</p>
-            </div>
-            <div class="timer">4 days</div>
-          </div>
-        </section>
-
-        <section class="chat">
-          <div class="header-chat">
-            <div class="hc-left">
-              <div class="hc-user">
-                <i class="icon fa fa-user-o" aria-hidden="true"></i>
-                <div class="hc-titles">
-                  <p class="name">Megan Leib</p>
-                  <p class="sub">IronForge Gym • Open</p>
-                </div>
+        <main class="content">
+          <section class="hero">
+            <div class="section">
+              <div class="eyebrow">Smart Match</div>
+              <div class="section-title">Find the right gym in minutes.</div>
+              <div class="hero-copy muted">This mockup pushes your palette across layout, hierarchy, controls, cards, stats, map blocks, and scheduling surfaces without introducing any extra tones.</div>
+              <div class="stats">
+                <div class="stat highlight"><div class="big-number">92%</div>match score</div>
+                <div class="stat"><div class="big-number">18</div>open late</div>
+                <div class="stat"><div class="big-number">7</div>nearby now</div>
               </div>
             </div>
-            <i class="icon clickable fa fa-ellipsis-h right" aria-hidden="true"></i>
-          </div>
-
-          <div class="messages-chat">
-            <div class="message">
-              <div
-                class="photo"
-                style="background-image:url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <p class="text">Hi! Do you have student discounts?</p>
-            </div>
-
-            <p class="time">14h58</p>
-
-            <div class="message text-only">
-              <div class="response">
-                <p class="text">Yes, we offer a student rate with valid ID.</p>
+            <div class="section">
+              <div class="eyebrow">Quick Actions</div>
+              <div class="list">
+                <div class="list-item active">Best Value</div>
+                <div class="list-item">Top Rated</div>
+                <div class="list-item">Shortest Travel</div>
+                <div class="list-item">Premium Gear</div>
+                <div class="list-item">Open 24/7</div>
+                <div class="list-item">Coach Included</div>
               </div>
             </div>
+          </section>
 
-            <p class="response-time time">15h04</p>
+          <section class="gym-grid">
+            <article class="gym-card">
+              <div class="eyebrow">Recommended</div>
+              <div class="card-title">Elite Fitness Lab</div>
+              <div class="rating-row"><span class="accent-text">★ 4.9</span><span class="muted">2.1 km away</span><span class="muted">Open all day</span></div>
+              <div class="muted">Power racks, calibrated plates, HIIT zone, and recovery area in one clean setup.</div>
+              <div class="meta-row">
+                <div class="mini-chip active">Strength</div>
+                <div class="mini-chip">Recovery</div>
+                <div class="mini-chip">Coach</div>
+              </div>
+              <div class="price-row"><span class="accent-text">₱1,800/mo</span><span class="muted">No joining fee</span></div>
+              <div class="actions"><div class="btn">View Gym</div><div class="ghost">Save</div></div>
+            </article>
 
-            <div class="message">
-              <div
-                class="photo"
-                style="background-image:url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=800&q=60)"
-              ></div>
-              <p class="text">Nice! How much is it per month?</p>
+            <article class="gym-card">
+              <div class="eyebrow">Trending</div>
+              <div class="card-title">Powerhouse Central</div>
+              <div class="rating-row"><span class="accent-text">★ 4.8</span><span class="muted">3.4 km away</span><span class="muted">Closes 11 PM</span></div>
+              <div class="muted">A heavier, more competitive atmosphere with top benches, deadlift platforms, and team training.</div>
+              <div class="meta-row">
+                <div class="mini-chip active">Powerlifting</div>
+                <div class="mini-chip">Parking</div>
+                <div class="mini-chip">Showers</div>
+              </div>
+              <div class="price-row"><span class="accent-text">₱2,200/mo</span><span class="muted">3 trial passes</span></div>
+              <div class="actions"><div class="btn">Compare</div><div class="ghost">Details</div></div>
+            </article>
+          </section>
+
+          <section class="split">
+            <div class="calendar-box">
+              <div class="eyebrow">Peak Hours</div>
+              <div class="section-title">Best times this week</div>
+              <div class="calendar-grid">
+                <div class="day">M</div><div class="day active">T</div><div class="day">W</div><div class="day">T</div><div class="day active">F</div><div class="day">S</div><div class="day">S</div>
+              </div>
+              <div class="legend"><span>6–8 AM quiet</span><span>7–9 PM busy</span><span>Friday best value</span></div>
             </div>
 
-            <p class="time">15h09</p>
-          </div>
-
-          <div class="footer-chat">
-            <input type="text" class="write-message" placeholder="Type your reply..." />
-            <i class="icon send fa fa-paper-plane-o clickable" aria-hidden="true"></i>
-          </div>
-        </section>
+            <div class="map-box">
+              <div class="eyebrow">Heat Map</div>
+              <div class="section-title">Nearby density</div>
+              <div class="map-grid">
+                <div class="map-node"></div><div class="map-node hot"></div><div class="map-node"></div><div class="map-node warm"></div><div class="map-node"></div><div class="map-node"></div>
+                <div class="map-node"></div><div class="map-node"></div><div class="map-node warm"></div><div class="map-node hot"></div><div class="map-node"></div><div class="map-node"></div>
+                <div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node hot"></div><div class="map-node"></div>
+                <div class="map-node warm"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
-    </div>
-  </body>
+    </section>
+
+    <section class="app light">
+      <header class="topbar">
+        <div class="logo">Exersearch</div>
+        <div class="searchbar">Search gyms, classes, trainers</div>
+        <div class="top-pill">Nearby • 12 results</div>
+        <div class="top-pill">Light mode</div>
+      </header>
+      <div class="shell">
+        <aside class="sidebar">
+          <div>
+            <div class="side-title">Filters</div>
+            <div class="muted">Same layout, same structure, same 9 colors.</div>
+          </div>
+
+          <div>
+            <div class="eyebrow">Goals</div>
+            <div class="chip-grid">
+              <div class="chip active">Strength</div>
+              <div class="chip">Weight Loss</div>
+              <div class="chip">Powerlifting</div>
+              <div class="chip">Recovery</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="eyebrow">Amenities</div>
+            <div class="mini-chip-grid">
+              <div class="mini-chip active">24/7</div>
+              <div class="mini-chip">Showers</div>
+              <div class="mini-chip">Parking</div>
+              <div class="mini-chip">Women Only</div>
+              <div class="mini-chip">Coaching</div>
+              <div class="mini-chip">Sauna</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section mini-card">
+              <div class="eyebrow">Palette</div>
+              <div class="swatches">
+                <div class="swatch b1"></div>
+                <div class="swatch b2"></div>
+                <div class="swatch b3"></div>
+                <div class="swatch w1"></div>
+                <div class="swatch w2"></div>
+                <div class="swatch w3"></div>
+                <div class="swatch o1"></div>
+                <div class="swatch o2"></div>
+                <div class="swatch o3"></div>
+              </div>
+              <div class="legend">
+                <span>#181718</span><span>#101820</span><span>#0d141b</span>
+                <span>#f6f8fa</span><span>#f1f4f8</span><span>#ebf0f5</span>
+                <span>#ab3200</span><span>#fc4a00</span><span>#ff5a16</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <div class="btn">Apply Filters</div>
+            <div class="ghost">Reset</div>
+          </div>
+        </aside>
+
+        <main class="content">
+          <section class="hero">
+            <div class="section">
+              <div class="eyebrow">Smart Match</div>
+              <div class="section-title">Show the full power of the palette.</div>
+              <div class="hero-copy muted">The light version uses your three whites for depth, your three blacks for structure, and your oranges only where they need to command attention.</div>
+              <div class="stats">
+                <div class="stat highlight"><div class="big-number">92%</div>match score</div>
+                <div class="stat"><div class="big-number">18</div>open late</div>
+                <div class="stat"><div class="big-number">7</div>nearby now</div>
+              </div>
+            </div>
+            <div class="section">
+              <div class="eyebrow">Quick Actions</div>
+              <div class="list">
+                <div class="list-item active">Best Value</div>
+                <div class="list-item">Top Rated</div>
+                <div class="list-item">Shortest Travel</div>
+                <div class="list-item">Premium Gear</div>
+                <div class="list-item">Open 24/7</div>
+                <div class="list-item">Coach Included</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="gym-grid">
+            <article class="gym-card">
+              <div class="eyebrow">Recommended</div>
+              <div class="card-title">Elite Fitness Lab</div>
+              <div class="rating-row"><span class="accent-text">★ 4.9</span><span class="muted">2.1 km away</span><span class="muted">Open all day</span></div>
+              <div class="muted">Power racks, calibrated plates, HIIT zone, and recovery area in one clean setup.</div>
+              <div class="meta-row">
+                <div class="mini-chip active">Strength</div>
+                <div class="mini-chip">Recovery</div>
+                <div class="mini-chip">Coach</div>
+              </div>
+              <div class="price-row"><span class="accent-text">₱1,800/mo</span><span class="muted">No joining fee</span></div>
+              <div class="actions"><div class="btn">View Gym</div><div class="ghost">Save</div></div>
+            </article>
+
+            <article class="gym-card">
+              <div class="eyebrow">Trending</div>
+              <div class="card-title">Powerhouse Central</div>
+              <div class="rating-row"><span class="accent-text">★ 4.8</span><span class="muted">3.4 km away</span><span class="muted">Closes 11 PM</span></div>
+              <div class="muted">A heavier, more competitive atmosphere with top benches, deadlift platforms, and team training.</div>
+              <div class="meta-row">
+                <div class="mini-chip active">Powerlifting</div>
+                <div class="mini-chip">Parking</div>
+                <div class="mini-chip">Showers</div>
+              </div>
+              <div class="price-row"><span class="accent-text">₱2,200/mo</span><span class="muted">3 trial passes</span></div>
+              <div class="actions"><div class="btn">Compare</div><div class="ghost">Details</div></div>
+            </article>
+          </section>
+
+          <section class="split">
+            <div class="calendar-box">
+              <div class="eyebrow">Peak Hours</div>
+              <div class="section-title">Best times this week</div>
+              <div class="calendar-grid">
+                <div class="day">M</div><div class="day active">T</div><div class="day">W</div><div class="day">T</div><div class="day active">F</div><div class="day">S</div><div class="day">S</div>
+              </div>
+              <div class="legend"><span>6–8 AM quiet</span><span>7–9 PM busy</span><span>Friday best value</span></div>
+            </div>
+
+            <div class="map-box">
+              <div class="eyebrow">Heat Map</div>
+              <div class="section-title">Nearby density</div>
+              <div class="map-grid">
+                <div class="map-node"></div><div class="map-node hot"></div><div class="map-node"></div><div class="map-node warm"></div><div class="map-node"></div><div class="map-node"></div>
+                <div class="map-node"></div><div class="map-node"></div><div class="map-node warm"></div><div class="map-node hot"></div><div class="map-node"></div><div class="map-node"></div>
+                <div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node hot"></div><div class="map-node"></div>
+                <div class="map-node warm"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div><div class="map-node"></div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+  </div>
+</body>
 </html>
