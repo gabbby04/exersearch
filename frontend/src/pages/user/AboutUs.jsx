@@ -1,339 +1,292 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import { 
-  ArrowRight, Linkedin, Twitter, Github, Mail, 
-  Target, Zap, Heart, Users, Shield, Eye, MapPin
-} from 'lucide-react';
+import { ArrowRight, Linkedin, Github, Mail, Facebook, Instagram } from 'lucide-react';
 import './AboutUs.css';
 
+/* ─── DATA ─── */
 const TEAM = [
   {
     id: 1,
-    name: 'Juan Dela Cruz',
-    role: 'Founder & CEO',
-    quote: 'Built ExerSearch after wasting 3 weeks finding a gym in Pasig.',
-    image: 'test.jpg',
-    color: '#d23f0b',
-    socials: { linkedin: '#', twitter: '#', email: 'juan@exersearch.com' }
+    name: 'Dheniel Pontiga',
+    role: 'Lead Developer',
+    quote: 'Great systems aren’t built overnight — they’re engineered one problem at a time.',
+    image: 'philo1.png',
+    socials: { github: '#', linkedin: '#', email: '#' },
   },
   {
     id: 2,
-    name: 'Maria Santos',
-    role: 'Lead Developer',
-    quote: 'Turning coffee into code since 2015. Love building things that scale.',
-    image: 'test1.png',
-    color: '#3b82f6',
-    socials: { github: '#', linkedin: '#', email: 'maria@exersearch.com' }
+    name: 'Ahron Javier',
+    role: 'Frontend Developer',
+    quote: 'Good design isn’t just what you see — it’s how smoothly everything works.',
+    image: 'philo3.png',
+    socials: { github: '#', linkedin: '#', email: '#' },
   },
   {
     id: 3,
-    name: 'Carlo Reyes',
-    role: 'Head of Design',
-    quote: 'Making fitness apps that don\'t look like garbage.',
-    image: 'test1.png',
-    color: '#8b5cf6',
-    socials: { linkedin: '#', twitter: '#', email: 'carlo@exersearch.com' }
+    name: 'Jedelyn Alayahay',
+    role: 'UI Design & Media Editor',
+    quote: 'Creativity turns ideas into experiences people remember.',
+    image: 'philo4.png',
+    socials: { facebook: '#', instagram: '#', email: '#' },
   },
   {
     id: 4,
-    name: 'Anna Fernandez',
-    role: 'Growth Lead',
-    quote: 'Took us from 0 to 10K users. Now aiming for 100K.',
-    image: 'test.jpg',
-    color: '#f59e0b',
-    socials: { twitter: '#', linkedin: '#', email: 'anna@exersearch.com' }
+    name: 'Janmarco Candido',
+    role: 'Project Manager & Documentation Lead',
+    quote: 'A strong vision and teamwork turn projects into reality.',
+    image: 'philo5.png',
+    socials: { facebook: '#', instagram: '#', email: '#' },
   },
   {
     id: 5,
-    name: 'Rico Patel',
-    role: 'Community Manager',
-    quote: 'Your fitness journey starts here. I\'m here to help.',
-    image: 'test1.png',
-    color: '#10b981',
-    socials: { twitter: '#', linkedin: '#', email: 'rico@exersearch.com' }
-  }
+    name: 'Mark Lawrence Hael',
+    role: 'Technical Support & Data Assistant',
+    quote: 'The small details behind the scenes are what keep everything running.',
+    image: 'philo2.png',
+    socials: { facebook: '#', instagram: '#', email: '#' },
+  },
 ];
 
-const FACTS = [
-  { icon: Users, value: '1,000+', label: 'Active Users', color: '#3b82f6' },
-  { icon: MapPin, value: '50+', label: 'Partner Gyms', color: '#d23f0b' },
-  { icon: Zap, value: '5,000+', label: 'Workouts', color: '#f59e0b' },
-  { icon: Heart, value: '4.9/5', label: 'Rating', color: '#10b981' }
+const STATS = [
+  { val: '1,000+', label: 'Active users' },
+  { val: '50+',    label: 'Partner gyms' },
+  { val: '5,000+', label: 'Workouts logged' },
+  { val: '4.9',    label: 'Avg rating' },
 ];
 
-export default function AboutFinal() {
-  const [activeTeam, setActiveTeam] = useState(0);
-  const [activeFact, setActiveFact] = useState(0);
-  const [activeStory, setActiveStory] = useState(1);
+const MANIFESTO = [
+  { n: '01', head: 'Always free.',       body: 'No paywalls. No premium tiers. Gyms pay us so you never have to.' },
+  { n: '02', head: 'Radically honest.',  body: 'Real reviews from verified users only. Zero tolerance for fakes.' },
+  { n: '03', head: 'User-centered.',     body: 'Every feature starts with research. You drive our roadmap.' },
+  { n: '04', head: 'Filipino first.',    body: 'Built for local culture, local budgets, local fitness habits.' },
+];
 
-  // Auto-rotate facts every 3s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveFact((prev) => (prev + 1) % FACTS.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+/* ─── TEAM CARD ─── */
+function TeamCard({ member, index }) {
+  const [flipped, setFlipped] = useState(false);
+  const [vis, setVis] = useState(false);
+  const ref = useRef(null);
 
-  // Auto-rotate story/images every 4s
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStory((prev) => (prev + 1) % 3);
-    }, 4000); 
-    return () => clearInterval(interval);
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.15 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
   }, []);
 
   return (
-    <div className="about-final">
-      <Header />
-
-      {/* HERO - Gradient with animated stats */}
-      <section className="final-hero">
-        <div className="final-hero-bg"></div>
-        <div className="final-hero-content">
-          <span className="final-badge">ABOUT US</span>
-          <h1>Making fitness accessible to every Filipino</h1>
-          <p>We're 5 people on a mission to fix gym discovery in Manila. No BS. Just real reviews and real results.</p>
-          
-          {/* Interactive rotating stats */}
-          <div className="final-hero-interactive">
-            <div className="fhi-display">
-              {FACTS.map((fact, index) => {
-                const Icon = fact.icon;
-                return (
-                  <div 
-                    key={index}
-                    className={`fhi-item ${activeFact === index ? 'active' : ''}`}
-                  >
-                    <div className="fhi-icon-wrap" style={{ background: fact.color }}>
-                      <Icon size={40} />
-                    </div>
-                    <h3>{fact.value}</h3>
-                    <p>{fact.label}</p>
-                  </div>
-                );
-              })}
+    <div
+      ref={ref}
+      className={`ab-card ${flipped ? 'ab-card--flip' : ''} ${vis ? 'ab-card--in' : ''}`}
+      style={{ '--di': index }}
+      onClick={() => setFlipped(f => !f)}
+    >
+      <div className="ab-card__inner">
+        {/* FRONT */}
+        <div className="ab-card__face ab-card__face--front">
+          <div className="ab-card__img-wrap">
+            <img src={member.image} alt={member.name} className="ab-card__img" />
+            <div className="ab-card__img-overlay" />
+          </div>
+          <div className="ab-card__front-info">
+            <span className="ab-card__num">{String(index + 1).padStart(2, '0')}</span>
+            <div>
+              <p className="ab-card__name">{member.name}</p>
+              <p className="ab-card__role">{member.role}</p>
             </div>
-            <div className="fhi-dots">
-              {FACTS.map((fact, index) => (
-                <button
-                  key={index}
-                  className={`fhi-dot ${activeFact === index ? 'active' : ''}`}
-                  style={{ background: activeFact === index ? fact.color : '#e5e7eb' }}
-                  onClick={() => setActiveFact(index)}
-                />
+          </div>
+          <span className="ab-card__flip-hint">Tap to read →</span>
+        </div>
+        {/* BACK */}
+        <div className="ab-card__face ab-card__face--back">
+          <span className="ab-card__num ab-card__num--back">{String(index + 1).padStart(2, '0')}</span>
+          <p className="ab-card__name ab-card__name--back">{member.name}</p>
+          <p className="ab-card__role ab-card__role--back">{member.role}</p>
+          <blockquote className="ab-card__quote">"{member.quote}"</blockquote>
+          <div className="ab-card__socials">
+            {member.socials.github   && <a href={member.socials.github}   onClick={e => e.stopPropagation()}><Github   size={14} /></a>}
+            {member.socials.linkedin && <a href={member.socials.linkedin} onClick={e => e.stopPropagation()}><Linkedin size={14} /></a>}
+            {member.socials.facebook && <a href={member.socials.facebook} onClick={e => e.stopPropagation()}><Facebook size={14} /></a>}
+            {member.socials.instagram && <a href={member.socials.instagram} onClick={e => e.stopPropagation()}><Instagram size={14} /></a>}
+            <a href={`mailto:${member.socials.email}`} onClick={e => e.stopPropagation()}><Mail size={14} /></a>
+          </div>
+          <span className="ab-card__flip-hint ab-card__flip-hint--back">← Back</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN ─── */
+export default function AboutUs() {
+  const [heroIn, setHeroIn] = useState(false);
+  const manifestoRef = useRef(null);
+  const [manifestoVis, setManifestoVis] = useState(false);
+  const statsRef = useRef(null);
+  const [statsVis, setStatsVis] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeroIn(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setManifestoVis(true); }, { threshold: 0.1 });
+    if (manifestoRef.current) obs.observe(manifestoRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStatsVis(true); }, { threshold: 0.1 });
+    if (statsRef.current) obs.observe(statsRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <>
+      <Header />
+      <div className="ab">
+
+        {/* ══ HERO ══ */}
+        <section className={`ab-hero ${heroIn ? 'ab-hero--in' : ''}`}>
+          <div className="ab-hero__bg">
+            <div className="ab-hero__grid" />
+            <div className="ab-hero__orb" />
+          </div>
+
+          <div className="ab-hero__layout">
+            {/* left col */}
+            <div className="ab-hero__left">
+              <span className="ab-eyebrow">About ExerSearch</span>
+              <h1 className="ab-hero__headline">
+                <span className="ab-hero__line ab-hero__line--1">We</span>
+                <span className="ab-hero__line ab-hero__line--2">fix<em>ed</em></span>
+                <span className="ab-hero__line ab-hero__line--3">fitness.</span>
+              </h1>
+              <p className="ab-hero__sub">
+                Five people. One city. A platform built out of genuine frustration with how hard it was to find a gym, stay consistent, and actually make progress in Pasig.
+              </p>
+              <Link to="/onboarding" className="ab-hero__cta">
+                Start for free <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {/* right col — stat strip */}
+            <div className="ab-hero__right">
+              {STATS.map((s, i) => (
+                <div key={i} className="ab-hero__stat" style={{ '--si': i }}>
+                  <span className="ab-hero__stat-val">{s.val}</span>
+                  <span className="ab-hero__stat-lbl">{s.label}</span>
+                </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ABOUT US - Interactive with auto-switching images */}
-      <section className="final-about">
-        <div className="final-about-container">
-          <div className="fa-left">
-            <span className="section-badge">OUR STORY</span>
-            <h2>From Problem to Solution</h2>
-            
-            <div 
-              className={`fa-story-block ${activeStory === 0 ? 'active' : ''}`}
-              onMouseEnter={() => setActiveStory(0)}
-            >
-              <div className="fa-icon fa-icon-problem">
-                <Target size={24} />
-              </div>
-              <div>
-                <h4>The Problem</h4>
-                <p>Finding a gym in Manila was broken. Fake reviews, hidden prices, stock photos. People wasted weeks visiting 5+ gyms just to pick one.</p>
-              </div>
+          {/* big ghost text */}
+          <div className="ab-hero__ghost" aria-hidden>EXERSEARCH</div>
+        </section>
+
+        {/* ══ ORIGIN STORY ══ */}
+        <section className="ab-story">
+          <div className="ab-story__wrap">
+            <div className="ab-story__label">
+              <span>Our story</span>
+              <div className="ab-story__label-line" />
             </div>
 
-            <div 
-              className={`fa-story-block ${activeStory === 1 ? 'active' : ''}`}
-              onMouseEnter={() => setActiveStory(1)}
-            >
-              <div className="fa-icon fa-icon-solution">
-                <Zap size={24} />
+            <div className="ab-story__body">
+              <div className="ab-story__pull">
+                <span className="ab-story__pull-quote">
+                  "The gym search experience in Pasig was broken."
+                </span>
               </div>
-              <div>
-                <h4>The Solution</h4>
-                <p>We built the platform we wished existed. Real photos from members, verified reviews, transparent pricing, AI workout plans. Everything free.</p>
-              </div>
-            </div>
-
-            <div 
-              className={`fa-story-block ${activeStory === 2 ? 'active' : ''}`}
-              onMouseEnter={() => setActiveStory(2)}
-            >
-              <div className="fa-icon fa-icon-mission">
-                <Heart size={24} />
-              </div>
-              <div>
-                <h4>The Mission</h4>
-                <p>Make fitness accessible to every Filipino. Whether you have ₱500 or ₱5000. Whether you're in Pasig or Paranaque. Better tools, better outcomes.</p>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="fa-progress-bar">
-              <div 
-                className="fa-progress-fill" 
-                style={{ 
-                  width: `${((activeStory + 1) / 3) * 100}%`,
-                  background: activeStory === 0 ? '#3b82f6' : activeStory === 1 ? '#d23f0b' : '#10b981'
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="fa-right">
-            <div className="fa-image-slider">
-              <div className={`fa-slide ${activeStory === 0 ? 'active' : ''}`}>
-                <img 
-                  src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&h=800&fit=crop&q=80" 
-                  alt="Problem" 
-                />
-                <div className="fa-slide-overlay fa-overlay-problem"></div>
-              </div>
-              <div className={`fa-slide ${activeStory === 1 ? 'active' : ''}`}>
-                <img 
-                  src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=800&fit=crop&q=80" 
-                  alt="Solution" 
-                />
-                <div className="fa-slide-overlay fa-overlay-solution"></div>
-              </div>
-              <div className={`fa-slide ${activeStory === 2 ? 'active' : ''}`}>
-                <img 
-                  src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&h=800&fit=crop&q=80" 
-                  alt="Mission" 
-                />
-                <div className="fa-slide-overlay fa-overlay-mission"></div>
-              </div>
-              <div className="fa-image-badge">
-                <MapPin size={16} />
-                <span>Based in Pasig, PH</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TEAM - Interactive Slider */}
-      <section className="final-team">
-        <div className="final-team-header">
-          <span className="section-badge">THE TEAM</span>
-          <h2>Meet the People Behind ExerSearch</h2>
-          <p>Five passionate individuals building the future of Filipino fitness</p>
-        </div>
-
-        <div className="final-team-showcase">
-          <div className="final-team-main">
-            <div className="ftm-image" style={{ borderColor: TEAM[activeTeam].color }}>
-              <img src={TEAM[activeTeam].image} alt={TEAM[activeTeam].name} />
-              <div className="ftm-badge" style={{ background: TEAM[activeTeam].color }}>
-                {activeTeam + 1} / 5
-              </div>
-            </div>
-            <div className="ftm-info">
-              <h3>{TEAM[activeTeam].name}</h3>
-              <p className="ftm-role" style={{ color: TEAM[activeTeam].color }}>
-                {TEAM[activeTeam].role}
-              </p>
-              <p className="ftm-quote">"{TEAM[activeTeam].quote}"</p>
-              <div className="ftm-socials">
-                {TEAM[activeTeam].socials.github && (
-                  <a href={TEAM[activeTeam].socials.github}><Github size={18} /></a>
-                )}
-                {TEAM[activeTeam].socials.linkedin && (
-                  <a href={TEAM[activeTeam].socials.linkedin}><Linkedin size={18} /></a>
-                )}
-                {TEAM[activeTeam].socials.twitter && (
-                  <a href={TEAM[activeTeam].socials.twitter}><Twitter size={18} /></a>
-                )}
-                <a href={`mailto:${TEAM[activeTeam].socials.email}`}><Mail size={18} /></a>
-              </div>
-            </div>
-          </div>
-
-          <div className="final-team-thumbs">
-            {TEAM.map((member, index) => (
-              <div
-                key={member.id}
-                className={`ft-thumb ${activeTeam === index ? 'active' : ''}`}
-                onClick={() => setActiveTeam(index)}
-                style={{ borderColor: activeTeam === index ? member.color : 'transparent' }}
-              >
-                <img src={member.image} alt={member.name} />
-                <div className="ft-thumb-overlay" style={{ background: `linear-gradient(180deg, transparent 0%, ${member.color}ee 100%)` }}>
-                  <span>{member.name.split(' ')[0]}</span>
+              <div className="ab-story__text">
+                <p>It started with a simple problem. Our founder spent three weeks visiting gyms across Pasig — dealing with fake photos, hidden prices, and reviews that all sounded suspiciously perfect. After finally picking one, he realised he wasn't alone in that struggle.</p>
+                <p>So we built the platform we wished existed. Real member photos. Verified reviews. Transparent pricing. An AI that builds your plan around your life — not a generic template. And a way to actually find a gym that fits before you commit.</p>
+                <p>We're a thesis project, but we're building it like a real product. Because the problem is real, and the people dealing with it deserve something that actually works.</p>
+                <div className="ab-story__sig">
+                  <span>— Janmarco Candido, Founder</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
+        </section>
+
+        {/* ══ MANIFESTO / VALUES ══ */}
+        <section className="ab-manifesto" ref={manifestoRef}>
+          <div className="ab-manifesto__wrap">
+            <div className="ab-manifesto__hdr">
+              <span className="ab-eyebrow ab-eyebrow--dk">What we stand for</span>
+              <h2 className="ab-manifesto__title">
+                Four things<br /><em>we won't budge on.</em>
+              </h2>
+            </div>
+
+            <div className="ab-manifesto__list">
+              {MANIFESTO.map((m, i) => (
+                <div
+                  key={i}
+                  className={`ab-m-item ${manifestoVis ? 'ab-m-item--in' : ''}`}
+                  style={{ '--di': i }}
+                >
+                  <span className="ab-m-item__n">{m.n}</span>
+                  <div className="ab-m-item__content">
+                    <h3 className="ab-m-item__head">{m.head}</h3>
+                    <p className="ab-m-item__body">{m.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══ TEAM ══ */}
+        <section className="ab-team">
+          <div className="ab-team__wrap">
+            <div className="ab-team__hdr">
+              <span className="ab-eyebrow">The team</span>
+              <h2 className="ab-team__title">
+                Five people<br />building this.
+              </h2>
+              <p className="ab-team__sub">Flip each card to meet them.</p>
+            </div>
+
+            <div className="ab-team__grid">
+              {TEAM.map((m, i) => (
+                <TeamCard key={m.id} member={m} index={i} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══ STATS BAND ══ */}
+        <div className="ab-stats" ref={statsRef}>
+          {STATS.map((s, i) => (
+            <div key={i} className={`ab-stats__item ${statsVis ? 'ab-stats__item--in' : ''}`} style={{ '--si': i }}>
+              <span className="ab-stats__val">{s.val}</span>
+              <span className="ab-stats__lbl">{s.label}</span>
+            </div>
+          ))}
         </div>
-      </section>
 
-      {/* VALUES */}
-      <section className="final-values">
-        <span className="section-badge">CORE VALUES</span>
-        <h2>What Drives Us</h2>
-        <div className="final-values-grid">
-          <div className="fv-card">
-            <div className="fv-icon-wrap fv-icon-1">
-              <Zap size={24} />
-            </div>
-            <div className="fv-content">
-              <h4>Always Free</h4>
-              <p>No paywalls. No premium tiers. Gyms pay us so you don't have to.</p>
-            </div>
+        {/* ══ CTA ══ */}
+        <section className="ab-cta">
+          <div className="ab-cta__wrap">
+            <h2 className="ab-cta__title">
+              Ready to find<br /><em>your gym?</em>
+            </h2>
+            <p className="ab-cta__sub">
+              Join 1,000+ Filipinos who stopped settling and started training.
+            </p>
+            <Link to="/onboarding" className="ab-cta__btn">
+              Get started free <ArrowRight size={15} />
+            </Link>
           </div>
+        </section>
 
-          <div className="fv-card">
-            <div className="fv-icon-wrap fv-icon-2">
-              <Shield size={24} />
-            </div>
-            <div className="fv-content">
-              <h4>Radically Honest</h4>
-              <p>Real reviews from verified users only. Zero tolerance for fakes.</p>
-            </div>
-          </div>
-
-          <div className="fv-card">
-            <div className="fv-icon-wrap fv-icon-3">
-              <Eye size={24} />
-            </div>
-            <div className="fv-content">
-              <h4>User-Centered</h4>
-              <p>Every feature starts with research. You drive our roadmap.</p>
-            </div>
-          </div>
-
-          <div className="fv-card">
-            <div className="fv-icon-wrap fv-icon-4">
-              <Heart size={24} />
-            </div>
-            <div className="fv-content">
-              <h4>Filipino First</h4>
-              <p>Built for local culture, budgets, and fitness preferences.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="final-cta">
-        <div className="final-cta-inner">
-          <h2>Ready to find your perfect gym?</h2>
-          <p>Join 1,000+ Filipinos transforming their fitness</p>
-          <Link to="/onboarding" className="final-btn">
-            Get Started Free
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      </section>
-
+      </div>
       <Footer />
-    </div>
+    </>
   );
 }

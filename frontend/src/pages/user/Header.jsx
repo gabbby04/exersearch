@@ -11,7 +11,7 @@ const LEFT_LINKS = [
 ];
 
 const RIGHT_LINKS = [
-  { to: "/contact-us", label: "Contact" },
+  { to: "/contact", label: "Contact" },
   { to: "/faqs", label: "FAQs" },
   { to: "/philosophy", label: "Our Philosophy" },
 ];
