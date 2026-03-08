@@ -2,50 +2,50 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import { ArrowRight, Linkedin, Github, Mail, Twitter } from 'lucide-react';
+import { ArrowRight, Linkedin, Github, Mail, Facebook, Instagram } from 'lucide-react';
 import './AboutUs.css';
 
 /* ─── DATA ─── */
 const TEAM = [
   {
     id: 1,
-    name: 'Juan Dela Cruz',
-    role: 'Founder & CEO',
-    quote: 'Built ExerSearch after wasting 3 weeks finding a gym in Pasig. Never again.',
+    name: 'Dheniel Pontiga',
+    role: 'Lead Developer',
+    quote: 'Great systems aren’t built overnight — they’re engineered one problem at a time.',
     image: 'philo1.png',
-    socials: { linkedin: '#', twitter: '#', email: 'juan@exersearch.com' },
+    socials: { github: '#', linkedin: '#', email: '#' },
   },
   {
     id: 2,
-    name: 'Maria Santos',
-    role: 'Lead Developer',
-    quote: 'Turning coffee into code since 2015. Love building things that actually scale.',
-    image: 'philo2.png',
-    socials: { github: '#', linkedin: '#', email: 'maria@exersearch.com' },
+    name: 'Ahron Javier',
+    role: 'Frontend Developer',
+    quote: 'Good design isn’t just what you see — it’s how smoothly everything works.',
+    image: 'philo3.png',
+    socials: { github: '#', linkedin: '#', email: '#' },
   },
   {
     id: 3,
-    name: 'Carlo Reyes',
-    role: 'Head of Design',
-    quote: "Making fitness apps that don't look like garbage — one pixel at a time.",
-    image: 'philo3.png',
-    socials: { linkedin: '#', twitter: '#', email: 'carlo@exersearch.com' },
+    name: 'Jedelyn Alayahay',
+    role: 'UI Design & Media Editor',
+    quote: 'Creativity turns ideas into experiences people remember.',
+    image: 'philo4.png',
+    socials: { facebook: '#', instagram: '#', email: '#' },
   },
   {
     id: 4,
-    name: 'Anna Fernandez',
-    role: 'Growth Lead',
-    quote: 'Took us from 0 to 10K users. Now aiming for 100K.',
-    image: 'philo4.png',
-    socials: { twitter: '#', linkedin: '#', email: 'anna@exersearch.com' },
+    name: 'Janmarco Candido',
+    role: 'Project Manager & Documentation Lead',
+    quote: 'A strong vision and teamwork turn projects into reality.',
+    image: 'philo5.png',
+    socials: { facebook: '#', instagram: '#', email: '#' },
   },
   {
     id: 5,
-    name: 'Rico Patel',
-    role: 'Community Manager',
-    quote: "Your journey starts with us. I'm here every step of the way.",
-    image: 'philo5.png',
-    socials: { twitter: '#', linkedin: '#', email: 'rico@exersearch.com' },
+    name: 'Mark Lawrence Hael',
+    role: 'Technical Support & Data Assistant',
+    quote: 'The small details behind the scenes are what keep everything running.',
+    image: 'philo2.png',
+    socials: { facebook: '#', instagram: '#', email: '#' },
   },
 ];
 
@@ -107,7 +107,8 @@ function TeamCard({ member, index }) {
           <div className="ab-card__socials">
             {member.socials.github   && <a href={member.socials.github}   onClick={e => e.stopPropagation()}><Github   size={14} /></a>}
             {member.socials.linkedin && <a href={member.socials.linkedin} onClick={e => e.stopPropagation()}><Linkedin size={14} /></a>}
-            {member.socials.twitter  && <a href={member.socials.twitter}  onClick={e => e.stopPropagation()}><Twitter  size={14} /></a>}
+            {member.socials.facebook && <a href={member.socials.facebook} onClick={e => e.stopPropagation()}><Facebook size={14} /></a>}
+            {member.socials.instagram && <a href={member.socials.instagram} onClick={e => e.stopPropagation()}><Instagram size={14} /></a>}
             <a href={`mailto:${member.socials.email}`} onClick={e => e.stopPropagation()}><Mail size={14} /></a>
           </div>
           <span className="ab-card__flip-hint ab-card__flip-hint--back">← Back</span>
@@ -205,7 +206,7 @@ export default function AboutUs() {
                 <p>So we built the platform we wished existed. Real member photos. Verified reviews. Transparent pricing. An AI that builds your plan around your life — not a generic template. And a way to actually find a gym that fits before you commit.</p>
                 <p>We're a thesis project, but we're building it like a real product. Because the problem is real, and the people dealing with it deserve something that actually works.</p>
                 <div className="ab-story__sig">
-                  <span>— Juan Dela Cruz, Founder</span>
+                  <span>— Janmarco Candido, Founder</span>
                 </div>
               </div>
             </div>
