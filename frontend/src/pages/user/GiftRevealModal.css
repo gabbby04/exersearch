@@ -1,33 +1,127 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
 :root{
-  --red:#d23f0b;
-  --red-2:#ff6b35;
-  --ink:#111111;
-  --ink-2:#444444;
-  --border:#e8e8e8;
-  --shadow: 0 16px 40px rgba(0,0,0,0.18);
+  --grm-font:"Montserrat", sans-serif;
+
+  /* YOUR CORE COLORS */
+  --grm-black-1:#181718;
+  --grm-black-2:#101820;
+  --grm-black-3:#0d141b;
+
+  --grm-white-1:#f6f8fa;
+  --grm-white-2:#f1f4f8;
+  --grm-white-3:#ebf0f5;
+
+  --grm-orange-1:#ab3200;
+  --grm-orange-2:#fc4a00;
+  --grm-orange-3:#ff5a16;
 }
 
+/* =========================================================
+   DARK DEFAULT
+========================================================= */
 .grm-overlay{
+  --grm-overlay-bg:rgba(13,20,27,.76);
+
+  --grm-modal-bg:
+    radial-gradient(circle at top left, rgba(246,248,250,.04), transparent 28%),
+    linear-gradient(180deg, #101820 0%, #0d141b 100%);
+  --grm-modal-border:rgba(246,248,250,.08);
+  --grm-modal-shadow:0 24px 64px rgba(0,0,0,.36);
+
+  --grm-title:#f6f8fa;
+  --grm-sub:#c6d0da;
+  --grm-hint:rgba(246,248,250,.72);
+  --grm-hint-muted:rgba(246,248,250,.50);
+  --grm-tip:#b7c4d2;
+
+  --grm-close-bg:rgba(246,248,250,.06);
+  --grm-close-border:rgba(246,248,250,.10);
+  --grm-close-color:#f6f8fa;
+  --grm-close-hover-bg:rgba(246,248,250,.11);
+
+  --grm-badge-bg:rgba(252,74,0,.14);
+  --grm-badge-border:rgba(252,74,0,.26);
+  --grm-badge-text:#ff5a16;
+
+  --grm-box-shadow:0px 12px 26px rgba(0,0,0,0.24);
+  --grm-box-bg:linear-gradient(180deg, #ff5a16, #fc4a00 58%, #ab3200 100%);
+  --grm-lid-bg:linear-gradient(180deg, #ff7a44, #fc4a00 58%, #ab3200 100%);
+  --grm-ribbon:linear-gradient(180deg, #fff6c9, #ffd36b, #e8b400);
+  --grm-ribbon-lid:linear-gradient(180deg, #fff6c9, #fff);
+  --grm-bow:#ffffff;
+
+  --grm-pop-bg:rgba(16,24,32,.82);
+  --grm-pop-border:rgba(246,248,250,.10);
+  --grm-pop-shadow:0 16px 30px rgba(0,0,0,0.24);
+  --grm-pop-label:rgba(246,248,250,.74);
+  --grm-pop-value:#f6f8fa;
+
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.72);
+  background: var(--grm-overlay-bg);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 22px;
   z-index: 1200;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--grm-font);
+}
+
+/* =========================================================
+   LIGHT MODE
+   use:
+   .grm-overlay[data-mode="light"]
+   or html/body[data-theme="light"]
+========================================================= */
+.grm-overlay[data-mode="light"],
+html[data-theme="light"] .grm-overlay,
+body[data-theme="light"] .grm-overlay{
+  --grm-overlay-bg:rgba(16,24,32,.34);
+
+  --grm-modal-bg:
+    radial-gradient(circle at top left, rgba(252,74,0,.06), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fa 55%, #f1f4f8 100%);
+  --grm-modal-border:rgba(16,24,32,.08);
+  --grm-modal-shadow:0 16px 40px rgba(16,24,32,0.14);
+
+  --grm-title:#101820;
+  --grm-sub:#526274;
+  --grm-hint:rgba(16,24,32,.70);
+  --grm-hint-muted:rgba(16,24,32,.50);
+  --grm-tip:#5e7084;
+
+  --grm-close-bg:rgba(255,255,255,.92);
+  --grm-close-border:rgba(16,24,32,.10);
+  --grm-close-color:#101820;
+  --grm-close-hover-bg:rgba(241,244,248,1);
+
+  --grm-badge-bg:rgba(252,74,0,.10);
+  --grm-badge-border:rgba(171,50,0,.18);
+  --grm-badge-text:#ab3200;
+
+  --grm-box-shadow:0px 12px 26px rgba(16,24,32,0.16);
+  --grm-box-bg:linear-gradient(180deg, #ff5a16, #fc4a00 58%, #ab3200 100%);
+  --grm-lid-bg:linear-gradient(180deg, #ff7a44, #d23f0b);
+  --grm-ribbon:linear-gradient(180deg, #fff6c9, #ffd36b, #e8b400);
+  --grm-ribbon-lid:linear-gradient(180deg, #fff6c9, #fff);
+  --grm-bow:#ffffff;
+
+  --grm-pop-bg:rgba(255,255,255,.88);
+  --grm-pop-border:rgba(16,24,32,.08);
+  --grm-pop-shadow:0 16px 30px rgba(16,24,32,.12);
+  --grm-pop-label:rgba(17,17,17,.70);
+  --grm-pop-value:#101820;
 }
 
 .grm-modal{
   width: 100%;
-  background: linear-gradient(180deg, #ffffff, #fbfbfa);
-  border: 1px solid rgba(255,255,255,0.7);
+  background: var(--grm-modal-bg);
+  border: 1px solid var(--grm-modal-border);
   border-radius: 22px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--grm-modal-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -45,12 +139,24 @@
   right: 14px;
   width: 42px;
   height: 42px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--grm-close-border);
+  background: var(--grm-close-bg);
+  color: var(--grm-close-color);
   border-radius: 12px;
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition:
+    transform .16s ease,
+    background .16s ease,
+    box-shadow .16s ease,
+    border-color .16s ease;
+}
+
+.grm-close:hover{
+  transform: translateY(-1px);
+  background: var(--grm-close-hover-bg);
+  box-shadow: 0 10px 20px rgba(0,0,0,.10);
 }
 
 .grm-head{
@@ -64,9 +170,9 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(210,63,11,0.10);
-  border: 1px solid rgba(210,63,11,0.18);
-  color: var(--red);
+  background: var(--grm-badge-bg);
+  border: 1px solid var(--grm-badge-border);
+  color: var(--grm-badge-text);
   font-weight: 900;
   font-size: 12px;
   letter-spacing: 0.35px;
@@ -76,19 +182,19 @@
   margin-top: 12px;
   font-weight: 950;
   font-size: 28px;
-  color: var(--ink);
+  color: var(--grm-title);
   line-height: 1.05;
 }
 
 .grm-sub{
   margin-top: 8px;
   font-weight: 800;
-  color: var(--ink-2);
+  color: var(--grm-sub);
   font-size: 14px;
 }
 
 /* =========================
-   STAGE (tight, no huge bottom whitespace)
+   STAGE
 ========================= */
 .grm-stage2{
   padding: 10px 22px 0;
@@ -104,13 +210,13 @@
   position: relative;
 }
 
-/* FIX: reduce the huge top push */
+/* push the gift down a little so the pop card has space */
 .grm-boxShell{
   position: relative;
   width: min(520px, 92vw);
   display: grid;
   justify-items: center;
-  padding-top: 18px;
+  padding-top: 88px;
 }
 
 .grm-boxBtn{
@@ -125,15 +231,15 @@
   opacity: 0.95;
 }
 
-/* Gift body: smaller */
+/* Gift body */
 .grm-boxBody3{
   position: relative;
   height: 185px;
   width: 205px;
   border-bottom-left-radius: 14px;
   border-bottom-right-radius: 14px;
-  box-shadow: 0px 12px 26px rgba(0,0,0,0.18);
-  background: linear-gradient(180deg, var(--red-2), var(--red));
+  box-shadow: var(--grm-box-shadow);
+  background: var(--grm-box-bg);
   overflow: visible;
 }
 
@@ -146,12 +252,12 @@
   left:50%;
   transform: translateX(-50%);
   width: 48px;
-  background: linear-gradient(180deg, #fff6c9, #ffd36b, #e8b400);
+  background: var(--grm-ribbon);
   border-radius: 12px;
   opacity: 0.98;
 }
 
-/* Lid: smaller */
+/* Lid */
 .grm-boxLid3{
   position: absolute;
   z-index: 2;
@@ -162,7 +268,7 @@
   height: 44px;
   border-radius: 14px;
   box-shadow: 0 12px 10px -8px rgba(0,0,0,0.28);
-  background: linear-gradient(180deg, #ff7a44, #d23f0b);
+  background: var(--grm-lid-bg);
   overflow: hidden;
 }
 
@@ -175,7 +281,7 @@
   left:50%;
   transform: translateX(-50%);
   width: 48px;
-  background: linear-gradient(180deg, #fff6c9, #fff);
+  background: var(--grm-ribbon-lid);
   border-radius: 12px;
 }
 
@@ -188,7 +294,7 @@
   content:"";
   width: 84px;
   height: 84px;
-  border: 15px solid #fff;
+  border: 15px solid var(--grm-bow);
   border-radius: 50% 50% 0 50%;
   position: absolute;
   bottom: 105%;
@@ -204,21 +310,20 @@
   transform: translateX(0%) rotate(90deg) skew(10deg,10deg);
 }
 
-/* ===== Claim code card (smaller + less “white block”) ===== */
+/* ===== Claim code card ===== */
 .grm-popCard{
   position: absolute;
   left: 50%;
-  top: 14px;
+  top: 10px;
   transform: translateX(-50%) translateY(0);
-  width: 190px;
-  padding: 10px 12px;
+  width: 182px;
+  padding: 9px 11px;
   border-radius: 14px;
-
-  background: rgba(255,255,255,0.86);
+  background: var(--grm-pop-bg);
   backdrop-filter: blur(6px);
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 16px 30px rgba(0,0,0,0.14);
-
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--grm-pop-border);
+  box-shadow: var(--grm-pop-shadow);
   text-align: center;
   opacity: 0;
   transition: all 0.55s ease;
@@ -228,14 +333,14 @@
 
 .grm-popCard.show{
   opacity: 1;
-  transform: translateX(-50%) translateY(-128px);
+  transform: translateX(-50%) translateY(-110px);
 }
 
 .grm-popLabel{
   font-size: 12px;
   font-weight: 950;
   letter-spacing: 0.45px;
-  color: rgba(17,17,17,0.70);
+  color: var(--grm-pop-label);
 }
 
 .grm-popValue{
@@ -243,19 +348,21 @@
   font-size: 40px;
   font-weight: 950;
   letter-spacing: 1.5px;
-  color: var(--ink);
+  color: var(--grm-pop-value);
   line-height: 1;
 }
 
-/* Hint + tip (tighter bottom) */
+/* Hint + tip */
 .grm-hint{
   margin-top: 10px;
   font-size: 12px;
   font-weight: 850;
-  color: rgba(17,17,17,0.70);
+  color: var(--grm-hint);
   text-align: center;
 }
-.grm-hint.muted{ color: rgba(17,17,17,0.50); }
+.grm-hint.muted{
+  color: var(--grm-hint-muted);
+}
 
 .grm-tip2{
   margin-top: 6px;
@@ -263,7 +370,7 @@
   text-align: center;
   font-size: 12px;
   font-weight: 650;
-  color: var(--ink-2);
+  color: var(--grm-tip);
 }
 
 /* =========================
@@ -306,18 +413,18 @@
   filter: drop-shadow(0 8px 12px rgba(0,0,0,0.18));
 }
 
-.p0{ background:#ff6b35; transform: translate(-170px, 0) rotate(18deg); }
+.p0{ background:#ff5a16; transform: translate(-170px, 0) rotate(18deg); }
 .p1{ background:#ffd36b; transform: translate(-140px, 0) rotate(-12deg); }
 .p2{ background:#ffffff; transform: translate(-110px, 0) rotate(24deg); }
-.p3{ background:#ff6b35; transform: translate(-80px, 0) rotate(-14deg); }
+.p3{ background:#fc4a00; transform: translate(-80px, 0) rotate(-14deg); }
 .p4{ background:#ffd36b; transform: translate(-50px, 0) rotate(18deg); }
 .p5{ background:#ffffff; transform: translate(-20px, 0) rotate(-10deg); }
-.p6{ background:#ff6b35; transform: translate(20px, 0) rotate(22deg); }
+.p6{ background:#ff5a16; transform: translate(20px, 0) rotate(22deg); }
 .p7{ background:#ffd36b; transform: translate(50px, 0) rotate(-22deg); }
 .p8{ background:#ffffff; transform: translate(80px, 0) rotate(10deg); }
-.p9{ background:#ff6b35; transform: translate(110px, 0) rotate(-8deg); }
+.p9{ background:#fc4a00; transform: translate(110px, 0) rotate(-8deg); }
 .p10{ background:#ffffff; transform: translate(140px, 0) rotate(14deg); }
-.p11{ background:#ff6b35; transform: translate(170px, 0) rotate(-18deg); }
+.p11{ background:#ff5a16; transform: translate(170px, 0) rotate(-18deg); }
 
 @keyframes grmPop2{
   0%{ opacity: 0; transform: translateX(-50%) translateY(0) scale(0.8); }
@@ -326,7 +433,7 @@
 }
 
 /* =========================
-   KEYFRAMES (ported)
+   KEYFRAMES
 ========================= */
 @keyframes grm-box-lid{
   0%, 42%{ transform: translate3d(-50%, 0%, 0) rotate(0deg); }
@@ -355,25 +462,17 @@
   90%, 100%{ transform: translateX(-100%) rotate(0deg) skew(10deg,10deg); }
 }
 
+/* focus */
+.grm-close:focus-visible,
+.grm-boxBtn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(252,74,0,.18);
+}
+
 @media (max-width: 420px){
   .grm-title{ font-size: 24px; }
   .grm-popValue{ font-size: 36px; }
   .grm-boxBody3{ width: 195px; height: 180px; }
   .grm-boxLid3{ width: 215px; }
   .grm-popCard{ width: 180px; }
-}/* push the gift down a little so the pop card has space */
-.grm-boxShell{
-  padding-top: 88px; /* was 18px */
-}
-
-/* make the pop card move up LESS so it doesn't hit the header/title */
-.grm-popCard.show{
-  transform: translateX(-50%) translateY(-110px); /* was -128px */
-}
-
-/* optional: slightly tighten the card so it feels less "blocking" */
-.grm-popCard{
-  top: 10px;          /* was 14px */
-  width: 182px;       /* was 190px */
-  padding: 9px 11px;  /* was 10px 12px */
 }

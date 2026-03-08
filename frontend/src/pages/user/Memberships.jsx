@@ -11,6 +11,9 @@ import {
   CalendarDays,
   ChevronRight,
   RotateCw,
+  Shield,
+  Sparkles,
+  History,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import { getMyMemberships } from "../../utils/membershipApi";
@@ -63,10 +66,19 @@ function isActive(m) {
   return String(m?.status || "").toLowerCase() === "active";
 }
 
+function membershipKey(m) {
+  return String(m.membership_id ?? m.id ?? `${m.gym_id}-${m.user_id}-${m.created_at}`);
+}
+
 export default function Memberships() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+  const [sideTab, setSideTab] = useState("memberships");
+
+  const tickRef = useRef(null);
 
   const memberships = useMemo(() => safeArr(rows), [rows]);
 
@@ -74,9 +86,15 @@ export default function Memberships() {
     () => memberships.filter((m) => String(m.status || "").toLowerCase() === "active"),
     [memberships]
   );
+
   const historyList = useMemo(
     () => memberships.filter((m) => String(m.status || "").toLowerCase() !== "active"),
     [memberships]
+  );
+
+  const sideItems = useMemo(
+    () => (sideTab === "memberships" ? activeList : historyList),
+    [sideTab, activeList, historyList]
   );
 
   const pageMeta = useMemo(() => {
@@ -86,18 +104,22 @@ export default function Memberships() {
     return { cur, last, total };
   }, [rows, page, memberships.length]);
 
-  const [selectedId, setSelectedId] = useState(null);
   const selected = useMemo(() => {
     if (!selectedId) return null;
-    return (
-      memberships.find(
-        (m) => String(m.membership_id ?? m.id ?? `${m.gym_id}-${m.user_id}-${m.created_at}`) === String(selectedId)
-      ) || null
-    );
+    return memberships.find((m) => membershipKey(m) === String(selectedId)) || null;
   }, [memberships, selectedId]);
 
-  const [countdown, setCountdown] = useState(null);
-  const tickRef = useRef(null);
+  const selectedMeta = useMemo(() => {
+    if (!selected) return null;
+    return statusMeta(selected.status);
+  }, [selected]);
+
+  const selectedGym = selected?.gym || {};
+  const selectedGymRouteId = selectedGym.gym_id ?? selectedGym.id ?? selected?.gym_id;
+  const selectedDays = selected && isActive(selected) && countdown ? countdown.days : 0;
+  const activeCount = activeList.length;
+  const historyCount = historyList.length;
+  const totalCount = pageMeta.total;
 
   const fetchMemberships = async (p = 1) => {
     setLoading(true);
@@ -109,8 +131,7 @@ export default function Memberships() {
       if (list.length) {
         const firstActive = list.find((m) => String(m.status || "").toLowerCase() === "active");
         const pick = firstActive || list[0];
-        const pid = pick.membership_id ?? pick.id ?? `${pick.gym_id}-${pick.user_id}-${pick.created_at}`;
-        setSelectedId(String(pid));
+        setSelectedId(membershipKey(pick));
       } else {
         setSelectedId(null);
       }
@@ -131,15 +152,13 @@ export default function Memberships() {
       tickRef.current = null;
     }
 
-    const m = selected;
-    if (!m || !isActive(m)) {
+    if (!selected || !isActive(selected)) {
       setCountdown(null);
       return;
     }
 
     const update = () => {
-      const c = calcCountdown(m.end_date);
-      setCountdown(c);
+      setCountdown(calcCountdown(selected.end_date));
     };
 
     update();
@@ -153,111 +172,118 @@ export default function Memberships() {
     };
   }, [selected]);
 
-  const renderClock = () => {
-    const hasSel = !!selected;
-    const sel = selected || {};
-    const gym = sel.gym || {};
-    const meta = statusMeta(sel.status);
-    const Icon = meta.Icon;
-    const gymRouteId = gym.gym_id ?? gym.id ?? sel.gym_id;
+  useEffect(() => {
+    if (sideTab === "memberships" && !activeList.length && historyList.length) {
+      setSideTab("history");
+    } else if (sideTab === "history" && !historyList.length && activeList.length) {
+      setSideTab("memberships");
+    }
+  }, [sideTab, activeList.length, historyList.length]);
 
-    const days = hasSel && isActive(sel) && countdown ? countdown.days : 0;
+  const handleRenew = () => {
+    Swal.fire("Renewal", "Please contact the gym to renew your membership.", "info");
+  };
 
-    const showRenew = !hasSel || (isActive(sel) && days <= 3);
-    const urgent = hasSel ? isActive(sel) && days <= 3 : true;
-    const expired = hasSel ? isActive(sel) && days <= 0 : true;
-
-    const rightCls = [
-      "um-timerSplit__right",
-      urgent ? "um-timerSplit__right--urgent" : "",
-      expired ? "um-timerSplit__right--expired" : "",
-    ].join(" ");
-
-    const subtitle = hasSel ? gym.name || "Gym" : "Select a membership to view the timer.";
+  const renderLeftSummaryPanel = () => {
+    const planType = selected?.plan_type || "No plan";
+    const since = selected?.start_date ? fmtDate(selected.start_date) : "—";
 
     return (
-      <div className="um-card um-card--clock">
-        <div className="um-card__hdr">
-          <div className="um-card__hdr-ico">
-            <Clock size={16} />
+      <div className="um-panel um-panel--left">
+        <div className="um-panelFrame">
+          <div className="um-panelHeading">
+            <span className="um-kicker">Membership Core</span>
+            <h2 className="um-panelTitle">Gym Status</h2>
+            <p className="um-panelSub">Your active plans, history count, and current membership summary.</p>
           </div>
 
-          <div className="um-card__hdr-text">
-            <h3>Membership Timer</h3>
-            <p>{subtitle}</p>
-          </div>
+          <div className="um-statMatrix">
+            <button type="button" className="um-statCard um-statCard--accent" onClick={() => setSideTab("memberships")}>
+              <span className="um-statCard__label">Active</span>
+              <span className="um-statCard__value">{activeCount}</span>
+            </button>
 
-          {hasSel ? (
-            <div className={meta.cls}>
-              <Icon size={14} />
-              {meta.label}
+            <button type="button" className="um-statCard" onClick={() => setSideTab("history")}>
+              <span className="um-statCard__label">History</span>
+              <span className="um-statCard__value">{historyCount}</span>
+            </button>
+
+            <div className="um-statCard">
+              <span className="um-statCard__label">Total</span>
+              <span className="um-statCard__value">{totalCount}</span>
             </div>
-          ) : null}
-        </div>
+          </div>
 
-        <div className="um-clock">
-          <div className="um-timer">
-            <div className="um-timerSplit">
-              <div className="um-timerSplit__left">
-                <div className="um-daysBig">
-                  <span className="um-daysBig__num">{days}</span>
-                  <span className="um-daysBig__label">days remaining</span>
+          <div className="um-coreBox">
+            <div className="um-coreBox__head">
+              <div className="um-coreIcon">
+                <Dumbbell size={18} />
+              </div>
+              <div>
+                <div className="um-coreTitle">Selected Membership</div>
+                <div className="um-coreSub">
+                  {selected ? selectedGym.name || "Gym membership" : "Pick a membership from the right panel"}
                 </div>
               </div>
-
-              <div className={rightCls}>
-                {showRenew ? (
-                  <div className="um-renew">
-                    <button
-                      type="button"
-                      className={[
-                        "um-renewBtn",
-                        urgent ? "um-renewBtn--urgent" : "",
-                        expired ? "um-renewBtn--expired" : "",
-                      ].join(" ")}
-                      onClick={() =>
-                        Swal.fire(
-                          "Renewal",
-                          "Please contact the gym to renew your membership.",
-                          "info"
-                        )
-                      }
-                      aria-label="Renew"
-                      title="Renew"
-                    >
-                      <RotateCw size={18} />
-                    </button>
-
-                    <div className="um-renew__text">
-                      <div className="um-renew__title">{expired ? "Renew now" : "Renew now"}</div>
-                      <div className="um-renew__date">
-                        {hasSel ? fmtDate(sel.end_date) : "No active membership"}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="um-endOnly">
-                    <div className="um-endOnly__title">End date</div>
-                    <div className="um-endOnly__date">{fmtDate(sel.end_date)}</div>
-                  </div>
-                )}
-              </div>
             </div>
 
-            {hasSel && sel.notes ? (
-              <div className="um-notes">
-                <p>{sel.notes}</p>
+            <div className="um-coreRows">
+              <div className="um-coreRow">
+                <span className="um-coreLabel">Plan</span>
+                <span className="um-coreValue">{planType}</span>
               </div>
-            ) : null}
+              <div className="um-coreRow">
+                <span className="um-coreLabel">Started</span>
+                <span className="um-coreValue">{since}</span>
+              </div>
+              <div className="um-coreRow">
+                <span className="um-coreLabel">Status</span>
+                <span className="um-coreValue">
+                  {selectedMeta ? (
+                    <span className={selectedMeta.cls}>
+                      <selectedMeta.Icon size={13} />
+                      {selectedMeta.label}
+                    </span>
+                  ) : (
+                    "Waiting"
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
 
-            <div className="um-clock__actions">
-              {hasSel && gymRouteId ? (
-                <Link className="um-btn um-btn--ghost" to={`/home/gym/${gymRouteId}`}>
-                  View gym <ChevronRight size={14} />
-                </Link>
-              ) : (
-                <span />
-              )}
+          <div className="um-leftFoot">
+            <Link to="/home/find-gyms" className="um-linkMini">
+              Find gyms <ChevronRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCenterPanel = () => {
+    return (
+      <div className="um-panel um-panel--center">
+        <div className="um-centerShell">
+          <div className="um-centerTop">
+            <div className="um-centerBrand">EXERSEARCH</div>
+            <div className="um-centerMode">Membership Control</div>
+          </div>
+
+          <div className="um-centerBody">
+            <div className="um-centerLogoWrap">
+              <div className="um-centerGlow" />
+              <div className="um-centerLogo">E</div>
+            </div>
+          </div>
+
+          <div className="um-centerBottom">
+            <div className="um-centerGymName">{selected ? selectedGym.name || "Membership Selected" : "No Membership Selected"}</div>
+            <div className="um-centerGymSub">
+              {selected
+                ? selectedGym.address || "Gym details available in the right-side panel."
+                : "Choose an item from Memberships or History to inspect it here."}
             </div>
           </div>
         </div>
@@ -265,186 +291,264 @@ export default function Memberships() {
     );
   };
 
-  const renderStatus = () => {
-    const activeCount = activeList.length;
-    const historyCount = historyList.length;
-    const totalCount = pageMeta.total;
+  const renderTimerMetric = ({ title, value, sub, tone = "default", icon = null }) => {
+    return (
+      <div className={`um-meterCard um-meterCard--${tone}`}>
+        <div className="um-meterCard__ring">
+          <div className="um-meterCard__inner">
+            <div className="um-meterCard__value">{value}</div>
+            {sub ? <div className="um-meterCard__sub">{sub}</div> : null}
+          </div>
+        </div>
+
+        <div className="um-meterCard__meta">
+          <div className="um-meterCard__title">{title}</div>
+          {icon ? <div className="um-meterCard__icon">{icon}</div> : null}
+        </div>
+      </div>
+    );
+  };
+
+  const renderRightMainPanel = () => {
+    const hasSel = !!selected;
+    const isSelActive = hasSel && isActive(selected);
+    const urgent = isSelActive && selectedDays <= 3;
+    const expired = isSelActive && selectedDays <= 0;
 
     return (
-      <div className="um-hero__leftStack">
-        <div className="um-heroCard um-heroCard--title">
-          <div className="um-heroTitleKicker">Memberships</div>
+      <div className="um-panel um-panel--meters">
+        <div className="um-metersShell">
+          <div className="um-metersLabel">Timer</div>
 
-          <div className="um-heroTitleRow">
-            <div>
-              <div className="um-heroTitle">Your Gym Status</div>
-              <div className="um-heroTitleSub">See your active memberships and your full membership history.</div>
-            </div>
+          {renderTimerMetric({
+            title: "Days Remaining",
+            value: hasSel && isSelActive ? selectedDays : 0,
+            sub: "days",
+            tone: expired ? "danger" : urgent ? "warn" : "accent",
+            icon: <Clock size={16} />,
+          })}
 
-            <div className="um-heroChip">
-              <Dumbbell size={18} />
-            </div>
-          </div>
-        </div>
+          {renderTimerMetric({
+            title: "End Date",
+            value: hasSel ? fmtDate(selected.end_date) : "—",
+            sub: selected?.plan_type || "plan",
+            tone: "soft",
+            icon: <CalendarDays size={16} />,
+          })}
 
-        <div className="um-heroCard um-heroCard--stats">
-          <div className="um-statsRow">
-            <div className="um-statBlock">
-              <div className="um-statTop">
-                <span className="um-statNum">{activeCount}</span>
-                <span className="um-statLabel">Active</span>
-              </div>
-            </div>
 
-            <div className="um-statBlock">
-              <div className="um-statTop">
-                <span className="um-statNum">{historyCount}</span>
-                <span className="um-statLabel">History</span>
-              </div>
-            </div>
 
-            <div className="um-statBlock">
-              <div className="um-statTop">
-                <span className="um-statNum">{totalCount}</span>
-                <span className="um-statLabel">Total</span>
-              </div>
-            </div>
+          <div className="um-meterAction">
+            <button type="button" className="um-actionBtn um-actionBtn--renew" onClick={handleRenew}>
+              <RotateCw size={16} />
+              Renew
+            </button>
+
+            {hasSel && selectedGymRouteId ? (
+              <Link className="um-actionBtn um-actionBtn--ghost" to={`/home/gym/${selectedGymRouteId}`}>
+                View gym <ChevronRight size={14} />
+              </Link>
+            ) : (
+              <button type="button" className="um-actionBtn um-actionBtn--ghost" disabled>
+                View gym <ChevronRight size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
     );
   };
 
-  const renderCard = (m) => {
+  const renderSidebarItem = (m) => {
     const gym = m.gym || {};
     const meta = statusMeta(m.status);
-    const Icon = meta.Icon;
-    const id = String(m.membership_id ?? m.id ?? `${m.gym_id}-${m.user_id}-${m.created_at}`);
-    const selectedCls = String(selectedId || "") === id ? " um-item--selected" : "";
+    const id = membershipKey(m);
+    const selectedCls = String(selectedId || "") === id ? " is-selected" : "";
+    const days = isActive(m) ? calcCountdown(m.end_date)?.days ?? 0 : null;
 
     return (
-      <button key={id} type="button" className={`um-item${selectedCls}`} onClick={() => setSelectedId(id)}>
-        <div className="um-item__top">
-          <div className="um-item__title">
-            <p className="um-item__gym">{gym.name || "Gym"}</p>
-            <p className="um-item__sub">{gym.address ? gym.address : "—"}</p>
+      <button key={id} type="button" className={`um-sideItem${selectedCls}`} onClick={() => setSelectedId(id)}>
+        <div className="um-sideItem__top">
+          <div className="um-sideItem__titleWrap">
+            <div className="um-sideItem__title">{gym.name || "Gym"}</div>
+            <div className="um-sideItem__sub">{m.plan_type || "Membership plan"}</div>
           </div>
+
           <div className={meta.cls}>
-            <Icon size={14} />
+            <meta.Icon size={13} />
             {meta.label}
           </div>
         </div>
 
-        <div className="um-item__meta">
-          <div className="um-mrow">
-            <span className="um-mlabel">Plan</span>
-            <span className="um-mval">{m.plan_type || "-"}</span>
+        <div className="um-sideItem__meta">
+          <div className="um-sideMetaRow">
+            <span>Start</span>
+            <strong>{fmtDate(m.start_date)}</strong>
           </div>
-          <div className="um-mrow">
-            <span className="um-mlabel">Start</span>
-            <span className="um-mval">{fmtDate(m.start_date)}</span>
+
+          <div className="um-sideMetaRow">
+            <span>End</span>
+            <strong>{fmtDate(m.end_date)}</strong>
           </div>
-          <div className="um-mrow">
-            <span className="um-mlabel">End</span>
-            <span className="um-mval">{fmtDate(m.end_date)}</span>
-          </div>
+
+          {isActive(m) ? (
+            <div className="um-sideMetaRow">
+              <span>Remaining</span>
+              <strong>{days} days</strong>
+            </div>
+          ) : null}
         </div>
 
-        <div className="um-item__hint">
-          <span>View timer</span>
-          <ChevronRight size={16} />
+        <div className="um-sideItem__foot">
+          <span>{gym.address || "No address listed"}</span>
+          <ChevronRight size={14} />
         </div>
       </button>
+    );
+  };
+
+  const renderSidebarPlaceholder = (type) => {
+    const isMemberships = type === "memberships";
+
+    return (
+      <div className="um-sidePlaceholder">
+        <div className="um-sidePlaceholder__icon">
+          {isMemberships ? <Sparkles size={18} /> : <History size={18} />}
+        </div>
+
+        <div className="um-sidePlaceholder__title">
+          {isMemberships ? "No active memberships" : "No history yet"}
+        </div>
+
+        <div className="um-sidePlaceholder__sub">
+          {isMemberships
+            ? "Start a gym membership and it will appear in this control panel."
+            : "Past, expired, cancelled, or rejected memberships will appear here later."}
+        </div>
+
+        <Link to="/home/find-gyms" className="um-linkMini">
+          Find gyms <ChevronRight size={14} />
+        </Link>
+      </div>
+    );
+  };
+
+  const renderSidebarPanel = () => {
+    return (
+      <div className="um-panel um-panel--sidebar">
+        <div className="um-sideShell">
+          <div className="um-sideTabs">
+            <button
+              type="button"
+              className={`um-sideTab ${sideTab === "memberships" ? "is-active" : ""}`}
+              onClick={() => setSideTab("memberships")}
+            >
+              Memberships
+            </button>
+            <button
+              type="button"
+              className={`um-sideTab ${sideTab === "history" ? "is-active" : ""}`}
+              onClick={() => setSideTab("history")}
+            >
+              History
+            </button>
+          </div>
+
+          <div className="um-sideHeader">
+            <div>
+              <div className="um-sideHeader__title">
+                {sideTab === "memberships" ? "Membership Panel" : "History Panel"}
+              </div>
+              <div className="um-sideHeader__sub">
+                {sideTab === "memberships"
+                  ? "Select an active membership to control the main display."
+                  : "Inspect your previous records and past memberships."}
+              </div>
+            </div>
+
+            <button className="um-btn um-btn--mini" onClick={() => fetchMemberships(pageMeta.cur)} disabled={loading}>
+              <RefreshCw size={14} /> Refresh
+            </button>
+          </div>
+
+          <div className="um-sideContent">
+            {loading ? (
+              <div className="um-skel um-skel--side">
+                <div className="um-skel__bar" />
+                <div className="um-skel__bar" />
+                <div className="um-skel__bar" />
+              </div>
+            ) : sideItems.length ? (
+              sideItems.map(renderSidebarItem)
+            ) : (
+              renderSidebarPlaceholder(sideTab)
+            )}
+          </div>
+
+          <div className="um-sideFooter">
+            <div className="um-pageInfo">
+              Page <strong>{pageMeta.cur}</strong> of <strong>{pageMeta.last}</strong>
+            </div>
+
+            <div className="um-sidePager">
+              <button
+                className="um-btn um-btn--mini"
+                disabled={pageMeta.cur <= 1 || loading}
+                onClick={() => {
+                  const np = pageMeta.cur - 1;
+                  setPage(np);
+                  fetchMemberships(np);
+                }}
+              >
+                Prev
+              </button>
+
+              <button
+                className="um-btn um-btn--mini"
+                disabled={pageMeta.cur >= pageMeta.last || loading}
+                onClick={() => {
+                  const np = pageMeta.cur + 1;
+                  setPage(np);
+                  fetchMemberships(np);
+                }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderEmptyWholePage = () => {
+    return (
+      <div className="um-dashboardEmpty">
+        <div className="um-dashboardEmpty__icon">
+          <Dumbbell size={24} />
+        </div>
+        <h3>No memberships yet</h3>
+        <p>Once you join a gym, this dashboard will show your timer, status, plan, and history.</p>
+        <Link to="/home/find-gyms" className="um-btn um-btn--primary">
+          Find gyms
+        </Link>
+      </div>
     );
   };
 
   return (
     <div className="um-app">
       <div className="um-container">
-        <div className="um-hero">
-          <div className="um-hero__narrow">{renderStatus()}</div>
-          <div className="um-hero__right">{renderClock()}</div>
-        </div>
-
-        <div className="um-section">
-          <div className="um-section__hdr">
-            <h2>
-              <CalendarDays size={18} /> Memberships
-            </h2>
-            <button className="um-btn um-btn--mini" onClick={() => fetchMemberships(1)} disabled={loading}>
-              <RefreshCw size={14} /> Refresh
-            </button>
+        {!loading && memberships.length === 0 ? (
+          <div className="um-dashboard um-dashboard--empty">{renderEmptyWholePage()}</div>
+        ) : (
+          <div className="um-dashboard">
+            {renderLeftSummaryPanel()}
+            {renderCenterPanel()}
+            {renderRightMainPanel()}
+            {renderSidebarPanel()}
           </div>
-
-          {loading ? (
-            <div className="um-skel">
-              <div className="um-skel__bar" />
-              <div className="um-skel__bar" />
-              <div className="um-skel__bar" />
-            </div>
-          ) : memberships.length === 0 ? (
-            <div className="um-empty">
-              <div className="um-empty__box">
-                <Dumbbell size={22} />
-              </div>
-              <h3>No memberships yet</h3>
-              <p>When you have a membership, it will show up here with your remaining time.</p>
-              <Link to="/home/find-gyms" className="um-btn um-btn--primary">
-                Find gyms
-              </Link>
-            </div>
-          ) : (
-            <>
-              {activeList.length ? (
-                <div className="um-block">
-                  <div className="um-block__hdr">
-                    <h3 className="um-block__title">Active Memberships</h3>
-                    <p className="um-block__sub">Tap one to see the big timer.</p>
-                  </div>
-                  <div className="um-grid">{activeList.map(renderCard)}</div>
-                </div>
-              ) : null}
-
-              {historyList.length ? (
-                <div className="um-block">
-                  <div className="um-block__hdr">
-                    <h3 className="um-block__title">History</h3>
-                    <p className="um-block__sub">Expired, cancelled, rejected, and other past records.</p>
-                  </div>
-                  <div className="um-grid">{historyList.map(renderCard)}</div>
-                </div>
-              ) : null}
-
-              <div className="um-pager">
-                <button
-                  className="um-btn um-btn--mini"
-                  disabled={pageMeta.cur <= 1 || loading}
-                  onClick={() => {
-                    const np = pageMeta.cur - 1;
-                    setPage(np);
-                    fetchMemberships(np);
-                  }}
-                >
-                  Prev
-                </button>
-                <span className="um-pager__text">
-                  Page <strong>{pageMeta.cur}</strong> of <strong>{pageMeta.last}</strong>
-                </span>
-                <button
-                  className="um-btn um-btn--mini"
-                  disabled={pageMeta.cur >= pageMeta.last || loading}
-                  onClick={() => {
-                    const np = pageMeta.cur + 1;
-                    setPage(np);
-                    fetchMemberships(np);
-                  }}
-                >
-                  Next
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
