@@ -26,6 +26,9 @@ import UserFaq from "./pages/user/FAQs";
 import AboutUs from "./pages/user/AboutUs";
 import Philosophy from "./pages/user/OurPhilosophy";
 import Reviews from "./pages/user/Reviews";
+import WhyExerSearch from "./pages/user/WhyExersearch";
+import HowItWorks from "./pages/user/HowItWorks";
+import Contact from "./pages/user/Contact";
 
 import Chatbot from "./pages/user/ChatBot";
 
@@ -90,6 +93,9 @@ function App() {
         <Route path="/about-us" element={<AboutUs />} />
           <Route path="faqs" element={<UserFaq />} />
           <Route path="reviews" element={<Reviews />} />
+        <Route path="/why-exersearch" element={<WhyExerSearch />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/contact" element={<Contact />} />
 
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/" element={<RoleLanding />} />
