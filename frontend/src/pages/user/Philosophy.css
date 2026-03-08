@@ -1,0 +1,487 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,900&display=swap');
+
+/* ══════════════════════════════════════
+   TOKENS
+══════════════════════════════════════ */
+:root {
+  /* Orange */
+  --ph-or:      #fc4a00;
+  --ph-or-dk:   #ab3200;
+  --ph-or-lt:   #ff5a16;
+  --ph-or-dim:  rgba(252, 74, 0, 0.09);
+  --ph-or-ring: rgba(252, 74, 0, 0.22);
+
+  /* Dark scale */
+  --ph-d1: #181718;
+  --ph-d2: #101820;
+  --ph-d3: #0d141b;
+
+  /* Light scale */
+  --ph-l1: #f6f8fa;
+  --ph-l2: #f1f4f8;
+  --ph-l3: #ebf0f5;
+
+  /* Text */
+  --ph-ink:   #101820;
+  --ph-ink-2: #2a3a4a;
+  --ph-ink-3: #4a6080;
+  --ph-ink-4: #7a90a8;
+
+  /* Borders */
+  --ph-b1:  rgba(16, 24, 32, 0.10);
+  --ph-b2:  rgba(16, 24, 32, 0.06);
+  --ph-bd:  rgba(255, 255, 255, 0.07);
+  --ph-bd2: rgba(255, 255, 255, 0.12);
+
+  --ph-fh: 'Montserrat', sans-serif;
+}
+
+/* ══════════════════════════════════════
+   BASE / WRAPPER
+══════════════════════════════════════ */
+.ph-page,
+.ph-page * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.ph-page {
+  font-family: var(--ph-fh);
+  background: var(--ph-l2);
+  color: var(--ph-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keep using fq-wrap from FAQs — but define it here too for safety */
+.fq-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+}
+
+/* ══════════════════════════════════════
+   HERO — keep dark, update glow color
+══════════════════════════════════════ */
+.philoHero {
+  background:
+    radial-gradient(circle at top, rgba(252, 74, 0, 0.09), transparent 32%),
+    linear-gradient(180deg, #0d141b 0%, #101820 50%, #181718 100%);
+}
+
+.philoHero__eyebrow {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ph-or);
+  margin-bottom: 14px;
+}
+
+.philoHero__content h1 {
+  color: #fff;
+  text-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+}
+
+/* ══════════════════════════════════════
+   SHARED SECTION CHROME
+══════════════════════════════════════ */
+.ph-eyebrow {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ph-or);
+  margin-bottom: 1rem;
+}
+
+/* ══════════════════════════════════════
+   PRINCIPLES SECTION  (was fq-contact)
+══════════════════════════════════════ */
+.ph-principles {
+  background: #fff;
+  padding: 7rem 0;
+  border-bottom: 1px solid var(--ph-b1);
+}
+
+.ph-principles__hdr {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3.5rem;
+}
+
+.ph-principles__hdr .ph-eyebrow { display: block; }
+
+.ph-principles__title {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900;
+  color: var(--ph-ink);
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  margin-bottom: 1rem;
+}
+
+.ph-principles__title em {
+  font-style: italic;
+  color: var(--ph-or);
+}
+
+.ph-principles__sub {
+  font-size: 0.9rem;
+  color: var(--ph-ink-3);
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+.ph-principles__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+/* ── Principle card ── */
+.ph-card {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.75rem;
+  background: var(--ph-l1);
+  border: 1.5px solid var(--ph-b1);
+  border-radius: 18px;
+  gap: 0.75rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s;
+}
+
+.ph-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(16, 24, 32, 0.08);
+  border-color: var(--ph-or-ring);
+}
+
+.ph-card__ico {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--ph-d2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.22s;
+}
+
+.ph-card:hover .ph-card__ico { background: var(--ph-or); }
+
+.ph-card__title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ph-ink);
+  letter-spacing: -0.015em;
+}
+
+.ph-card__desc {
+  font-size: 0.83rem;
+  color: var(--ph-ink-3);
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════
+   CTA BAND  (was fq-cta)
+══════════════════════════════════════ */
+.ph-cta {
+  background: var(--ph-d2);
+  padding: 4.5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ph-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(252, 74, 0, 0.09) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ph-cta__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+}
+
+.ph-cta__title {
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.ph-cta__title em {
+  font-style: italic;
+  color: var(--ph-or);
+}
+
+.ph-cta__sub {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════
+   FOR USERS SECTION
+══════════════════════════════════════ */
+.philoUsersAlt {
+  background: var(--ph-l2);
+  padding: 7rem 0;
+}
+
+.philoUsersAlt__head {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3.5rem;
+}
+
+.philoUsersAlt__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 16px;
+  margin-bottom: 1rem;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ph-or);
+  background: var(--ph-or-dim);
+  border: 1px solid var(--ph-or-ring);
+  border-radius: 999px;
+}
+
+.philoUsersAlt__title {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--ph-ink);
+  margin-bottom: 0.875rem;
+  line-height: 1.08;
+}
+
+.philoUsersAlt__sub {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--ph-ink-3);
+  font-weight: 400;
+}
+
+/* Grid */
+.philoUsersAlt__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+/* Card */
+.philoUsersAlt__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 2rem 1.75rem;
+  background: #fff;
+  border: 1.5px solid var(--ph-b1);
+  border-radius: 18px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s;
+}
+
+.philoUsersAlt__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(16, 24, 32, 0.07);
+  border-color: var(--ph-or-ring);
+}
+
+/* Icon */
+.philoUsersAlt__icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(160deg, var(--ph-or-lt) 0%, var(--ph-or-dk) 100%);
+  box-shadow: 0 6px 18px rgba(252, 74, 0, 0.25);
+  transition: transform 0.22s, box-shadow 0.22s;
+}
+
+.philoUsersAlt__card:hover .philoUsersAlt__icon {
+  transform: scale(1.07);
+  box-shadow: 0 8px 24px rgba(252, 74, 0, 0.35);
+}
+
+/* Body */
+.philoUsersAlt__body h3 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ph-ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 0.375rem;
+}
+
+.philoUsersAlt__body p {
+  font-size: 0.83rem;
+  line-height: 1.75;
+  color: var(--ph-ink-3);
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════
+   FOR OWNERS SECTION  (reuses ph-card grid)
+══════════════════════════════════════ */
+.ph-owners {
+  background: var(--ph-d3);
+  padding: 7rem 0;
+}
+
+.ph-owners__hdr {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3.5rem;
+}
+
+.ph-owners__eyebrow {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ph-or);
+  margin-bottom: 1rem;
+}
+
+.ph-owners__title {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  margin-bottom: 1rem;
+}
+
+.ph-owners__title em {
+  font-style: italic;
+  color: var(--ph-or);
+}
+
+.ph-owners__sub {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+.ph-owners__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+/* Owner card — dark variant */
+.ph-ocard {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid var(--ph-bd);
+  border-radius: 18px;
+  gap: 0.75rem;
+  transition: background 0.22s ease, border-color 0.22s, transform 0.22s;
+}
+
+.ph-ocard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--ph-or-ring);
+  transform: translateY(-4px);
+}
+
+.ph-ocard__ico {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--ph-or-dim);
+  border: 1px solid var(--ph-or-ring);
+  color: var(--ph-or);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.22s, color 0.22s;
+}
+
+.ph-ocard:hover .ph-ocard__ico {
+  background: var(--ph-or);
+  color: #fff;
+  border-color: var(--ph-or);
+}
+
+.ph-ocard__title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.015em;
+}
+
+.ph-ocard__desc {
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.38);
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 960px) {
+  .ph-principles__grid  { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto; }
+  .ph-owners__grid      { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto; }
+}
+
+@media (max-width: 768px) {
+  .fq-wrap { padding: 0 1.5rem; }
+  .ph-principles { padding: 5rem 0; }
+  .philoUsersAlt { padding: 5rem 0; }
+  .ph-owners     { padding: 5rem 0; }
+  .ph-cta        { padding: 3.5rem 0; }
+
+  .philoUsersAlt__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .fq-wrap { padding: 0 1.25rem; }
+
+  .ph-principles__title,
+  .philoUsersAlt__title,
+  .ph-owners__title { font-size: clamp(1.75rem, 7vw, 2.25rem); }
+
+  .ph-cta__title { font-size: clamp(1.5rem, 6vw, 2rem); }
+
+  .ph-card,
+  .philoUsersAlt__card,
+  .ph-ocard { padding: 1.5rem 1.25rem; border-radius: 14px; }
+
+  .philoUsersAlt__card { gap: 1rem; }
+
+  .philoUsersAlt__icon { width: 44px; height: 44px; border-radius: 11px; }
+
+  .ph-card__ico { width: 42px; height: 42px; border-radius: 11px; }
+  .ph-ocard__ico { width: 42px; height: 42px; border-radius: 11px; }
+}
