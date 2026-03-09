@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import HeaderUser from "./Header-user";
 import Footer from "./Footer";
 import UserLoading from "./UserLoading";
+import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
 import { api } from "../../utils/apiClient";
 
 const ROLE_LEVEL = {
@@ -18,19 +19,20 @@ function hasAtLeastRole(role, required) {
   return (ROLE_LEVEL[role] || 0) >= (ROLE_LEVEL[required] || 0);
 }
 
-export default function UserLayout() {
-  const [ready, setReady] = useState(false);
-  const [showLoader] = useState(() => {
-    return !sessionStorage.getItem(USER_LAYOUT_LOADED_KEY);
-  });
+export default function UserLayout({ skipAuth = false }) {
+  const [ready, setReady] = useState(skipAuth);
+  const [showLoader] = useState(() => !sessionStorage.getItem(USER_LAYOUT_LOADED_KEY));
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Authentication check
   useEffect(() => {
-    let alive = true;
+    if (skipAuth) return;
 
-    const run = async () => {
+    let active = true;
+
+    const checkAuth = async () => {
       try {
         const token = localStorage.getItem("token");
 
@@ -43,21 +45,25 @@ export default function UserLayout() {
           ? new Promise((resolve) => setTimeout(resolve, 800))
           : Promise.resolve();
 
-        const meReq = api.get("/me");
-        const [meRes] = await Promise.all([meReq, minDelay]);
+        const [meRes] = await Promise.all([
+          api.get("/me"),
+          minDelay
+        ]);
 
-        const fetchedUser = meRes.data?.user ?? meRes.data;
+        const user = meRes.data?.user ?? meRes.data;
 
-        if (!hasAtLeastRole(fetchedUser?.role, "user")) {
+        if (!hasAtLeastRole(user?.role, "user")) {
           navigate("/login", { replace: true });
           return;
         }
 
-        if (!alive) return;
+        if (!active) return;
 
         sessionStorage.setItem(USER_LAYOUT_LOADED_KEY, "1");
         setReady(true);
+
       } catch (err) {
+
         if (err?.response?.status === 503) {
           navigate("/maintenance", { replace: true });
           return;
@@ -69,28 +75,45 @@ export default function UserLayout() {
       }
     };
 
-    run();
+    checkAuth();
 
     return () => {
-      alive = false;
+      active = false;
     };
-  }, [navigate, showLoader]);
 
+  }, [navigate, skipAuth, showLoader]);
+
+  // Scroll to top when page changes
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }, [location.pathname]);
 
-  if (!ready && showLoader) return <UserLoading />;
-  if (!ready) return null;
+  // Loading states
+  if (!ready && !skipAuth && showLoader) return <UserLoading />;
+  if (!ready && !skipAuth) return null;
 
   const hideHeader = location.pathname === "/home";
-  const showFooter = true;
 
   return (
     <div className="user-app">
+
+      {/* Header */}
       {!hideHeader && <HeaderUser />}
-      <Outlet />
-      {showFooter && <Footer />}
+
+      {/* Page Content */}
+      <main>
+        <Outlet />
+      </main>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Scroll + Theme widget */}
+      <ScrollThemeWidget />
+
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
+// ─── THEME CONTEXT ───
+import { ThemeProvider } from "./pages/user/ThemeContext";
+
+// ─── PAGES ───
 import Index from "./pages/index";
 import Login from "./pages/auth/login";
 import VerifyEmail from "./pages/auth/VerifyEmail";
@@ -12,7 +16,7 @@ import Profile from "./pages/user/Profile";
 import Onboarding from "./pages/user/Onboarding";
 import FindGyms from "./pages/user/FindGyms";
 import AllGym from "./pages/user/AllGym";
-import GymResultsMatching from "./pages/user/GymResultMatching";
+import GymResultMatching from "./pages/user/GymResultMatching";
 import GymDetails from "./pages/user/GymDetails";
 import Memberships from "./pages/user/Memberships";
 import SavedGyms from "./pages/user/SavedGyms";
@@ -71,8 +75,6 @@ import AdminIngredients from "./pages/admin/AdminIngredients";
 import AdminMacroPresets from "./pages/admin/AdminMacroPresets";
 import AdminMeals from "./pages/admin/AdminMeals";
 
-import ScrollToTop from "./utils/ScrollToTop";  // ← Changed from ../../utils // ← ADD THIS
-
 import { getUserRole } from "./utils/auth";
 
 import "leaflet/dist/leaflet.css";
@@ -88,14 +90,16 @@ function RoleLanding() {
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <Routes>
+        {/* ─── PUBLIC ROUTES (with theme support) ─── */}
         <Route path="/about-us" element={<AboutUs />} />
-          <Route path="faqs" element={<UserFaq />} />
-          <Route path="reviews" element={<Reviews />} />
+        <Route path="faqs" element={<UserFaq />} />
+        <Route path="reviews" element={<Reviews />} />
         <Route path="/why-exersearch" element={<WhyExerSearch />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/philosophy" element={<Philosophy />} />
 
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/" element={<RoleLanding />} />
@@ -104,13 +108,11 @@ function App() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/become-an-owner" element={<BecomeOwner />} />
         <Route path="/owner-application" element={<OwnerApplication />} />
-                <Route path="/philosophy" element={<Philosophy />} />
 
         <Route path="meal-plan" element={<MealPlanGenerator />} />
-
         <Route path="/chatbot" element={<Chatbot />} />
-             <Route path="/owner-application" element={<OwnerApplication />} />
-   
+
+        {/* ─── USER ROUTES (UserLayout handles widget) ─── */}
         <Route path="/home/*" element={<UserLayout />}>
           <Route index element={<UserHome />} />
           <Route path="becomeowner" element={<BecomeOwner />} />
@@ -121,16 +123,16 @@ function App() {
           <Route path="gyms" element={<AllGym />} />
           <Route path="meal-plan" element={<MealPlanGenerator />} />
           <Route path="memberships" element={<Memberships />} />
-          <Route path="gym-results" element={<GymResultsMatching />} />
+          <Route path="gym-results" element={<GymResultMatching />} />
           <Route path="saved-gyms" element={<SavedGyms />} />
           <Route path="workout" element={<WorkoutWeek />} />
           <Route path="workout/day/:id" element={<WorkoutDayDetails />} />
           <Route path="inquiries" element={<GymInquiryHistory />} />
         </Route>
- 
-        <Route path="/owner/*" element={<OwnerLayout />}>
-                  <Route path="view-gyms" element={<OwnerGymsPage />} />
 
+        {/* ─── OWNER ROUTES (no theme toggle) ─── */}
+        <Route path="/owner/*" element={<OwnerLayout />}>
+          <Route path="view-gyms" element={<OwnerGymsPage />} />
           <Route path="home" element={<OwnerHome />} />
           <Route path="profile" element={<OwnerProfile />} />
           <Route path="inbox" element={<OwnerInbox />} />
@@ -144,16 +146,16 @@ function App() {
           <Route index element={<Navigate to="home" replace />} />
         </Route>
 
+        {/* ─── ADMIN ROUTES (no theme toggle) ─── */}
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="equipments" element={<AdminEquipments />} />
           <Route path="amenities" element={<AdminAmenities />} />
-                    <Route path="activities" element={<AdminActivities />} />
-                    <Route path="chathistory" element={<AdminChatHistory />} />
-                    <Route path="ingredients" element={<AdminIngredients />} />
-                    <Route path="macro" element={<AdminMacroPresets />} />
-                    <Route path="meals" element={<AdminMeals />} />
-
+          <Route path="activities" element={<AdminActivities />} />
+          <Route path="chathistory" element={<AdminChatHistory />} />
+          <Route path="ingredients" element={<AdminIngredients />} />
+          <Route path="macro" element={<AdminMacroPresets />} />
+          <Route path="meals" element={<AdminMeals />} />
           <Route path="gyms" element={<AdminGyms />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="admins" element={<AdminAdmins />} />
@@ -174,9 +176,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      <ScrollToTop />
-    </>
+    </ThemeProvider>
   );
 }
 

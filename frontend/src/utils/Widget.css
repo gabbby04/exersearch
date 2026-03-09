@@ -1,0 +1,78 @@
+/* src/utils/Widget.css */
+.stw-widget {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* REMOVED: opacity: 0 and transform */
+}
+
+.stw-widget--show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.stw-trigger,
+.stw-theme {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--lnd-or, #ff5a16);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px var(--lnd-or-glow, rgba(255, 90, 22, 0.3));
+}
+
+.stw-trigger:hover {
+  background: var(--lnd-or-md, #fc4a00);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--lnd-or-glow, rgba(255, 90, 22, 0.3));
+}
+
+.stw-trigger:active {
+  background: var(--lnd-or-dk, #ab3200);
+  transform: translateY(-1px);
+}
+
+.stw-theme {
+  background: var(--lnd-bg-tertiary, #f1f4f8);
+  color: var(--lnd-text-primary, #0d141b);
+  border: 1.5px solid var(--lnd-border, #e6ddd6);
+  box-shadow: 0 4px 12px var(--lnd-shadow, rgba(0, 0, 0, 0.1));
+}
+
+/* Theme button always visible (no expansion needed) */
+.stw-theme--always {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+}
+
+.stw-theme:hover {
+  background: var(--lnd-or-dim, rgba(255, 90, 22, 0.12));
+  border-color: var(--lnd-or, #ff5a16);
+  color: var(--lnd-or, #ff5a16);
+  transform: scale(1.05);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .stw-widget {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+
+  .stw-trigger,
+  .stw-theme {
+    width: 44px;
+    height: 44px;
+  }
+}

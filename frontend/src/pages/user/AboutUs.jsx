@@ -4,6 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import { ArrowRight, Linkedin, Github, Mail, Facebook, Instagram } from 'lucide-react';
 import './AboutUs.css';
+import ScrollThemeWidget from '../../utils/ScrollThemeWidget';
 
 /* ─── DATA ─── */
 const TEAM = [
@@ -21,7 +22,7 @@ const TEAM = [
     role: 'Frontend Developer',
     quote: 'Good design isn’t just what you see — it’s how smoothly everything works.',
     image: 'philo3.png',
-    socials: { github: '#', linkedin: '#', email: '#' },
+    socials: { github: 'https://github.com/gabbby04', linkedin: 'https://www.linkedin.com/in/ahron-javier-638082345/', email: 'ahronjavier16@gmail.com' },
   },
   {
     id: 3,
@@ -287,6 +288,7 @@ export default function AboutUs() {
 
       </div>
       <Footer />
+      <ScrollThemeWidget />
     </>
   );
 }
