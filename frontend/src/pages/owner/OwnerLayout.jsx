@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import OwnerLoading from "./OwnerLoading";
-import HeaderOwner from "./Header-owner";
 import HeaderOwnerStatic from "./Header2";
 import Footer from "../user/Footer";
 import "./OwnerLayout.css";
@@ -53,24 +52,13 @@ export default function OwnerLayout() {
 
   const pathname = String(location.pathname || "");
 
-  const useHeader2 = useMemo(() => {
-    return (
-      pathname.startsWith("/owner/home") ||
-      pathname.startsWith("/owner/inbox") ||
-      pathname.startsWith("/owner/view-stats") ||
-      pathname.startsWith("/owner/view-gyms")
-    );
-  }, [pathname]);
-
-  const hideFooter = useMemo(() => {
-    return pathname.startsWith("/owner/view-gyms");
-  }, [pathname]);
+  const hideFooter = pathname.startsWith("/owner/view-gyms");
 
   if (!ready) return <OwnerLoading />;
 
   return (
     <div className="owner-layout" data-theme="light">
-      {useHeader2 ? <HeaderOwnerStatic /> : <HeaderOwner />}
+      <HeaderOwnerStatic />
       <main className="owner-layout__content">
         <Outlet />
       </main>

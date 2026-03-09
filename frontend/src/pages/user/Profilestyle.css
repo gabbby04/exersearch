@@ -75,7 +75,10 @@
     linear-gradient(90deg, var(--black-3) 0%, var(--black-2) 22%, var(--black-1) 50%, var(--black-2) 78%, var(--black-3) 100%) !important;
 }
 
-.user-app[data-theme="light"] {
+.user-app[data-theme="light"],
+.user-app.light-mode,
+html[data-theme="light"] .user-app,
+body[data-theme="light"] .user-app {
   --text: #283241;
   --text-strong: var(--black-1);
   --text-soft: #516072;
@@ -130,7 +133,7 @@
   isolation: isolate;
   font-family: 'Montserrat', sans-serif;
   color: var(--text);
-  margin-top: 60px;
+  margin-top: 0px;
   padding: 7rem 2.25rem 5rem;
   background: transparent !important;
 }
@@ -146,15 +149,18 @@
   pointer-events: none;
 }
 
-.user-app[data-theme="light"] .profile-page::before {
+.user-app[data-theme="light"] .profile-page::before,
+.user-app.light-mode .profile-page::before,
+html[data-theme="light"] .user-app .profile-page::before,
+body[data-theme="light"] .user-app .profile-page::before {
   background:
     radial-gradient(circle at 50% 0%, rgba(252, 74, 0, 0.08) 0%, rgba(252, 74, 0, 0.03) 16%, transparent 40%),
     linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-2) 100%);
 }
 
 .user-app .profile-container {
-  max-width: 1220px;
-  width: 100%;
+  max-width: 1020px;
+  width: 90%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 285px 1fr;
@@ -170,7 +176,10 @@
   overflow: hidden;
 }
 
-.user-app[data-theme="light"] .p-card {
+.user-app[data-theme="light"] .p-card,
+.user-app.light-mode .p-card,
+html[data-theme="light"] .user-app .p-card,
+body[data-theme="light"] .user-app .p-card {
   background: linear-gradient(145deg, var(--panel) 0%, var(--panel-deep) 100%);
 }
 
@@ -191,7 +200,10 @@
     linear-gradient(145deg, #18202a 0%, #101820 100%);
 }
 
-.user-app[data-theme="light"] .identity-card {
+.user-app[data-theme="light"] .identity-card,
+.user-app.light-mode .identity-card,
+html[data-theme="light"] .user-app .identity-card,
+body[data-theme="light"] .user-app .identity-card {
   background:
     radial-gradient(circle at 50% 12%, var(--page-glow), transparent 30%),
     linear-gradient(145deg, var(--panel-soft) 0%, var(--panel-soft-2) 100%);
@@ -284,7 +296,10 @@
   align-self: center;
 }
 
-.user-app[data-theme="light"] .role-pill {
+.user-app[data-theme="light"] .role-pill,
+.user-app.light-mode .role-pill,
+html[data-theme="light"] .user-app .role-pill,
+body[data-theme="light"] .user-app .role-pill {
   color: #c94714;
 }
 
@@ -307,7 +322,10 @@
   background: linear-gradient(145deg, #18202a 0%, #101820 100%);
 }
 
-.user-app[data-theme="light"] .upload-card {
+.user-app[data-theme="light"] .upload-card,
+.user-app.light-mode .upload-card,
+html[data-theme="light"] .user-app .upload-card,
+body[data-theme="light"] .user-app .upload-card {
   background: linear-gradient(145deg, var(--panel-soft) 0%, var(--panel-soft-2) 100%);
 }
 
@@ -585,7 +603,10 @@
   min-height: 92px;
 }
 
-.user-app[data-theme="light"] .info-tile {
+.user-app[data-theme="light"] .info-tile,
+.user-app.light-mode .info-tile,
+html[data-theme="light"] .user-app .info-tile,
+body[data-theme="light"] .user-app .info-tile {
   background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel-deep) 100%);
 }
 
@@ -595,7 +616,10 @@
   box-shadow: var(--shadow-soft);
 }
 
-.user-app[data-theme="light"] .info-tile:hover {
+.user-app[data-theme="light"] .info-tile:hover,
+.user-app.light-mode .info-tile:hover,
+html[data-theme="light"] .user-app .info-tile:hover,
+body[data-theme="light"] .user-app .info-tile:hover {
   background: linear-gradient(180deg, var(--panel-3) 0%, var(--panel-2) 100%);
 }
 
@@ -695,7 +719,10 @@
   border-top: 1px solid rgba(252, 74, 0, 0.22) !important;
 }
 
-.user-app[data-theme="light"] .form-actions {
+.user-app[data-theme="light"] .form-actions,
+.user-app.light-mode .form-actions,
+html[data-theme="light"] .user-app .form-actions,
+body[data-theme="light"] .user-app .form-actions {
   background: var(--panel-deep) !important;
   background-color: var(--panel-deep) !important;
 }
@@ -735,7 +762,10 @@
   overflow: hidden;
 }
 
-.user-app[data-theme="light"] .modal-box {
+.user-app[data-theme="light"] .modal-box,
+.user-app.light-mode .modal-box,
+html[data-theme="light"] .user-app .modal-box,
+body[data-theme="light"] .user-app .modal-box {
   background: linear-gradient(145deg, var(--panel-soft) 0%, var(--panel-deep) 100%) !important;
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.16);
 }
@@ -750,7 +780,10 @@
   background: linear-gradient(145deg, #18202a 0%, #101820 100%) !important;
 }
 
-.user-app[data-theme="light"] .modal-head {
+.user-app[data-theme="light"] .modal-head,
+.user-app.light-mode .modal-head,
+html[data-theme="light"] .user-app .modal-head,
+body[data-theme="light"] .user-app .modal-head {
   background: linear-gradient(145deg, var(--panel-soft) 0%, var(--panel-deep) 100%) !important;
 }
 
@@ -775,7 +808,10 @@
   background: linear-gradient(180deg, #1a222c 0%, #101820 100%) !important;
 }
 
-.user-app[data-theme="light"] .modal-body {
+.user-app[data-theme="light"] .modal-body,
+.user-app.light-mode .modal-body,
+html[data-theme="light"] .user-app .modal-body,
+body[data-theme="light"] .user-app .modal-body {
   background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel-deep) 100%) !important;
 }
 
@@ -921,7 +957,10 @@
   background-color: var(--panel-deep) !important;
 }
 
-.user-app[data-theme="light"] .modal-footer {
+.user-app[data-theme="light"] .modal-footer,
+.user-app.light-mode .modal-footer,
+html[data-theme="light"] .user-app .modal-footer,
+body[data-theme="light"] .user-app .modal-footer {
   background: var(--panel-deep) !important;
   background-color: var(--panel-deep) !important;
 }
