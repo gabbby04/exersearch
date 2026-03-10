@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./ProfileStyle.css";
 import { useOutletContext } from "react-router-dom";
 import { api } from "../../utils/apiClient";
+import { absoluteUrl } from "../../utils/findGymsData";
 import { MAIN, adminThemes } from "./AdminLayout";
 import { alertSuccess, alertError, alertInfo } from "../../utils/adminAlert";
 
@@ -9,12 +10,8 @@ const FALLBACK_AVATAR = "/arellano.png";
 
 function toAbsoluteAvatarUrl(raw) {
   if (!raw) return FALLBACK_AVATAR;
-  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-
-  const base = api?.defaults?.baseURL || "";
-  if (!base) return raw;
-
-  return `${base.replace(/\/+$/, "")}/${String(raw).replace(/^\/+/, "")}`;
+  const u = absoluteUrl(raw);
+  return u || FALLBACK_AVATAR;
 }
 
 export default function Profile() {
@@ -121,7 +118,7 @@ export default function Profile() {
       setLoading(true);
 
       try {
-        const res = await api.get("/api/v1/admin/profile");
+        const res = await api.get("/admin/profile");
 
         const u = res.data?.user;
         const p = res.data?.admin_profile;
@@ -176,7 +173,7 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [theme]);
+  }, [theme, localPreview]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -231,7 +228,7 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("photo", file);
 
-      const res = await api.post("/api/v1/me/avatar/admin", fd, {
+      const res = await api.post("/me/avatar/admin", fd, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -304,7 +301,7 @@ export default function Profile() {
         notes: formData.notes,
       };
 
-      const res = await api.put("/api/v1/admin/profile", payload);
+      const res = await api.put("/admin/profile", payload);
 
       setUserData((prev) => ({
         ...prev,

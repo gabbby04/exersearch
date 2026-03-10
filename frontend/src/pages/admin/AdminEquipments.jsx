@@ -49,7 +49,7 @@ export default function AdminEquipments() {
   const isDark = theme === "dark";
 
   const { isAdmin } = useAuthMe();
-  const { rows, loading: loadingRows, error, reload } = useApiList("/api/v1/equipments", {
+  const { rows, loading: loadingRows, error, reload } = useApiList("/equipments", {
     authed: true,
   });
 

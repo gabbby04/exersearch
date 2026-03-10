@@ -1,27 +1,12 @@
-// src/pages/admin/GymDetails.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext, useParams, useLocation, useNavigate } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
 import { api } from "../../utils/apiClient";
+import { absoluteUrl } from "../../utils/findGymsData";
 import "./Homestyles.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-const ASSET_BASE = import.meta.env.VITE_ASSET_BASE_URL || "";
-
-function getAssetHost() {
-  const host = (ASSET_BASE || API_BASE || "").replace(/\/$/, "");
-  return host || window.location.origin;
-}
-
 function absUrl(u) {
-  if (!u) return "";
-  const s = String(u).trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-
-  const host = getAssetHost();
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return `${host}${path}`;
+  return absoluteUrl(u);
 }
 
 function formatOpeningClosing(openingISO, closingISO) {
@@ -325,7 +310,6 @@ export default function GymDetails() {
     observer.observe(statsRef.current);
 
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gym, hasAnimated]);
 
   const animateStats = () => {

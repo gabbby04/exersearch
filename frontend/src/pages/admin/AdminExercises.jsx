@@ -57,7 +57,7 @@ export default function AdminExercises() {
 
   // ✅ FETCH ALL PAGES
   const { rows, loading: loadingRows, error, reload } = useApiList(
-    "/api/v1/exercises",
+    "/exercises",
     {
       authed: true,
       allPages: true,

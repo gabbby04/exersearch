@@ -10,6 +10,7 @@ import {
   alertInfo,
   alertSuccess,
 } from "../../utils/adminAlert";
+import { absoluteUrl } from "../../utils/findGymsData";
 
 import "./AdminEquipments.css";
 
@@ -18,14 +19,7 @@ const MAX_UPLOAD_MB = 5;
 const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
 function toAbsUrl(u) {
-  if (!u) return "";
-  const s = String(u).trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-
-  const base = String(api?.defaults?.baseURL || "").replace(/\/$/, "");
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return `${base}${path}`;
+  return absoluteUrl(u);
 }
 
 const EMPTY = {
@@ -54,12 +48,12 @@ function safeStr(v) {
 }
 
 async function getAdminSettings() {
-  const res = await api.get("/api/v1/admin/settings");
+  const res = await api.get("/admin/settings");
   return res.data?.data ?? res.data;
 }
 
 async function updateAdminSettings(payload) {
-  const res = await api.put("/api/v1/admin/settings", payload);
+  const res = await api.put("/admin/settings", payload);
   return res.data?.data ?? res.data;
 }
 
@@ -69,8 +63,7 @@ async function uploadSettingsImage(file, kind = "logos") {
   fd.append("kind", kind);
   fd.append("file", file);
 
-  const res = await api.post("/api/v1/media/upload", fd);
-
+  const res = await api.post("/media/upload", fd);
   return res.data?.url || null;
 }
 
@@ -889,6 +882,12 @@ export default function AdminSettings() {
 }
 
 function LogoBox({ t, url, emptyText }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [url]);
+
   return (
     <div
       style={{
@@ -903,14 +902,12 @@ function LogoBox({ t, url, emptyText }) {
       }}
       title="Logo preview"
     >
-      {url ? (
+      {url && !imgFailed ? (
         <img
           src={url}
           alt="Logo"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
+          onError={() => setImgFailed(true)}
         />
       ) : (
         <div style={{ fontSize: 11, color: t.mutedText, fontWeight: 800 }}>{emptyText}</div>
