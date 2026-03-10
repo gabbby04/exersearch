@@ -1,4 +1,4 @@
-// src/pages/user/GymResults.jsx
+// src/pages/user/AllGyms.jsx
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import "./AllGyms.css";
@@ -9,7 +9,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 
 import { api } from "../../utils/apiClient";
 
-const API_BASE = "https://exersearch.test";
 const DEFAULT_GYM_IMG = "/defaultgym.png";
 const TOKEN_KEY = "token";
 
@@ -18,10 +17,24 @@ const SAVED_GYMS_STORE = "/user/saved-gyms";
 const SAVED_GYMS_DELETE = (gymId) => `/user/saved-gyms/${gymId}`;
 
 const SESSION_KEY = "exersearch_session_id";
+
+function getApiOrigin() {
+  const base = String(api?.defaults?.baseURL || "").trim();
+  if (!base) return window.location.origin;
+
+  try {
+    return new URL(base).origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
 function getSessionId() {
   let sid = localStorage.getItem(SESSION_KEY);
   if (!sid) {
-    sid = crypto?.randomUUID?.() || `sess_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    sid =
+      crypto?.randomUUID?.() ||
+      `sess_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     localStorage.setItem(SESSION_KEY, sid);
   }
   return sid;
@@ -31,26 +44,33 @@ function toNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+
 function safeArr(v) {
   return Array.isArray(v) ? v : [];
 }
+
 function toAbsImgUrl(u) {
   if (u == null) return DEFAULT_GYM_IMG;
+
   const s = String(u).trim();
   if (!s) return DEFAULT_GYM_IMG;
 
   const lower = s.toLowerCase();
   if (lower === "null" || lower === "undefined") return DEFAULT_GYM_IMG;
-  if (lower.includes("img hippo") || lower === "hippo" || lower === "img") return DEFAULT_GYM_IMG;
+  if (lower.includes("img hippo") || lower === "hippo" || lower === "img") {
+    return DEFAULT_GYM_IMG;
+  }
 
   if (lower.startsWith("data:")) return s;
   if (/^https?:\/\//i.test(s)) return s;
 
-  if (s.startsWith("/storage/")) return `${API_BASE}${s}`;
-  if (s.startsWith("storage/")) return `${API_BASE}/${s}`;
-  if (s.startsWith("/")) return `${API_BASE}${s}`;
+  const apiOrigin = getApiOrigin();
 
-  return `${API_BASE}/${s}`;
+  if (s.startsWith("/storage/")) return `${apiOrigin}${s}`;
+  if (s.startsWith("storage/")) return `${apiOrigin}/${s}`;
+  if (s.startsWith("/")) return `${apiOrigin}${s}`;
+
+  return `${apiOrigin}/${s}`;
 }
 
 function MapAutoFocus({ center, zoom, selectedGym }) {
@@ -151,7 +171,7 @@ export default function GymResults() {
         };
 
         await api.post("/gym-interactions", payload);
-      } catch (e) {}
+      } catch {}
     },
     [filters]
   );
@@ -177,13 +197,14 @@ export default function GymResults() {
 
         if (!alive) return;
         setSavedIds(Array.from(new Set(ids)));
-      } catch (e) {
+      } catch {
         if (!alive) return;
         setSavedIds([]);
       }
     }
 
     loadSaved();
+
     return () => {
       alive = false;
     };
@@ -195,14 +216,16 @@ export default function GymResults() {
       setSavedIds([]);
       return;
     }
+
     try {
       const res = await api.get(SAVED_GYMS_INDEX, { params: { per_page: 500 } });
       const rows = Array.isArray(res?.data?.data) ? res.data.data : [];
       const ids = rows
         .map((r) => Number(r?.gym_id ?? r?.gym?.gym_id ?? r?.gymId ?? 0))
         .filter((n) => Number.isFinite(n) && n > 0);
+
       setSavedIds(Array.from(new Set(ids)));
-    } catch (e) {}
+    } catch {}
   }, []);
 
   const toggleSaveGym = useCallback(
@@ -241,11 +264,14 @@ export default function GymResults() {
           await api.delete(SAVED_GYMS_DELETE(gymId), {
             data: { source: "gym_results", session_id: getSessionId() },
           });
-          await logInteraction("unsave", gymObj, { action: "save_button", origin });
+          await logInteraction("unsave", gymObj, {
+            action: "save_button",
+            origin,
+          });
         }
 
         await refreshSavedFromBackend();
-      } catch (e) {
+      } catch {
         setSavedIds((prev) => {
           const set = new Set((prev || []).map((x) => Number(x)));
           if (currentlySaved) set.add(gymId);
@@ -287,8 +313,16 @@ export default function GymResults() {
     const nextFromQuery = {
       freeFirstVisit: clampAllowed(qFree, ["all", "only"], "all"),
       rating: clampAllowed(qRating, ["all", "4.5", "4.0", "3.5"], "all"),
-      priceRange: clampAllowed(qPrice, ["all", "budget", "mid", "premium"], "all"),
-      sortBy: clampAllowed(qSort, ["recommended", "price-low", "price-high", "rating", "reviews"], "recommended"),
+      priceRange: clampAllowed(
+        qPrice,
+        ["all", "budget", "mid", "premium"],
+        "all"
+      ),
+      sortBy: clampAllowed(
+        qSort,
+        ["recommended", "price-low", "price-high", "rating", "reviews"],
+        "recommended"
+      ),
       amenities: qAmenities
         ? qAmenities
             .split(",")
@@ -323,15 +357,16 @@ export default function GymResults() {
         if (filters.priceRange === "premium") params.monthly_price_min = 1501;
 
         const res = await api.get("/gyms", { params });
-
         const rows = safeArr(res?.data?.data);
+
         if (!alive) return;
 
         setGyms(rows);
         setShownIds(new Set());
       } catch (e) {
         if (!alive) return;
-        const msg = e?.response?.data?.message || e?.message || "Failed to load gyms.";
+        const msg =
+          e?.response?.data?.message || e?.message || "Failed to load gyms.";
         setErr(String(msg));
       } finally {
         if (alive) setLoading(false);
@@ -339,6 +374,7 @@ export default function GymResults() {
     }
 
     run();
+
     return () => {
       alive = false;
     };
@@ -368,7 +404,9 @@ export default function GymResults() {
           params: { gym_ids: ids.join(",") },
         });
 
-        const map = res?.data?.data && typeof res.data.data === "object" ? res.data.data : {};
+        const map =
+          res?.data?.data && typeof res.data.data === "object" ? res.data.data : {};
+
         if (!alive) return;
         setRatingMap(map);
       } catch {
@@ -394,17 +432,29 @@ export default function GymResults() {
         const lng = toNum(g.longitude);
 
         const summary = ratingMap?.[id] || ratingMap?.[Number(id)] || null;
-        const rating = summary?.avg_rating != null ? toNum(summary.avg_rating) : null;
-        const reviews = summary?.reviews_count != null ? toNum(summary.reviews_count) : null;
+        const rating =
+          summary?.avg_rating != null ? toNum(summary.avg_rating) : null;
+        const reviews =
+          summary?.reviews_count != null ? toNum(summary.reviews_count) : null;
 
         const daily = toNum(g.daily_price);
         const monthly = toNum(g.monthly_price);
         const annual = toNum(g.annual_price);
 
-        const mainImage = toAbsImgUrl(g.main_image_url || g.image_url || g.image || g.main_image || g.photo);
+        const mainImage = toAbsImgUrl(
+          g.main_image_url ||
+            g.image_url ||
+            g.image ||
+            g.main_image ||
+            g.photo
+        );
 
-        const amenities = safeArr(g.amenities).map((a) => a.name ?? a.label ?? a);
-        const equipment = safeArr(g.equipments).map((e) => e.name ?? e.label ?? e);
+        const amenities = safeArr(g.amenities).map(
+          (a) => a.name ?? a.label ?? a
+        );
+        const equipment = safeArr(g.equipments).map(
+          (e) => e.name ?? e.label ?? e
+        );
 
         const freeFirstVisitEnabled =
           g.free_first_visit_enabled === true ||
@@ -447,7 +497,9 @@ export default function GymResults() {
 
     if (filters.amenities?.length) {
       const wanted = new Set(filters.amenities.map(String));
-      list = list.filter((g) => g.amenities.some((a) => wanted.has(String(a))));
+      list = list.filter((g) =>
+        g.amenities.some((a) => wanted.has(String(a)))
+      );
     }
 
     if (filters.sortBy === "price-low") {
@@ -490,10 +542,12 @@ export default function GymResults() {
     if (selectedGym?.latitude != null && selectedGym?.longitude != null) {
       return [selectedGym.latitude, selectedGym.longitude];
     }
+
     if (gymsWithCoords.length) {
       const g = gymsWithCoords[0];
       return [g.latitude, g.longitude];
     }
+
     return [14.5764, 121.0851];
   }, [selectedGym, gymsWithCoords]);
 
@@ -525,6 +579,7 @@ export default function GymResults() {
     const observer = new IntersectionObserver(
       (entries) => {
         const newlyShown = [];
+
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
           const id = entry.target?.dataset?.gymid;
@@ -572,30 +627,53 @@ export default function GymResults() {
             <div className="gr-map-card">
               <div className="gr-map-top">
                 <div className="gr-map-top__left">
-                  <strong>{selectedGymId ? selectedGym?.name || "Selected gym" : `Pins: ${markersToShow.length}`}</strong>
+                  <strong>
+                    {selectedGymId
+                      ? selectedGym?.name || "Selected gym"
+                      : `Pins: ${markersToShow.length}`}
+                  </strong>
                   <span className="gr-map-top__sub">
-                    {selectedGymId ? "Showing only the selected gym marker" : "Markers update based on your filters"}
+                    {selectedGymId
+                      ? "Showing only the selected gym marker"
+                      : "Markers update based on your filters"}
                   </span>
                 </div>
 
                 {selectedGymId ? (
-                  <button className="gr-map-btn" onClick={() => setSelectedGymId(null)} type="button">
+                  <button
+                    className="gr-map-btn"
+                    onClick={() => setSelectedGymId(null)}
+                    type="button"
+                  >
                     Show all
                   </button>
                 ) : (
-                  <button className="gr-map-btn" onClick={() => setSelectedGymId(null)} type="button">
+                  <button
+                    className="gr-map-btn"
+                    onClick={() => setSelectedGymId(null)}
+                    type="button"
+                  >
                     Reset
                   </button>
                 )}
               </div>
 
               <div className="gr-map">
-                <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom style={{ height: "100%", width: "100%" }}>
+                <MapContainer
+                  center={mapCenter}
+                  zoom={mapZoom}
+                  scrollWheelZoom
+                  style={{ height: "100%", width: "100%" }}
+                >
                   <TileLayer
                     attribution="&copy; OpenStreetMap contributors"
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <MapAutoFocus center={mapCenter} zoom={mapZoom} selectedGym={selectedGym} />
+                  <MapAutoFocus
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    selectedGym={selectedGym}
+                  />
 
                   {markersToShow.map((g) => (
                     <Marker
@@ -605,18 +683,26 @@ export default function GymResults() {
                       eventHandlers={{
                         click: async () => {
                           setSelectedGymId(String(g.id));
-                          await logInteraction("click", g, { action: "map_marker_click" });
+                          await logInteraction("click", g, {
+                            action: "map_marker_click",
+                          });
                         },
                       }}
                     >
                       <Popup>
                         <div>
                           <div className="gr-popup__title">{g.name}</div>
-                          <div className="gr-popup__sub">📍 {g.address || "No address"}</div>
+                          <div className="gr-popup__sub">
+                            📍 {g.address || "No address"}
+                          </div>
                           <div className="gr-popup__meta">
-                            {g.monthly_price != null ? `₱${g.monthly_price}/mo` : "Monthly price not set"}
+                            {g.monthly_price != null
+                              ? `₱${g.monthly_price}/mo`
+                              : "Monthly price not set"}
                             {g.rating != null ? ` • ⭐ ${g.rating}` : ""}
-                            {g.free_first_visit_enabled ? " • 🎟️ Free first visit" : ""}
+                            {g.free_first_visit_enabled
+                              ? " • 🎟️ Free first visit"
+                              : ""}
                           </div>
                         </div>
                       </Popup>
@@ -680,15 +766,24 @@ export default function GymResults() {
                       value={filters.freeFirstVisit}
                       onChange={(e) => {
                         setSelectedGymId(null);
-                        setFilters((p) => ({ ...p, freeFirstVisit: e.target.value }));
+                        setFilters((p) => ({
+                          ...p,
+                          freeFirstVisit: e.target.value,
+                        }));
                       }}
                     >
                       <option value="all">All Gyms</option>
-                      <option value="only">Only gyms with free first visit</option>
+                      <option value="only">
+                        Only gyms with free first visit
+                      </option>
                     </select>
                   </div>
 
-                  <button className="clear-filters-btn" onClick={clearFilters} type="button">
+                  <button
+                    className="clear-filters-btn"
+                    onClick={clearFilters}
+                    type="button"
+                  >
                     Clear Filters
                   </button>
                 </div>
@@ -735,18 +830,24 @@ export default function GymResults() {
                             }}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              await logInteraction("click", gym, { action: "image_click" });
+                              await logInteraction("click", gym, {
+                                action: "image_click",
+                              });
                               onPickGym(gym.id);
                             }}
                             style={{ cursor: "pointer" }}
                           />
 
                           <div className="card-badge">
-                            {gym.monthly_price != null ? `₱${gym.monthly_price}/mo` : "See monthly pricing"}
+                            {gym.monthly_price != null
+                              ? `₱${gym.monthly_price}/mo`
+                              : "See monthly pricing"}
                           </div>
 
                           {gym.free_first_visit_enabled ? (
-                            <div className="card-badge gr-freevisit-badge">🎟️ Free first visit</div>
+                            <div className="card-badge gr-freevisit-badge">
+                              🎟️ Free first visit
+                            </div>
                           ) : null}
                         </div>
 
@@ -755,33 +856,52 @@ export default function GymResults() {
                             style={{ cursor: "pointer" }}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              await logInteraction("click", gym, { action: "name_click" });
+                              await logInteraction("click", gym, {
+                                action: "name_click",
+                              });
                               onPickGym(gym.id);
                             }}
                           >
                             {gym.name}
                           </h3>
-                          <p className="gym-location">📍 {gym.address || "No address"}</p>
+
+                          <p className="gym-location">
+                            📍 {gym.address || "No address"}
+                          </p>
 
                           <div className="gym-rating-row">
-                            <span className="rating">⭐ {gym.rating != null ? gym.rating : "—"}</span>
-                            <span className="reviews">({gym.reviews != null ? gym.reviews : 0} reviews)</span>
+                            <span className="rating">
+                              ⭐ {gym.rating != null ? gym.rating : "—"}
+                            </span>
+                            <span className="reviews">
+                              ({gym.reviews != null ? gym.reviews : 0} reviews)
+                            </span>
                           </div>
 
-                          <p className="gym-description">{gym.description || "No description yet."}</p>
+                          <p className="gym-description">
+                            {gym.description || "No description yet."}
+                          </p>
 
                           <div className="gym-amenities">
                             {gym.amenities.slice(0, 3).map((amenity, idx) => (
-                              <span key={`${gym.id}-am-${idx}`} className="amenity-tag">
+                              <span
+                                key={`${gym.id}-am-${idx}`}
+                                className="amenity-tag"
+                              >
                                 {amenity}
                               </span>
                             ))}
                             {gym.amenities.length > 3 ? (
-                              <span className="amenity-tag">+{gym.amenities.length - 3}</span>
+                              <span className="amenity-tag">
+                                +{gym.amenities.length - 3}
+                              </span>
                             ) : null}
                           </div>
 
-                          <div className="card-actions" onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className="card-actions"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <Link
                               to={`/home/gym/${gym.id}`}
                               className="see-more-btn"
@@ -816,7 +936,9 @@ export default function GymResults() {
                           </div>
 
                           {gym.latitude == null || gym.longitude == null ? (
-                            <div className="gr-muted-note">No map coordinates for this gym yet.</div>
+                            <div className="gr-muted-note">
+                              No map coordinates for this gym yet.
+                            </div>
                           ) : null}
                         </div>
                       </div>
@@ -824,7 +946,9 @@ export default function GymResults() {
                   })}
                 </div>
 
-                {!loading && filteredGyms.length === 0 ? <div className="gr-empty">No gyms match your filters.</div> : null}
+                {!loading && filteredGyms.length === 0 ? (
+                  <div className="gr-empty">No gyms match your filters.</div>
+                ) : null}
               </div>
             </section>
 

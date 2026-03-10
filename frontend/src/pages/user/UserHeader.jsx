@@ -22,20 +22,10 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from "../../utils/notificationApi";
+import { absoluteUrl } from "../../utils/findGymsData";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "/defaulticon.png";
 const TOKEN_KEY = "token";
-
-function toAbsUrl(u) {
-  if (!u) return "";
-  const s = String(u).trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-  const base = String(API_BASE || "").replace(/\/$/, "");
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return `${base}${path}`;
-}
 
 function iconForNotifType(type) {
   const t = String(type || "").toLowerCase();
@@ -83,7 +73,7 @@ export default function UserHeader({
     const u = effectiveUser;
     if (!u) return FALLBACK_AVATAR;
 
-    let raw =
+    const raw =
       u?.user_profile?.profile_photo_url ||
       u?.userProfile?.profile_photo_url ||
       u?.owner_profile?.profile_photo_url ||
@@ -96,12 +86,10 @@ export default function UserHeader({
 
     if (!raw) return FALLBACK_AVATAR;
     if (/^https?:\/\//i.test(String(raw))) return String(raw);
-    return toAbsUrl(raw);
+
+    return absoluteUrl(raw);
   }, [effectiveUser, currentUi]);
 
-  // =========================
-  // Notifications (same logic as HeaderUser.jsx)
-  // =========================
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifErr, setNotifErr] = useState("");
@@ -138,12 +126,16 @@ export default function UserHeader({
     return () => window.removeEventListener("focus", onFocus);
   }, [refreshUnread]);
 
-  // Close popovers on outside click
   useEffect(() => {
     const close = (e) => {
-      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
     };
+
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, [notifOpen]);
@@ -191,19 +183,30 @@ export default function UserHeader({
         </div>
 
         <div className="uhv-header__actions">
-          <Link to="/home/workout" className="uhv-chip uhv-chip--fire" onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            to="/home/workout"
+            className="uhv-chip uhv-chip--fire"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             <Flame size={12} /> Workout
           </Link>
 
-          <Link to="/home/find-gyms" className="uhv-chip uhv-chip--find" onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            to="/home/find-gyms"
+            className="uhv-chip uhv-chip--find"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             <Dumbbell size={12} /> Find Gyms
           </Link>
 
-          <Link to="/home/meal-plan" className="uhv-chip uhv-chip--meal" onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            to="/home/meal-plan"
+            className="uhv-chip uhv-chip--meal"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             <Utensils size={12} /> Meal Plan
           </Link>
 
-          {/* ✅ Notifications */}
           <div className="uhv-notif-wrap" ref={notifRef}>
             <button
               type="button"
@@ -232,7 +235,9 @@ export default function UserHeader({
                       onClick={async () => {
                         try {
                           await markAllNotificationsRead();
-                          setNotifications((prev) => prev.map((x) => ({ ...x, unread: false })));
+                          setNotifications((prev) =>
+                            prev.map((x) => ({ ...x, unread: false }))
+                          );
                           setUnreadCount(0);
                         } catch {
                           // ignore
@@ -241,7 +246,11 @@ export default function UserHeader({
                     >
                       Mark all as read
                     </button>
-                    <button type="button" className="uhv-notif-close" onClick={() => setNotifOpen(false)}>
+                    <button
+                      type="button"
+                      className="uhv-notif-close"
+                      onClick={() => setNotifOpen(false)}
+                    >
                       <X size={14} />
                     </button>
                   </div>
@@ -249,7 +258,9 @@ export default function UserHeader({
 
                 <div className="uhv-notif-pop__list">
                   {notifLoading && <div className="uhv-notif-empty">Loading...</div>}
-                  {!notifLoading && notifErr && <div className="uhv-notif-empty">{notifErr}</div>}
+                  {!notifLoading && notifErr && (
+                    <div className="uhv-notif-empty">{notifErr}</div>
+                  )}
                   {!notifLoading && !notifErr && notifications.length === 0 && (
                     <div className="uhv-notif-empty">All caught up!</div>
                   )}
@@ -258,22 +269,23 @@ export default function UserHeader({
                     !notifErr &&
                     notifications.map((n) => {
                       const Icon = iconForNotifType(n.type);
+
                       return (
                         <button
                           key={n.id}
                           type="button"
                           className={"uhv-notif-item" + (n.unread ? " unread" : "")}
                           onClick={async () => {
-                            // optimistic UI
                             setNotifications((prev) =>
-                              prev.map((x) => (x.id === n.id ? { ...x, unread: false } : x))
+                              prev.map((x) =>
+                                x.id === n.id ? { ...x, unread: false } : x
+                              )
                             );
                             setUnreadCount((c) => Math.max(0, c - (n.unread ? 1 : 0)));
 
                             try {
                               await markNotificationRead(n.id);
                             } catch {
-                              // fallback
                               refreshUnread();
                               loadNotifs();
                             }
@@ -294,7 +306,6 @@ export default function UserHeader({
             )}
           </div>
 
-          {/* Profile */}
           <div className="uhv-profile-wrap" ref={profileRef}>
             <button
               type="button"
@@ -310,14 +321,19 @@ export default function UserHeader({
                   alt="Profile"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
-                    if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = "flex";
+                    if (e.currentTarget.nextSibling) {
+                      e.currentTarget.nextSibling.style.display = "flex";
+                    }
                   }}
                 />
                 <span className="uhv-profile-avatar__fallback">
                   {String(displayName || "U").trim().charAt(0).toUpperCase()}
                 </span>
               </div>
-              <ChevronDown size={13} className={"uhv-profile-chevron" + (profileOpen ? " open" : "")} />
+              <ChevronDown
+                size={13}
+                className={"uhv-profile-chevron" + (profileOpen ? " open" : "")}
+              />
             </button>
 
             {profileOpen && (
@@ -327,11 +343,19 @@ export default function UserHeader({
                   <small>{displayEmail}</small>
                 </div>
 
-                <Link to="/home/profile" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                <Link
+                  to="/home/profile"
+                  className="uhv-profile-menu-item"
+                  onClick={() => setProfileOpen(false)}
+                >
                   <UserCircle size={15} /> My Profile
                 </Link>
 
-                <Link to="/home/inquiries" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                <Link
+                  to="/home/inquiries"
+                  className="uhv-profile-menu-item"
+                  onClick={() => setProfileOpen(false)}
+                >
                   <MessageCircle size={15} /> Inquiries
                 </Link>
 

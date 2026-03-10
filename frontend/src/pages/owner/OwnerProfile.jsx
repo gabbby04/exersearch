@@ -22,7 +22,6 @@ import {
   BadgeCheck,
 } from "lucide-react";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "/arellano.png";
 const MAIN = "#d23f0b";
 
@@ -32,9 +31,14 @@ function safeStr(v) {
 
 function absoluteUrlMaybe(pathOrUrl) {
   if (!pathOrUrl) return "";
-  const s = String(pathOrUrl);
-  if (s.startsWith("http")) return s;
-  return `${API_BASE}${s}`;
+  const s = String(pathOrUrl).trim();
+  if (!s) return "";
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+
+  const rawBase = String(api?.defaults?.baseURL || "").replace(/\/+$/, "");
+  const originBase = rawBase.replace(/\/api\/v1$/i, "");
+  const path = s.startsWith("/") ? s : `/${s}`;
+  return `${originBase}${path}`;
 }
 
 export default function Profile() {
@@ -79,8 +83,7 @@ export default function Profile() {
         ? formData.profile_photo_url
         : ownerData.profile_photo_url) || "";
     if (!raw) return FALLBACK_AVATAR;
-    if (raw.startsWith("http")) return raw;
-    return `${API_BASE}${raw}`;
+    return absoluteUrlMaybe(raw) || FALLBACK_AVATAR;
   }, [
     localPreview,
     isEditingProfile,
@@ -196,8 +199,6 @@ export default function Profile() {
     processFile(e.dataTransfer.files?.[0]);
   };
 
-  // ✅ Upload ONLY uploads the image and stores the returned URL into formData.
-  // ✅ It does NOT call upsertMyOwnerProfile (so nothing gets wiped, and nothing is saved yet).
   const uploadAvatar = async () => {
     const file = selectedFile;
 
@@ -225,10 +226,7 @@ export default function Profile() {
         return;
       }
 
-      // store in form (so Save will include it)
       setFormData((p) => ({ ...p, profile_photo_url: url }));
-
-      // update UI immediately (optional, but feels nicer)
       setOwnerData((p) => ({ ...p, profile_photo_url: url }));
 
       if (localPreview) URL.revokeObjectURL(localPreview);
@@ -262,7 +260,6 @@ export default function Profile() {
     setSavingProfile(true);
     try {
       const payload = {
-        // ✅ includes photo url set by uploadAvatar
         profile_photo_url: formData.profile_photo_url || null,
         contact_number: safeStr(formData.contact_number).trim() || null,
         address: safeStr(formData.address).trim() || null,
@@ -271,7 +268,6 @@ export default function Profile() {
 
       await upsertMyOwnerProfile(payload);
 
-      // update local display state instead of reloading
       setOwnerData((p) => ({
         ...p,
         ...payload,
@@ -332,7 +328,7 @@ export default function Profile() {
               className="avatar-zone"
               onClick={() => isEditingProfile && fileRef.current?.click()}
             >
-              <img src={absoluteUrlMaybe(avatarSrc)} alt="Profile" className="avatar-img" />
+              <img src={avatarSrc} alt="Profile" className="avatar-img" />
               {isEditingProfile && (
                 <div className="avatar-edit-overlay">
                   <Camera size={18} />

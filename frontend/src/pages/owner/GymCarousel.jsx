@@ -1,12 +1,11 @@
-// src/pages/owner/GymCarousel.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import "./GymCarousel.scss";
 
 import { MapPin, CheckCircle, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllMyGyms } from "../../utils/ownerDashboardApi";
+import { api } from "../../utils/apiClient";
 
-const API_BASE = "https://exersearch.test";
 const DEFAULT_GYM_IMAGE =
   "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80";
 
@@ -31,9 +30,12 @@ function resolveImageUrl(v) {
 
   if (/^https?:\/\//i.test(s0)) return s0;
 
+  const base = String(api?.defaults?.baseURL || "").replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
   const s = s0.replace(/^\/+/, "");
-  const out = `${API_BASE}/${s}`;
-  return out.replace(/([^:]\/)\/+/g, "$1");
+
+  if (!base) return `/${s}`;
+
+  return `${base}/${s}`.replace(/([^:]\/)\/+/g, "$1");
 }
 
 function mapGym(g) {
@@ -165,8 +167,7 @@ export default function GymCarousel({ visible }) {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, total, activeIndex, gymsWithAdd]);
+  }, [visible, total, activeIndex, gymsWithAdd, navigate]);
 
   return (
     <div className={`carousel-container ${visible ? "is-visible" : ""}`} aria-hidden={!visible}>

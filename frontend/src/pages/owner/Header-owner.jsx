@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import axios from "axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./HeaderOwner.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
@@ -17,6 +16,7 @@ import {
   Settings,
 } from "lucide-react";
 
+import { api } from "../../utils/apiClient";
 import {
   listNotifications,
   getUnreadNotificationsCount,
@@ -25,7 +25,6 @@ import {
   getNotificationUrl,
 } from "../../utils/notificationApi";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "https://i.pravatar.cc/60?img=12";
 const TOKEN_KEY = "token";
 const UI_MODE_KEY = "ui_mode";
@@ -35,23 +34,39 @@ const ROLE_LEVEL = { user: 1, owner: 2, superadmin: 3 };
 function roleLevel(role) {
   return ROLE_LEVEL[role] ?? 0;
 }
+
 function hasAtLeastRole(role, required) {
   return roleLevel(role) >= roleLevel(required);
 }
+
+function getApiOrigin() {
+  const base = String(api?.defaults?.baseURL || "").trim();
+  if (!base) return window.location.origin;
+
+  try {
+    return new URL(base).origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
 function toAbsUrl(u) {
   if (!u) return "";
   const s = String(u).trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
-  const base = String(API_BASE || "").replace(/\/$/, "");
+
+  const base = getApiOrigin().replace(/\/$/, "");
   const path = s.startsWith("/") ? s : `/${s}`;
   return `${base}${path}`;
 }
+
 function routeForUiMode(mode) {
   if (mode === "owner") return "/owner/home";
   if (mode === "superadmin") return "/admin/dashboard";
   return "/home";
 }
+
 function labelForUiMode(mode) {
   if (mode === "user") return "User UI";
   if (mode === "superadmin") return "Admin UI";
@@ -108,6 +123,7 @@ export default function HeaderOwner() {
 
   const refreshUnread = useCallback(async () => {
     if (!token) return;
+
     try {
       const c = await getUnreadNotificationsCount({ role: ROLE });
       setUnreadCount(Number(c) || 0);
@@ -124,8 +140,10 @@ export default function HeaderOwner() {
 
   const loadNotifs = useCallback(async () => {
     if (!token) return;
+
     setNotifLoading(true);
     setNotifErr("");
+
     try {
       const paged = await listNotifications({ role: ROLE, page: 1, per_page: 20 });
       setNotifications(paged?.data || []);
@@ -146,14 +164,17 @@ export default function HeaderOwner() {
 
   useEffect(() => {
     let mounted = true;
+
     async function loadMe() {
       if (!token) return;
+
       setMeLoading(true);
+
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        const res = await api.get("/me", {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
+
         if (!mounted) return;
         setMe(res.data || null);
       } catch (err) {
@@ -162,25 +183,35 @@ export default function HeaderOwner() {
         if (mounted) setMeLoading(false);
       }
     }
+
     if (!user && !me && token) loadMe();
-    return () => (mounted = false);
+
+    return () => {
+      mounted = false;
+    };
   }, [user, me, token]);
 
   useEffect(() => {
     let mounted = true;
+
     async function loadUserLogo() {
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/settings/public`, { withCredentials: true });
+        const res = await api.get("/settings/public");
         const data = res.data?.data ?? res.data;
         const url = data?.user_logo_url || "";
+
         if (!mounted) return;
         setUserLogoUrl(toAbsUrl(url));
       } catch {
         if (mounted) setUserLogoUrl("");
       }
     }
+
     loadUserLogo();
-    return () => (mounted = false);
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const avatarSrc = useMemo(() => {
@@ -235,9 +266,14 @@ export default function HeaderOwner() {
 
   useEffect(() => {
     function onDocClick(e) {
-      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
-      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
     }
+
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [notifOpen, profileOpen]);
@@ -327,7 +363,12 @@ export default function HeaderOwner() {
 
         <div className="uhv-header__actions">
           {TOP_LINKS.map(({ to, icon: Icon, label, chipClass }) => (
-            <Link key={to} to={to} className={`uhv-chip ${chipClass}`} onClick={() => setMobileMenuOpen(false)}>
+            <Link
+              key={to}
+              to={to}
+              className={`uhv-chip ${chipClass}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <Icon size={12} /> {label}
             </Link>
           ))}
@@ -360,14 +401,20 @@ export default function HeaderOwner() {
                       onClick={async () => {
                         try {
                           await markAllNotificationsRead({ role: ROLE });
-                          setNotifications((prev) => (prev || []).map((x) => ({ ...x, is_read: true })));
+                          setNotifications((prev) =>
+                            (prev || []).map((x) => ({ ...x, is_read: true }))
+                          );
                           setUnreadCount(0);
                         } catch {}
                       }}
                     >
                       Mark all as read
                     </button>
-                    <button type="button" className="uhv-notif-close" onClick={() => setNotifOpen(false)}>
+                    <button
+                      type="button"
+                      className="uhv-notif-close"
+                      onClick={() => setNotifOpen(false)}
+                    >
                       <X size={14} />
                     </button>
                   </div>
@@ -375,7 +422,9 @@ export default function HeaderOwner() {
 
                 <div className="uhv-notif-pop__list">
                   {notifLoading && <div className="uhv-notif-empty">Loading...</div>}
-                  {!notifLoading && notifErr && <div className="uhv-notif-empty">{notifErr}</div>}
+                  {!notifLoading && notifErr && (
+                    <div className="uhv-notif-empty">{notifErr}</div>
+                  )}
 
                   {!notifLoading && !notifErr && notifications.length === 0 && (
                     <div className="uhv-notif-empty">All caught up!</div>
@@ -393,7 +442,9 @@ export default function HeaderOwner() {
 
                           setNotifications((prev) =>
                             (prev || []).map((x) =>
-                              (x.notification_id ?? x.id) === id ? { ...x, is_read: true } : x
+                              (x.notification_id ?? x.id) === id
+                                ? { ...x, is_read: true }
+                                : x
                             )
                           );
                           setUnreadCount((c) => Math.max(0, c - (!n.is_read ? 1 : 0)));
@@ -405,7 +456,12 @@ export default function HeaderOwner() {
                             loadNotifs();
                           }
 
-                          const href = getNotificationUrl(n) || n?.meta?.href || n?.meta?.url || "";
+                          const href =
+                            getNotificationUrl(n) ||
+                            n?.meta?.href ||
+                            n?.meta?.url ||
+                            "";
+
                           if (href) {
                             setNotifOpen(false);
                             navigate(String(href));
@@ -439,7 +495,9 @@ export default function HeaderOwner() {
                   className="uhv-profile-avatar__img"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
-                    if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = "flex";
+                    if (e.currentTarget.nextSibling) {
+                      e.currentTarget.nextSibling.style.display = "flex";
+                    }
                   }}
                 />
                 <span className="uhv-profile-avatar__fallback">
@@ -458,7 +516,9 @@ export default function HeaderOwner() {
                       alt="Profile"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
-                        if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = "flex";
+                        if (e.currentTarget.nextSibling) {
+                          e.currentTarget.nextSibling.style.display = "flex";
+                        }
                       }}
                     />
                     <span>{String(displayName || "O").trim().charAt(0).toUpperCase()}</span>
@@ -470,14 +530,22 @@ export default function HeaderOwner() {
                 </div>
 
                 <div className="uhv-profile-pop__menu">
-                  <Link to="/owner/inbox" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                  <Link
+                    to="/owner/inbox"
+                    className="uhv-profile-menu-item"
+                    onClick={() => setProfileOpen(false)}
+                  >
                     <div className="uhv-pmi-icon" style={{ background: "#ecfdf5", color: "#10b981" }}>
                       <Inbox size={15} />
                     </div>
                     Inbox
                   </Link>
 
-                  <Link to="/owner/view-gyms" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                  <Link
+                    to="/owner/view-gyms"
+                    className="uhv-profile-menu-item"
+                    onClick={() => setProfileOpen(false)}
+                  >
                     <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#d23f0b" }}>
                       <Building2 size={15} />
                     </div>
@@ -495,7 +563,11 @@ export default function HeaderOwner() {
                     Gym Application
                   </Link>
 
-                  <Link to="/owner/profile" className="uhv-profile-menu-item" onClick={() => setProfileOpen(false)}>
+                  <Link
+                    to="/owner/profile"
+                    className="uhv-profile-menu-item"
+                    onClick={() => setProfileOpen(false)}
+                  >
                     <div className="uhv-pmi-icon" style={{ background: "#eff6ff", color: "#3b82f6" }}>
                       <UserCircle size={15} />
                     </div>
@@ -506,7 +578,12 @@ export default function HeaderOwner() {
                     <>
                       <div className="uhv-profile-pop__divider" />
                       {switchModes.map((m) => (
-                        <button key={m} type="button" className="uhv-profile-menu-item" onClick={() => handleSwitchUi(m)}>
+                        <button
+                          key={m}
+                          type="button"
+                          className="uhv-profile-menu-item"
+                          onClick={() => handleSwitchUi(m)}
+                        >
                           <div className="uhv-pmi-icon" style={{ background: "#f3f4f6", color: "#111827" }}>
                             <Settings size={15} />
                           </div>

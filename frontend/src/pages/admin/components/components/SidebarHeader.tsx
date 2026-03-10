@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../../../utils/apiClient";
 import { Typography } from "./Typography";
 
 interface SidebarHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -13,24 +13,17 @@ type AdminSettings = {
 };
 
 const THEME = "#d23f0b";
-const API_BASE = "https://exersearch.test";
-const TOKEN_KEY = "token";
 
-function authHeaders() {
-  const token = localStorage.getItem(TOKEN_KEY);
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-// Convert /storage/... to absolute
 function toAbsUrl(u?: string | null) {
   if (!u) return "";
   const s = String(u).trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
 
-  const base = API_BASE.replace(/\/$/, "");
+  const rawBase = String(api?.defaults?.baseURL || "").replace(/\/+$/, "");
+  const originBase = rawBase.replace(/\/api\/v1$/i, "");
   const path = s.startsWith("/") ? s : `/${s}`;
-  return `${base}${path}`;
+  return `${originBase}${path}`;
 }
 
 const StyledSidebarHeader = styled.div`
@@ -76,11 +69,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ rtl, ...rest }) =>
 
     const loadSettings = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/admin/settings`, {
-          headers: authHeaders(),       // ✅ REQUIRED
-          withCredentials: true,
-        });
-
+        const res = await api.get("/admin/settings");
         const data: AdminSettings = res.data?.data ?? res.data;
 
         if (!mounted) return;
@@ -94,7 +83,6 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ rtl, ...rest }) =>
         console.error("Failed to load branding (SidebarHeader)", {
           status,
           msg,
-          token_present: !!localStorage.getItem(TOKEN_KEY),
         });
       }
     };

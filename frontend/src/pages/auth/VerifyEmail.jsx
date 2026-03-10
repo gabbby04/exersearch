@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./login.css";
-
-const API = "https://exersearch.test/api/v1";
+import { api } from "../../utils/apiClient";
 
 export default function VerifyEmail() {
   const [sending, setSending] = useState(false);
@@ -23,20 +21,27 @@ export default function VerifyEmail() {
       }, 600);
       return () => clearTimeout(t);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verified]);
 
   const resend = async () => {
+    if (!token) {
+      localStorage.removeItem("token");
+      navigate("/login", { replace: true });
+      return;
+    }
+
     setSending(true);
     try {
-      await axios.post(
-        `${API}/email/verification-notification`,
+      await api.post(
+        "/email/verification-notification",
         {},
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       alert("Verification email sent. Please check your inbox/spam.");
     } catch (e) {
-      alert(e.response?.data?.message || "Failed to resend verification email.");
+      alert(e?.response?.data?.message || "Failed to resend verification email.");
     } finally {
       setSending(false);
     }
@@ -44,15 +49,14 @@ export default function VerifyEmail() {
 
   const checkVerified = async () => {
     if (!token) {
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
 
     setChecking(true);
     try {
-      const res = await axios.get(`${API}/me`, {
+      const res = await api.get("/me", {
         headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
       });
 
       if (res.data?.email_verified_at) {

@@ -1,29 +1,12 @@
-// src/pages/admin/GymDetails.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext, useParams, useLocation, useNavigate } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
+import { api } from "../../utils/apiClient";
+import { absoluteUrl } from "../../utils/findGymsData";
 import "./Homestyles.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-const ASSET_BASE = import.meta.env.VITE_ASSET_BASE_URL || ""; // optional
-
-function getAssetHost() {
-  // Prefer explicit asset host, then API host.
-  const host = (ASSET_BASE || API_BASE || "").replace(/\/$/, "");
-
-  // If still empty (rare), fallback to current origin (dev server).
-  return host || window.location.origin;
-}
-
 function absUrl(u) {
-  if (!u) return "";
-  const s = String(u).trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-
-  const host = getAssetHost();
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return `${host}${path}`;
+  return absoluteUrl(u);
 }
 
 function formatOpeningClosing(openingISO, closingISO) {
@@ -31,68 +14,69 @@ function formatOpeningClosing(openingISO, closingISO) {
     if (!openingISO || !closingISO) return "Hours not provided";
     const open = new Date(openingISO);
     const close = new Date(closingISO);
-    const fmt = (d) => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const fmt = (d) =>
+      d.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
     return `Mon – Sun | ${fmt(open)} – ${fmt(close)}`;
   } catch {
     return "Hours not provided";
   }
 }
 
+function parseGallery(g) {
+  if (!g) return [];
+  if (Array.isArray(g)) return g.filter(Boolean).map(String);
+
+  if (typeof g !== "string") return [];
+  const s = g.trim();
+  if (!s) return [];
+
+  if (s.startsWith("[")) {
+    try {
+      const arr = JSON.parse(s);
+      return Array.isArray(arr) ? arr.filter(Boolean).map(String) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  if (s.startsWith("{") && s.endsWith("}")) {
+    return s
+      .slice(1, -1)
+      .split(",")
+      .map((x) =>
+        x
+          .trim()
+          .replace(/^"(.*)"$/, "$1")
+          .replace(/\\"/g, '"')
+      )
+      .filter(Boolean);
+  }
+
+  return s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
 function normalizeGym(raw) {
   if (!raw) return null;
 
-  const gymId = raw.gym_id;
+  const gymId = raw.gym_id ?? raw.id;
   const lat = parseFloat(raw.latitude);
   const lng = parseFloat(raw.longitude);
 
-  // -------- GALLERY PARSER (supports array / json string / postgres literal / comma) ----------
-  const parseGallery = (g) => {
-    if (!g) return [];
-    if (Array.isArray(g)) return g.filter(Boolean).map(String);
-
-    if (typeof g !== "string") return [];
-    const s = g.trim();
-    if (!s) return [];
-
-    // JSON string: ["a","b"]
-    if (s.startsWith("[")) {
-      try {
-        const arr = JSON.parse(s);
-        return Array.isArray(arr) ? arr.filter(Boolean).map(String) : [];
-      } catch {
-        return [];
-      }
-    }
-
-    // Postgres literal: {"a","b"}
-    if (s.startsWith("{") && s.endsWith("}")) {
-      return s
-        .slice(1, -1)
-        .split(",")
-        .map((x) =>
-          x
-            .trim()
-            .replace(/^"(.*)"$/, "$1")
-            .replace(/\\"/g, '"')
-        )
-        .filter(Boolean);
-    }
-
-    // fallback: comma-separated
-    return s.split(",").map((x) => x.trim()).filter(Boolean);
-  };
-
-  // -------- IMAGES ----------
   let images = [];
   if (raw.main_image_url) images.push(absUrl(raw.main_image_url));
 
   const gallery = parseGallery(raw.gallery_urls).map(absUrl);
   images.push(...gallery);
 
-  // Remove duplicates + empties
   images = Array.from(new Set(images.filter(Boolean)));
 
-  // -------- AMENITIES ----------
   const amenities = (raw.amenities || []).map((a) => ({
     icon: "✅",
     name: a.name || "Amenity",
@@ -101,26 +85,24 @@ function normalizeGym(raw) {
     availability: a.pivot?.availability_status ?? true,
   }));
 
-  // -------- EQUIPMENT ----------
   const equipment = (raw.equipments || []).map((e) =>
     typeof e === "string" ? e : e.name || e.equipment_name || "Equipment"
   );
 
-  // -------- HOURS ----------
   const hoursText = raw.is_24_hours
     ? "Mon – Sun | 24 Hours"
     : formatOpeningClosing(raw.opening_time, raw.closing_time);
 
-  // -------- PRICE ----------
-  const daily = raw.daily_price ? Number(raw.daily_price) : null;
-  const monthly = raw.monthly_price ? Number(raw.monthly_price) : null;
-  const annual = raw.annual_price ? Number(raw.annual_price) : null;
+  const daily = raw.daily_price != null && raw.daily_price !== "" ? Number(raw.daily_price) : null;
+  const monthly =
+    raw.monthly_price != null && raw.monthly_price !== "" ? Number(raw.monthly_price) : null;
+  const annual = raw.annual_price != null && raw.annual_price !== "" ? Number(raw.annual_price) : null;
 
-  const priceText = daily
+  const priceText = Number.isFinite(daily)
     ? `₱${daily.toLocaleString()}/day`
-    : monthly
+    : Number.isFinite(monthly)
     ? `₱${monthly.toLocaleString()}/month`
-    : annual
+    : Number.isFinite(annual)
     ? `₱${annual.toLocaleString()}/year`
     : "—";
 
@@ -131,9 +113,9 @@ function normalizeGym(raw) {
     description: raw.description || "This gym has not added a description yet.",
     hours: hoursText,
 
-    crowd: 0,
-    rating: 0,
-    reviews: 0,
+    crowd: Number(raw.crowd_level ?? raw.crowd ?? 0) || 0,
+    rating: Number(raw.rating ?? 0) || 0,
+    reviews: Number(raw.reviews_count ?? raw.reviews ?? 0) || 0,
 
     price: priceText,
 
@@ -144,15 +126,14 @@ function normalizeGym(raw) {
     },
 
     stats: {
-      machines: 0,
-      members: 0,
-      trainers: raw.has_personal_trainers ? 1 : 0,
+      machines: Number(raw.machine_count ?? raw.total_machines ?? equipment.length ?? 0) || 0,
+      members: Number(raw.member_count ?? raw.total_members ?? 0) || 0,
+      trainers:
+        Number(raw.trainer_count ?? raw.total_trainers ?? (raw.has_personal_trainers ? 1 : 0)) || 0,
     },
 
     amenities,
     equipment,
-
-    // IMPORTANT: do NOT fallback to "/sample.jpg" because that breaks in admin
     images: images.length ? images : [],
 
     socialMedia: {
@@ -171,23 +152,60 @@ function normalizeGym(raw) {
           contact_number: raw.owner.contact_number,
           company_name: raw.owner.company_name,
           verified: !!raw.owner.verified,
-          profile_photo_url: raw.owner.profile_photo_url ? absUrl(raw.owner.profile_photo_url) : null,
+          profile_photo_url: raw.owner.profile_photo_url
+            ? absUrl(raw.owner.profile_photo_url)
+            : null,
         }
       : null,
+
+    raw,
   };
+}
+
+function getOpenNowStatus(openingISO, closingISO, is24Hours) {
+  if (is24Hours) {
+    return { label: "Open 24 Hours", className: "open" };
+  }
+
+  try {
+    if (!openingISO || !closingISO) {
+      return { label: "Hours Unavailable", className: "" };
+    }
+
+    const now = new Date();
+    const open = new Date(openingISO);
+    const close = new Date(closingISO);
+
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const openMinutes = open.getHours() * 60 + open.getMinutes();
+    const closeMinutes = close.getHours() * 60 + close.getMinutes();
+
+    let isOpen = false;
+
+    if (closeMinutes >= openMinutes) {
+      isOpen = nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+    } else {
+      isOpen = nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+    }
+
+    return {
+      label: isOpen ? "Open Now" : "Closed Now",
+      className: isOpen ? "open" : "closed",
+    };
+  } catch {
+    return { label: "Hours Unavailable", className: "" };
+  }
 }
 
 export default function GymDetails() {
   const { gymId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
   const { theme } = useOutletContext();
+
   const t = adminThemes[theme]?.app || adminThemes.light.app;
 
-  // ✅ return-to-previous support
   const from = location.state?.from;
-
   const isAdmin = window.location.pathname.startsWith("/admin");
   const defaultBackTo = isAdmin ? "/admin/map" : "/home/results";
   const backLabel = from ? "Back" : isAdmin ? "Back to Map" : "Back to Results";
@@ -220,6 +238,7 @@ export default function GymDetails() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const statsRef = useRef(null);
+  const animationIntervalsRef = useRef([]);
   const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
@@ -230,35 +249,13 @@ export default function GymDetails() {
         setLoading(true);
         setError("");
 
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("access_token") ||
-          localStorage.getItem("auth_token");
-
-        const res = await fetch(`${API_BASE}/api/v1/gyms/${gymId}`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          credentials: "include",
-        });
-
-        const text = await res.text();
-        let json = null;
-        try {
-          json = text ? JSON.parse(text) : null;
-        } catch {
-          json = null;
-        }
-
-        if (!res.ok) {
-          const msg = (json && (json.message || json.error)) || `Failed to load gym (HTTP ${res.status})`;
-          throw new Error(msg);
-        }
-
-        const payload = json?.data ?? json;
+        const res = await api.get(`/gyms/${gymId}`);
+        const payload = res?.data?.data ?? res?.data;
         const normalized = normalizeGym(payload);
+
+        if (!normalized) {
+          throw new Error("Gym not found.");
+        }
 
         if (!ignore) {
           setGym(normalized);
@@ -267,15 +264,27 @@ export default function GymDetails() {
           setCount({ machines: 0, members: 0, trainers: 0 });
         }
       } catch (e) {
-        if (!ignore) setError(e.message || "Failed to load gym.");
+        if (!ignore) {
+          setError(
+            e?.response?.data?.message ||
+              e?.response?.data?.error ||
+              e?.message ||
+              "Failed to load gym."
+          );
+        }
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     }
 
     run();
+
     return () => {
       ignore = true;
+      animationIntervalsRef.current.forEach(clearInterval);
+      animationIntervalsRef.current = [];
     };
   }, [gymId]);
 
@@ -283,9 +292,8 @@ export default function GymDetails() {
     return gym?.location?.lat != null && gym?.location?.lng != null;
   }, [gym]);
 
-  // Animate stats on scroll
   useEffect(() => {
-    if (!gym) return;
+    if (!gym || !statsRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -299,15 +307,21 @@ export default function GymDetails() {
       { threshold: 0.3 }
     );
 
-    if (statsRef.current) observer.observe(statsRef.current);
+    observer.observe(statsRef.current);
+
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gym, hasAnimated]);
 
   const animateStats = () => {
+    if (!gym?.stats) return;
+
+    animationIntervalsRef.current.forEach(clearInterval);
+    animationIntervalsRef.current = [];
+
     Object.keys(gym.stats).forEach((key) => {
       let i = 0;
       const target = Number(gym.stats[key] ?? 0);
+
       if (!Number.isFinite(target) || target <= 0) {
         setCount((prev) => ({ ...prev, [key]: 0 }));
         return;
@@ -316,6 +330,7 @@ export default function GymDetails() {
       const increment = Math.ceil(target / 50) || 1;
       const interval = setInterval(() => {
         i += increment;
+
         if (i >= target) {
           setCount((prev) => ({ ...prev, [key]: target }));
           clearInterval(interval);
@@ -323,19 +338,29 @@ export default function GymDetails() {
           setCount((prev) => ({ ...prev, [key]: i }));
         }
       }, 30);
+
+      animationIntervalsRef.current.push(interval);
     });
   };
 
   const openDirection = () => {
-    if (!gym?.location?.lat || !gym?.location?.lng) return;
+    if (gym?.location?.lat == null || gym?.location?.lng == null) return;
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        window.open(`https://www.google.com/maps/dir/${latitude},${longitude}/${gym.location.lat},${gym.location.lng}`, "_blank");
+        window.open(
+          `https://www.google.com/maps/dir/${latitude},${longitude}/${gym.location.lat},${gym.location.lng}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
       },
       () => {
-        window.open(`https://www.google.com/maps/search/?api=1&query=${gym.location.lat},${gym.location.lng}`, "_blank");
+        window.open(
+          `https://www.google.com/maps/search/?api=1&query=${gym.location.lat},${gym.location.lng}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
       }
     );
   };
@@ -351,22 +376,26 @@ export default function GymDetails() {
   };
 
   const getCrowdStatus = (level) => {
-    if (level < 30) return "Low";
-    if (level < 60) return "Moderate";
+    const value = Number(level) || 0;
+    if (value < 30) return "Low";
+    if (value < 60) return "Moderate";
     return "Busy";
   };
 
-  // ✅ If current image fails to load, remove it and move on
   const handleImageError = () => {
     setGym((prev) => {
       if (!prev?.images?.length) return prev;
-      const bad = prev.images[currentImageIndex];
-      const nextImages = prev.images.filter((u) => u !== bad);
+
+      const nextImages = prev.images.filter((_, idx) => idx !== currentImageIndex);
       return { ...prev, images: nextImages };
     });
 
-    setCurrentImageIndex((i) => Math.max(0, i - 1));
+    setCurrentImageIndex((prev) => Math.max(0, prev - 1));
   };
+
+  const hoursStatus = useMemo(() => {
+    return getOpenNowStatus(gym?.raw?.opening_time, gym?.raw?.closing_time, gym?.raw?.is_24_hours);
+  }, [gym]);
 
   if (loading) {
     return (
@@ -403,46 +432,52 @@ export default function GymDetails() {
 
   return (
     <div className={`gym-details-page ${isAdmin ? "admin-mode" : ""}`} style={wrapperStyle}>
-      {/* Hero Section */}
       <section className="gym-hero">
         <div className="hero-overlay" />
         <div className="hero-content">
-<div
-  onClick={goBack}
-  style={{
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: 600,
-    color: "var(--gd-text)",
-    opacity: 0.9,
-  }}
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.9")}
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M15 18l-6-6 6-6" />
-  </svg>
-  <span>{backLabel}</span>
-</div>
-
+          <div
+            onClick={goBack}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600,
+              color: "var(--gd-text)",
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "0.9";
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            <span>{backLabel}</span>
+          </div>
 
           <div className="hero-info">
             <div className="hero-text">
               <h1 className="gym-name">{gym.name}</h1>
               <p className="gym-tagline">{gym.tagline}</p>
+
               <div className="hero-meta">
-                <span className="rating-badge">⭐ {gym.rating || "—"}</span>
+                <span className="rating-badge">
+                  ⭐ {gym.rating > 0 ? gym.rating.toFixed(1) : "—"}
+                  {gym.reviews > 0 ? ` · ${gym.reviews} reviews` : ""}
+                </span>
                 <span className="location-badge">📍 {gym.location.address || "—"}</span>
               </div>
             </div>
@@ -453,13 +488,14 @@ export default function GymDetails() {
           </div>
         </div>
 
-        {/* Image Gallery */}
         <div className="image-gallery">
           {gym.images.length ? (
             <>
-              <button className="gallery-nav prev" onClick={prevImage}>
-                ‹
-              </button>
+              {gym.images.length > 1 ? (
+                <button type="button" className="gallery-nav prev" onClick={prevImage}>
+                  ‹
+                </button>
+              ) : null}
 
               <img
                 src={gym.images[currentImageIndex]}
@@ -468,19 +504,23 @@ export default function GymDetails() {
                 className="gallery-image"
               />
 
-              <button className="gallery-nav next" onClick={nextImage}>
-                ›
-              </button>
+              {gym.images.length > 1 ? (
+                <button type="button" className="gallery-nav next" onClick={nextImage}>
+                  ›
+                </button>
+              ) : null}
 
-              <div className="gallery-dots">
-                {gym.images.map((_, index) => (
-                  <span
-                    key={index}
-                    className={`dot ${index === currentImageIndex ? "active" : ""}`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
-                ))}
-              </div>
+              {gym.images.length > 1 ? (
+                <div className="gallery-dots">
+                  {gym.images.map((_, index) => (
+                    <span
+                      key={index}
+                      className={`dot ${index === currentImageIndex ? "active" : ""}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </>
           ) : (
             <div style={{ padding: 18, color: "#fff", opacity: 0.9 }}>No images uploaded yet.</div>
@@ -488,10 +528,8 @@ export default function GymDetails() {
         </div>
       </section>
 
-      {/* Main Content */}
       <div className="gym-details-container">
         <div className="details-grid">
-          {/* Left Column */}
           <div className="main-column">
             <div className="detail-card about-section">
               <h2 className="section-title">About This Gym</h2>
@@ -504,7 +542,9 @@ export default function GymDetails() {
                 <div className="hours-icon">🕐</div>
                 <div className="hours-text">
                   <p className="hours-time">{gym.hours}</p>
-                  <span className="hours-status open">Open Now</span>
+                  <span className={`hours-status ${hoursStatus.className || ""}`}>
+                    {hoursStatus.label}
+                  </span>
                 </div>
               </div>
             </div>
@@ -555,7 +595,7 @@ export default function GymDetails() {
             </div>
 
             <div className="detail-card amenities-section">
-              <h2 className="section-title">Amenities & Features</h2>
+              <h2 className="section-title">Amenities &amp; Features</h2>
 
               <div className="amenities-grid">
                 {gym.amenities.length ? (
@@ -574,7 +614,10 @@ export default function GymDetails() {
                       </span>
 
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span className="amenity-name" style={{ color: "var(--gd-text)", fontWeight: 600 }}>
+                        <span
+                          className="amenity-name"
+                          style={{ color: "var(--gd-text)", fontWeight: 600 }}
+                        >
                           {amenity.name}
                         </span>
 
@@ -594,7 +637,9 @@ export default function GymDetails() {
                     </div>
                   ))
                 ) : (
-                  <div style={{ opacity: 0.85, color: "var(--gd-muted)" }}>No amenities listed yet.</div>
+                  <div style={{ opacity: 0.85, color: "var(--gd-muted)" }}>
+                    No amenities listed yet.
+                  </div>
                 )}
               </div>
             </div>
@@ -605,7 +650,11 @@ export default function GymDetails() {
               <div className="equipment-list">
                 {gym.equipment.length ? (
                   gym.equipment.map((item, index) => (
-                    <div key={index} className="equipment-item" style={{ color: "var(--gd-text)" }}>
+                    <div
+                      key={`${item}-${index}`}
+                      className="equipment-item"
+                      style={{ color: "var(--gd-text)" }}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -619,13 +668,14 @@ export default function GymDetails() {
                     </div>
                   ))
                 ) : (
-                  <div style={{ opacity: 0.85, color: "var(--gd-muted)" }}>No equipment listed yet.</div>
+                  <div style={{ opacity: 0.85, color: "var(--gd-muted)" }}>
+                    No equipment listed yet.
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Right Column */}
           <div className="sidebar-column">
             <div className="detail-card map-card">
               <h2 className="section-title">Location</h2>
@@ -643,8 +693,14 @@ export default function GymDetails() {
 
                   <p className="map-address">📍 {gym.location.address || "—"}</p>
 
-                  <button className="direction-btn" onClick={openDirection}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <button type="button" className="direction-btn" onClick={openDirection}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
                     </svg>
                     Get Directions
@@ -675,14 +731,18 @@ export default function GymDetails() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <div style={{ fontWeight: 800, fontSize: 16 }}>{gym.owner.name || "Owner"}</div>
 
-                    <div style={{ opacity: 0.9, fontSize: 13, color: "var(--gd-muted)" }}>{gym.owner.email || "—"}</div>
+                    <div style={{ opacity: 0.9, fontSize: 13, color: "var(--gd-muted)" }}>
+                      {gym.owner.email || "—"}
+                    </div>
 
                     <div style={{ opacity: 0.9, fontSize: 13, color: "var(--gd-muted)" }}>
                       {gym.owner.contact_number ? `📞 ${gym.owner.contact_number}` : "📞 —"}
                     </div>
 
                     {gym.owner.company_name ? (
-                      <div style={{ opacity: 0.9, fontSize: 13, color: "var(--gd-muted)" }}>🏢 {gym.owner.company_name}</div>
+                      <div style={{ opacity: 0.9, fontSize: 13, color: "var(--gd-muted)" }}>
+                        🏢 {gym.owner.company_name}
+                      </div>
                     ) : null}
 
                     <div style={{ marginTop: 6 }}>
@@ -733,25 +793,35 @@ export default function GymDetails() {
                   </p>
                 ) : null}
 
-                {!gym.socialMedia.phone && !gym.socialMedia.email && !gym.socialMedia.website ? (
+                {gym.socialMedia.facebook ? (
+                  <p>
+                    <strong>Facebook:</strong>{" "}
+                    <a href={gym.socialMedia.facebook} target="_blank" rel="noopener noreferrer">
+                      {gym.socialMedia.facebook}
+                    </a>
+                  </p>
+                ) : null}
+
+                {gym.socialMedia.instagram ? (
+                  <p>
+                    <strong>Instagram:</strong>{" "}
+                    <a href={gym.socialMedia.instagram} target="_blank" rel="noopener noreferrer">
+                      {gym.socialMedia.instagram}
+                    </a>
+                  </p>
+                ) : null}
+
+                {!gym.socialMedia.phone &&
+                !gym.socialMedia.email &&
+                !gym.socialMedia.website &&
+                !gym.socialMedia.facebook &&
+                !gym.socialMedia.instagram ? (
                   <p style={{ opacity: 0.85, color: "var(--gd-muted)" }}>No contact info listed yet.</p>
                 ) : null}
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ icon, value, label, color }) {
-  return (
-    <div className={`stat-card stat-${color}`}>
-      <div className="stat-icon">{icon}</div>
-      <div className="stat-content">
-        <div className="stat-value">{value}+</div>
-        <div className="stat-label">{label}</div>
       </div>
     </div>
   );

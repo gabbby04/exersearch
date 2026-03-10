@@ -46,9 +46,8 @@ export default function AdminAdmins() {
 
   const { isAdmin } = useAuthMe();
 
-  // ✅ admins list endpoint (you said this is working now)
   const { rows, loading: loadingRows, error, reload } = useApiList(
-    "/api/v1/admin/admins",
+    "admin/admins",
     { authed: true }
   );
 

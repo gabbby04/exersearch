@@ -13,7 +13,7 @@ import {
   fetchAmenities,
   fetchEquipments,
   groupEquipmentsByTypeAndMuscle,
-  labelForSelectedKey,
+  labelForSelectedKey, 
   absoluteUrl,
   prettyCategory,
   parseTargets,
@@ -701,7 +701,7 @@ export default function OwnerGymsPage() {
       address: suggestion.display_name,
       lat: suggestion.lat,
       lon: suggestion.lon,
-    });
+    }); 
   };
 
   const searchLocation = async () => {

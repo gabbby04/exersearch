@@ -13,7 +13,7 @@ import {
   Mail,
   Globe,
   ChevronLeft,
-  AlertTriangle,
+  AlertTriangle, 
   CheckCircle2,
   ArrowRight,
 } from "lucide-react";

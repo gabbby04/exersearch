@@ -1,4 +1,3 @@
-// src/pages/admin/AdminWorkoutTemplates.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
@@ -28,12 +27,6 @@ function formatDateTimeFallback(value) {
   return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleString();
 }
 
-function clampText(text, max = 64) {
-  const s = String(text || "").trim();
-  if (!s) return "-";
-  return s.length > max ? s.slice(0, max - 1) + "…" : s;
-}
-
 function toIntOrNull(v) {
   if (v === "" || v == null) return null;
   const n = Number(v);
@@ -47,9 +40,8 @@ export default function AdminWorkoutTemplates() {
 
   const { isAdmin } = useAuthMe();
 
-  // ✅ fetch all pages
   const { rows, loading: loadingRows, error, reload } = useApiList(
-    "/api/v1/workout-templates",
+    "/workout-templates",
     { authed: true, allPages: true, perPage: 100 }
   );
 
@@ -59,7 +51,7 @@ export default function AdminWorkoutTemplates() {
   const [page, setPage] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState("view"); // view | edit | add
+  const [mode, setMode] = useState("view");
   const [active, setActive] = useState(null);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -136,11 +128,11 @@ export default function AdminWorkoutTemplates() {
     setActive(null);
     setForm({
       name: "",
-      goal: "lose_fat", // lose_fat | build_muscle | endurance | strength
-      level: "beginner", // beginner | intermediate | advanced
+      goal: "lose_fat",
+      level: "beginner",
       days_per_week: "3",
       session_minutes: "45",
-      split_type: "full_body", // full_body | upper_lower | ppl
+      split_type: "full_body",
       weeks: "4",
       notes: "",
     });

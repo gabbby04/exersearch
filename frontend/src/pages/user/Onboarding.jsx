@@ -1,7 +1,5 @@
-
-import React, { useState, useRef, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   Flame,
   Dumbbell,
@@ -47,6 +45,7 @@ import "./Onboardingstyle.css";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { api } from "../../utils/apiClient";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -96,16 +95,16 @@ export default function Onboarding() {
   const [mapCenter, setMapCenter] = useState(pasigCenter);
   const [mapKey, setMapKey] = useState(0);
 
-  const [heightUnit, setHeightUnit] = useState("cm"); // cm | ftin
-  const [weightUnit, setWeightUnit] = useState("kg"); // kg | lb
+  const [heightUnit, setHeightUnit] = useState("cm");
+  const [weightUnit, setWeightUnit] = useState("kg");
 
   const [formData, setFormData] = useState({
     fitnessGoal: "",
     fitnessLevel: "",
     age: "",
     gender: "",
-    height: "", // always stored in cm
-    weight: "", // always stored in kg
+    height: "",
+    weight: "",
     heightFeet: "",
     heightInches: "",
     weightDisplay: "",
@@ -780,12 +779,11 @@ export default function Onboarding() {
     setSubmitting(true);
 
     const { latitude, longitude } = await geocodeIfMissing();
-    const headers = { Authorization: `Bearer ${token}` };
 
     const profilePayload = {
       age: formData.age ? Number(formData.age) : null,
-      height: formData.height ? Number(formData.height) : null, // still cm
-      weight: formData.weight ? Number(formData.weight) : null, // still kg
+      height: formData.height ? Number(formData.height) : null,
+      weight: formData.weight ? Number(formData.weight) : null,
       address: formData.location || null,
       latitude,
       longitude,
@@ -819,35 +817,19 @@ export default function Onboarding() {
     };
 
     try {
-      await axios.put(
-        "https://exersearch.test/api/v1/user/profile",
-        profilePayload,
-        { headers, withCredentials: true }
-      );
+      await api.put("/user/profile", profilePayload);
 
-      await axios.post(
-        "https://exersearch.test/api/v1/user/preferences",
-        prefPayload,
-        { headers, withCredentials: true }
-      );
+      await api.post("/user/preferences", prefPayload);
 
-      await axios.post(
-        "https://exersearch.test/api/v1/user/preferred-amenities",
-        { amenity_ids: formData.amenities },
-        { headers, withCredentials: true }
-      );
+      await api.post("/user/preferred-amenities", {
+        amenity_ids: formData.amenities,
+      });
 
-      await axios.post(
-        "https://exersearch.test/api/v1/user/preferred-equipments",
-        { equipment_ids: formData.equipment },
-        { headers, withCredentials: true }
-      );
+      await api.post("/user/preferred-equipments", {
+        equipment_ids: formData.equipment,
+      });
 
-      await axios.post(
-        "https://exersearch.test/api/v1/user/onboarding/complete",
-        {},
-        { headers, withCredentials: true }
-      );
+      await api.post("/user/onboarding/complete", {});
 
       if ((latitude == null || longitude == null) && formData.location) {
         alert(

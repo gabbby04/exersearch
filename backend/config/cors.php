@@ -7,16 +7,19 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-    'http://localhost:3000',  
-    'http://localhost:5173',  
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
-    'https://localhost:5173',
-    'http://exersearch.test',   // ← add this
-    'https://exersearch.test',  // ← and this
-                            ],
+        'https://frontend-production-f74d.up.railway.app',
+        'https://exersearch.online',
+        'https://www.exersearch.online',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https://.*\.up\.railway\.app$#',
+        '#^https?://(www\.)?exersearch\.(test|online)$#',
+        '#^http://localhost:\d+$#',
+        '#^http://127\.0\.0\.1:\d+$#',
+    ],
 
     'allowed_headers' => ['*'],
 

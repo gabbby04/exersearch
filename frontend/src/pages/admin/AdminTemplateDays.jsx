@@ -1,4 +1,3 @@
-// src/pages/admin/AdminTemplateDays.jsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
@@ -35,15 +34,12 @@ export default function AdminTemplateDays() {
 
   const { isAdmin } = useAuthMe();
 
-  // ------------------------------------------------------------
-  // Templates dropdown
-  // ------------------------------------------------------------
   const {
     rows: templates,
     loading: loadingTpls,
     error: tplErr,
     reload: reloadTpls,
-  } = useApiList("/api/v1/workout-templates", {
+  } = useApiList("/workout-templates", {
     authed: true,
     allPages: true,
     perPage: 50,
@@ -51,26 +47,18 @@ export default function AdminTemplateDays() {
 
   const [templateId, setTemplateId] = useState("");
 
-  // ------------------------------------------------------------
-  // Days table: load from /workout-template-days?template_id=...
-  // (Do NOT rely on nested template.days)
-  // ------------------------------------------------------------
   const {
     rows: days,
     loading: loadingDays,
     error: dayErr,
     reload: reloadDays,
-    setRows: setDaysRows,
-  } = useApiList("/api/v1/workout-template-days", {
+  } = useApiList("/workout-template-days", {
     authed: true,
     allPages: true,
     perPage: 100,
-    params: templateId ? { template_id: templateId } : {}, // safe when empty
+    params: templateId ? { template_id: templateId } : {},
   });
 
-  // ------------------------------------------------------------
-  // Table state
-  // ------------------------------------------------------------
   const [q, setQ] = useState("");
   const [sort, setSort] = useState({ key: "day", dir: "asc" });
   const pageSize = 10;
@@ -118,11 +106,8 @@ export default function AdminTemplateDays() {
     return pills;
   }, [loadingDays, sorted.length, templateId]);
 
-  // ------------------------------------------------------------
-  // Modals
-  // ------------------------------------------------------------
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState("view"); // view | edit | add
+  const [mode, setMode] = useState("view");
   const [active, setActive] = useState(null);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -198,7 +183,7 @@ export default function AdminTemplateDays() {
       await deleteTemplateDay(active.template_day_id);
       setDelOpen(false);
       setOpen(false);
-      reloadDays(); // ✅ refresh days list
+      reloadDays();
     } catch (e) {
       setErrMsg(e?.message || "Delete failed.");
     } finally {
@@ -241,7 +226,7 @@ export default function AdminTemplateDays() {
 
       setOpen(false);
       setSaveOpen(false);
-      reloadDays(); // ✅ refresh days list
+      reloadDays();
     } catch (e) {
       setErrMsg(e?.message || "Save failed.");
     } finally {
@@ -271,7 +256,6 @@ export default function AdminTemplateDays() {
   const canEdit = isAdmin && (mode === "edit" || mode === "add");
 
   const handleReload = () => {
-    // reload both
     reloadTpls();
     if (templateId) reloadDays();
   };
@@ -486,7 +470,6 @@ export default function AdminTemplateDays() {
         </div>
       </div>
 
-      {/* Modal */}
       {open && form && (
         <div className="ae-backdrop" onClick={() => setOpen(false)}>
           <div className="ae-formModal" onClick={(e) => e.stopPropagation()}>
@@ -577,7 +560,6 @@ export default function AdminTemplateDays() {
         </div>
       )}
 
-      {/* Confirm Save */}
       {saveOpen && open && form && (
         <div
           className="ae-backdrop ae-backdropTop"
@@ -627,7 +609,6 @@ export default function AdminTemplateDays() {
         </div>
       )}
 
-      {/* Confirm Delete */}
       {delOpen && active && (
         <div
           className="ae-backdrop ae-backdropTop"

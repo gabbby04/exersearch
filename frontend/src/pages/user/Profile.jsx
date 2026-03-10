@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import "./Profilestyle.css";
 import { alertSuccess, alertError, alertInfo } from "../../utils/adminAlert";
+import { api } from "../../utils/apiClient";
 import {
   User,
   Mail,
@@ -25,7 +25,6 @@ import {
   ImageUp,
 } from "lucide-react";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "/arellano.png";
 const MAIN = "#d23f0b";
 
@@ -55,9 +54,13 @@ function pickPrefPayload(prefResData) {
 
 function absoluteUrlMaybe(pathOrUrl) {
   if (!pathOrUrl) return "";
-  const s = String(pathOrUrl);
-  if (s.startsWith("http")) return s;
-  return `${API_BASE}${s}`;
+  const s = String(pathOrUrl).trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+
+  const base = String(api.defaults.baseURL || "").replace(/\/api\/v1\/?$/, "");
+  const path = s.startsWith("/") ? s : `/${s}`;
+  return `${base}${path}`;
 }
 
 function PrefModal({
@@ -308,8 +311,7 @@ export default function Profile() {
       (isEditingProfile ? formData.profile_photo_url : userData.profile_photo_url) ||
       "";
     if (!raw) return FALLBACK_AVATAR;
-    if (raw.startsWith("http")) return raw;
-    return `${API_BASE}${raw}`;
+    return absoluteUrlMaybe(raw) || FALLBACK_AVATAR;
   }, [localPreview, isEditingProfile, formData.profile_photo_url, userData.profile_photo_url]);
 
   useEffect(() => {
@@ -320,19 +322,18 @@ export default function Profile() {
 
   useEffect(() => {
     let mounted = true;
+
     async function loadMe() {
       setLoading(true);
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
-        const u = res.data;
-        const p = u?.user_profile;
+        const res = await api.get("/me");
+        const root = res.data?.user || res.data || {};
+        const p = root?.user_profile || {};
+
         const next = {
-          name: u?.name || "",
-          email: u?.email || "",
-          role: u?.role || "",
+          name: root?.name || "",
+          email: root?.email || "",
+          role: root?.role || "",
           age: p?.age ?? "",
           height: p?.height ?? "",
           weight: p?.weight ?? "",
@@ -343,6 +344,7 @@ export default function Profile() {
           created_at: p?.created_at ? String(p.created_at).slice(0, 10) : "",
           updated_at: p?.updated_at ? String(p.updated_at).slice(0, 10) : "",
         };
+
         if (!mounted) return;
         setUserData(next);
         setFormData(next);
@@ -359,6 +361,7 @@ export default function Profile() {
         if (mounted) setLoading(false);
       }
     }
+
     if (token) loadMe();
     else {
       setLoading(false);
@@ -369,6 +372,7 @@ export default function Profile() {
         mainColor: MAIN,
       });
     }
+
     return () => {
       mounted = false;
     };
@@ -376,24 +380,16 @@ export default function Profile() {
 
   useEffect(() => {
     let mounted = true;
+
     async function loadPrefs() {
       setPrefLoading(true);
       try {
         const [prefRes, eqPickRes, amPickRes, allEqRes, allAmRes] = await Promise.all([
-          axios.get(`${API_BASE}/api/v1/user/preferences`, {
-            headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
-          }),
-          axios.get(`${API_BASE}/api/v1/user/preferred-equipments`, {
-            headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
-          }),
-          axios.get(`${API_BASE}/api/v1/user/preferred-amenities`, {
-            headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
-          }),
-          axios.get(`${API_BASE}/api/v1/equipments`),
-          axios.get(`${API_BASE}/api/v1/amenities`),
+          api.get("/user/preferences"),
+          api.get("/user/preferred-equipments"),
+          api.get("/user/preferred-amenities"),
+          api.get("/equipments"),
+          api.get("/amenities"),
         ]);
 
         const { goal, activity_level, budget } = pickPrefPayload(prefRes.data);
@@ -426,6 +422,7 @@ export default function Profile() {
             .filter((v) => v != null)
             .map((v) => Number(v))
         );
+
         const selectedAmenityIds = new Set(
           view.preferred_amenities
             .map((x) => x?.amenity_id ?? x?.id)
@@ -455,7 +452,9 @@ export default function Profile() {
         if (mounted) setPrefLoading(false);
       }
     }
+
     if (token) loadPrefs();
+
     return () => {
       mounted = false;
     };
@@ -496,7 +495,9 @@ export default function Profile() {
     e.preventDefault();
     setIsDragging(true);
   };
+
   const onDragLeave = () => setIsDragging(false);
+
   const onDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -521,12 +522,10 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("photo", file);
 
-      const res = await axios.post(`${API_BASE}/api/v1/me/avatar/user`, fd, {
+      const res = await api.post("/me/avatar/user", fd, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: true,
       });
 
       const url = res.data?.avatar_url;
@@ -582,10 +581,9 @@ export default function Profile() {
         latitude: toNumOrNull(formData.latitude),
         longitude: toNumOrNull(formData.longitude),
       };
-      const res = await axios.put(`${API_BASE}/api/v1/user/profile`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+
+      const res = await api.put("/user/profile", payload);
+
       alertSuccess({
         title: "Profile updated",
         text: res.data?.message || "Changes saved.",
@@ -596,6 +594,7 @@ export default function Profile() {
       const validation = err?.response?.data?.errors
         ? Object.values(err.response.data.errors).flat().join("\n")
         : null;
+
       alertError({
         title: "Save failed",
         text: validation || err?.response?.data?.message || "Failed to save.",
@@ -610,35 +609,25 @@ export default function Profile() {
   const savePreferences = async () => {
     setPrefSaving(true);
     try {
-      await axios.post(
-        `${API_BASE}/api/v1/user/preferences`,
-        {
-          goal: prefForm.goal || null,
-          activity_level: prefForm.activity_level || null,
-          budget: prefForm.budget === "" ? null : prefForm.budget,
-        },
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-      );
+      await api.post("/user/preferences", {
+        goal: prefForm.goal || null,
+        activity_level: prefForm.activity_level || null,
+        budget: prefForm.budget === "" ? null : prefForm.budget,
+      });
 
       const equipment_ids = Array.from(prefForm.selectedEquipmentIds)
         .map((x) => Number(x))
         .filter((n) => Number.isFinite(n));
+
       const amenity_ids = Array.from(prefForm.selectedAmenityIds)
         .map((x) => Number(x))
         .filter((n) => Number.isFinite(n));
 
-      await axios.post(
-        `${API_BASE}/api/v1/user/preferred-equipments`,
-        { equipment_ids },
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-      );
-      await axios.post(
-        `${API_BASE}/api/v1/user/preferred-amenities`,
-        { amenity_ids },
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-      );
+      await api.post("/user/preferred-equipments", { equipment_ids });
+      await api.post("/user/preferred-amenities", { amenity_ids });
 
       setPrefModalOpen(false);
+
       alertSuccess({
         title: "Preferences saved",
         text: "Your preferences were updated.",
@@ -649,6 +638,7 @@ export default function Profile() {
       const validation = err?.response?.data?.errors
         ? Object.values(err.response.data.errors).flat().join("\n")
         : null;
+
       alertError({
         title: "Save failed",
         text: validation || err?.response?.data?.message || "Failed to save.",
@@ -674,6 +664,7 @@ export default function Profile() {
         .map((x) => x?.name || `#${x?.equipment_id ?? x?.id ?? "?"}`)
         .join(", ")
     : "—";
+
   const prefAmenText = prefView.preferred_amenities.length
     ? prefView.preferred_amenities
         .map((x) => x?.name || `#${x?.amenity_id ?? x?.id ?? "?"}`)

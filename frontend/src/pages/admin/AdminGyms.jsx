@@ -1,4 +1,3 @@
-// ✅ WHOLE FILE: src/pages/admin/AdminGyms.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext, useNavigate, useLocation } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
@@ -25,7 +24,7 @@ import {
 
 import MapPickerModal from "../../components/MapPickerModal";
 
-import "./AdminEquipments.css"; // ✅ reuse your existing styles
+import "./AdminEquipments.css";
 
 function formatDateTimeFallback(value) {
   if (!value) return "-";
@@ -40,7 +39,6 @@ function toNumOrNull(v) {
 }
 
 function toBool(v) {
-  // accepts true/false, "true"/"false", 1/0
   if (typeof v === "boolean") return v;
   if (typeof v === "number") return v === 1;
   if (typeof v === "string") return v.toLowerCase() === "true";
@@ -48,14 +46,8 @@ function toBool(v) {
 }
 
 function formatTimeForInput(value) {
-  // Handles:
-  // - "2026-01-01 08:00:00"
-  // - "2026-01-01T08:00:00.000Z"
-  // - "08:00:00"
-  // - "08:00"
   if (!value) return "";
   const s = String(value);
-
   const m = s.match(/\b(\d{2}):(\d{2})\b/);
   if (m) return `${m[1]}:${m[2]}`;
   return "";
@@ -68,22 +60,19 @@ export default function AdminGyms() {
 
   const { isAdmin } = useAuthMe();
 
-  // ✅ NEW: for redirecting to GymDetails with "from"
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ your GymController index: /api/v1/gyms
-  const { rows, loading: loadingRows, error, reload } = useApiList("/api/v1/gyms", {
+  const { rows, loading: loadingRows, error, reload } = useApiList("/gyms", {
     authed: true,
-    allPages: true, // ✅ NEW
+    allPages: true,
     perPage: 10,
   });
 
   const [q, setQ] = useState("");
 
-  // Filters
   const [gymType, setGymType] = useState("All");
-  const [is24, setIs24] = useState("All"); // All | true | false
+  const [is24, setIs24] = useState("All");
   const [hasClasses, setHasClasses] = useState("All");
   const [isAir, setIsAir] = useState("All");
 
@@ -93,9 +82,8 @@ export default function AdminGyms() {
 
   const [previewImg, setPreviewImg] = useState(null);
 
-  // Modal states
   const [gymOpen, setGymOpen] = useState(false);
-  const [gymMode, setGymMode] = useState("view"); // view | edit | add
+  const [gymMode, setGymMode] = useState("view");
   const [activeGym, setActiveGym] = useState(null);
   const [gymForm, setGymForm] = useState(null);
   const [gymBusy, setGymBusy] = useState(false);
@@ -106,10 +94,8 @@ export default function AdminGyms() {
 
   const [saveOpen, setSaveOpen] = useState(false);
 
-  // Gallery upload helpers
   const [galleryUploading, setGalleryUploading] = useState(false);
 
-  // ✅ in-app map picker
   const [mapOpen, setMapOpen] = useState(false);
 
   useEffect(() => {
@@ -126,7 +112,6 @@ export default function AdminGyms() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Dropdown options from rows
   const gymTypes = useMemo(() => {
     const set = new Set(rows.map((r) => r.gym_type).filter(Boolean));
     return ["All", ...Array.from(set).sort()];
@@ -220,28 +205,21 @@ export default function AdminGyms() {
       address: "",
       latitude: "",
       longitude: "",
-
       daily_price: "",
       monthly_price: "",
       annual_price: "",
-
       opening_time: "",
       closing_time: "",
-
       gym_type: "",
-
       contact_number: "",
       email: "",
       website: "",
       facebook_page: "",
       instagram_page: "",
-
       main_image_url: "",
       mainImageFile: null,
-
       gallery_urls: [],
       galleryFiles: [],
-
       has_personal_trainers: false,
       has_classes: false,
       is_24_hours: false,
@@ -261,28 +239,21 @@ export default function AdminGyms() {
       address: r.address || "",
       latitude: r.latitude ?? "",
       longitude: r.longitude ?? "",
-
       daily_price: r.daily_price ?? "",
       monthly_price: r.monthly_price ?? "",
       annual_price: r.annual_price ?? "",
-
       opening_time: formatTimeForInput(r.opening_time),
       closing_time: formatTimeForInput(r.closing_time),
-
       gym_type: r.gym_type || "",
-
       contact_number: r.contact_number || "",
       email: r.email || "",
       website: r.website || "",
       facebook_page: r.facebook_page || "",
       instagram_page: r.instagram_page || "",
-
       main_image_url: r.main_image_url || "",
       mainImageFile: null,
-
       gallery_urls: Array.isArray(r.gallery_urls) ? r.gallery_urls : [],
       galleryFiles: [],
-
       has_personal_trainers: toBool(r.has_personal_trainers),
       has_classes: toBool(r.has_classes),
       is_24_hours: toBool(r.is_24_hours),
@@ -355,15 +326,12 @@ export default function AdminGyms() {
     if (!name) return setGymErr("Name is required.");
     if (!address) return setGymErr("Address is required.");
 
-    // monthly_price required
     const monthly = toNumOrNull(gymForm.monthly_price);
     if (monthly === null) return setGymErr("Monthly price is required (number).");
 
-    // lat/lng optional but validate if provided
     let latitude = toNumOrNull(gymForm.latitude);
     let longitude = toNumOrNull(gymForm.longitude);
 
-    // ✅ normalize if helper exists
     if (typeof normalizeLatLng === "function") {
       const norm = normalizeLatLng(latitude, longitude);
       latitude = norm?.latitude ?? latitude;
@@ -386,28 +354,21 @@ export default function AdminGyms() {
         name,
         description: String(gymForm.description || "").trim() || null,
         address,
-
         latitude,
         longitude,
-
         daily_price: toNumOrNull(gymForm.daily_price),
         monthly_price: monthly,
         annual_price: toNumOrNull(gymForm.annual_price),
-
         opening_time: String(gymForm.opening_time || "").trim() || null,
         closing_time: String(gymForm.closing_time || "").trim() || null,
-
         gym_type: String(gymForm.gym_type || "").trim() || null,
-
         contact_number: String(gymForm.contact_number || "").trim() || null,
         email: String(gymForm.email || "").trim() || null,
         website: String(gymForm.website || "").trim() || null,
         facebook_page: String(gymForm.facebook_page || "").trim() || null,
         instagram_page: String(gymForm.instagram_page || "").trim() || null,
-
         main_image_url,
         gallery_urls: gallery_urls?.length ? gallery_urls : null,
-
         has_personal_trainers: toBool(gymForm.has_personal_trainers),
         has_classes: toBool(gymForm.has_classes),
         is_24_hours: toBool(gymForm.is_24_hours),
@@ -604,30 +565,28 @@ export default function AdminGyms() {
                         </td>
 
                         <td className="ae-td">{r.gym_type || "-"}</td>
-<td className="ae-td">
-  <div className="ae-locCell">
-    <div
-      className="ae-mutedTiny ae-locAddress"
-      data-full={r.address || "-"}
-    >
-      {r.address || "-"}
-    </div>
+                        <td className="ae-td">
+                          <div className="ae-locCell">
+                            <div
+                              className="ae-mutedTiny ae-locAddress"
+                              data-full={r.address || "-"}
+                            >
+                              {r.address || "-"}
+                            </div>
 
-    <div className="ae-mutedTiny">
-      {r.latitude && r.longitude
-        ? `${r.latitude}, ${r.longitude}`
-        : "No coordinates"}
-    </div>
-  </div>
-</td>
-
+                            <div className="ae-mutedTiny">
+                              {r.latitude && r.longitude
+                                ? `${r.latitude}, ${r.longitude}`
+                                : "No coordinates"}
+                            </div>
+                          </div>
+                        </td>
 
                         <td className="ae-td">{r.monthly_price ?? "-"}</td>
                         <td className="ae-td ae-mutedCell">{formatDateTimeFallback(r.updated_at)}</td>
 
                         <td className="ae-td ae-tdRight">
                           <div className="ae-actionsInline">
-                            {/* ✅ VIEW NOW REDIRECTS TO DETAILS + REMEMBERS CURRENT PAGE */}
                             <IconBtn
                               title="View"
                               className="ae-iconBtn"
@@ -692,7 +651,6 @@ export default function AdminGyms() {
         </div>
       </div>
 
-      {/* ✅ image preview */}
       {previewImg && (
         <div className="ae-backdrop ae-backdropTop" onClick={() => setPreviewImg(null)}>
           <div className="ae-modalContent" onClick={(e) => e.stopPropagation()}>
@@ -709,7 +667,6 @@ export default function AdminGyms() {
         </div>
       )}
 
-      {/* ✅ Add/Edit/View modal */}
       {gymOpen && gymForm && (
         <div
           className="ae-backdrop"
@@ -719,7 +676,7 @@ export default function AdminGyms() {
           <div
             className="ae-formModal"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxHeight: "calc(100vh - 64px)", overflow: "auto" }} // ✅ scroll fix
+            style={{ maxHeight: "calc(100vh - 64px)", overflow: "auto" }}
           >
             <div className="ae-modalTopRow">
               <div className="ae-modalTitle">{modalTitle}</div>
@@ -764,7 +721,6 @@ export default function AdminGyms() {
                 onChange={(v) => setGymForm((p) => ({ ...p, longitude: v }))}
               />
 
-              {/* ✅ In-app map picker */}
               <div className="ae-field ae-fieldFull">
                 <div className="ae-fieldLabel">Map</div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -863,7 +819,6 @@ export default function AdminGyms() {
                 />
               </label>
 
-              {/* Main image */}
               <label className="ae-field ae-fieldFull">
                 <div className="ae-fieldLabel">Main Image File</div>
                 <input
@@ -887,7 +842,6 @@ export default function AdminGyms() {
                 full
               />
 
-              {/* Gallery */}
               <label className="ae-field ae-fieldFull">
                 <div className="ae-fieldLabel">Gallery Files (multiple)</div>
                 <input
@@ -921,7 +875,6 @@ export default function AdminGyms() {
                 onPreview={(url) => setPreviewImg({ src: absoluteUrl(url), name: gymForm.name || "gym" })}
               />
 
-              {/* switches */}
               <SwitchRow
                 disabled={!canEdit}
                 items={[
@@ -934,7 +887,6 @@ export default function AdminGyms() {
               />
             </div>
 
-            {/* inline tools for main image */}
             {canShowMainInlineTools ? (
               <div className="ae-inlineTools">
                 <button
@@ -1016,12 +968,11 @@ export default function AdminGyms() {
             ...p,
             latitude: latNum ?? latitude,
             longitude: lngNum ?? longitude,
-            address: String(address ?? ""), // ✅ ALWAYS overwrite
+            address: String(address ?? ""),
           }));
         }}
       />
 
-      {/* ✅ save confirm */}
       {saveOpen && gymOpen && gymForm && (
         <div className="ae-backdrop ae-backdropTop" onClick={() => setSaveOpen(false)}>
           <div className="ae-confirmModalFancy" onClick={(e) => e.stopPropagation()}>
@@ -1060,7 +1011,6 @@ export default function AdminGyms() {
         </div>
       )}
 
-      {/* ✅ delete confirm */}
       {delOpen && activeGym && (
         <div className="ae-backdrop ae-backdropTop" onClick={() => setDelOpen(false)}>
           <div className="ae-confirmModalFancy" onClick={(e) => e.stopPropagation()}>

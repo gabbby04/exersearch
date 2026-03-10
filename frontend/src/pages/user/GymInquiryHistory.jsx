@@ -8,9 +8,9 @@ import {
 import InquiryComposeModal from "./InquiryComposeModal";
 import { ExternalLink, RefreshCw, Menu, Info, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { absoluteUrl } from "../../utils/findGymsData";
 
 const PH_TZ = "Asia/Manila";
-const API_BASE = "https://exersearch.test";
 
 function safeStr(v) {
   return v == null ? "" : String(v);
@@ -60,19 +60,15 @@ function fmtPHDateTime(d) {
   return dt.toLocaleString("en-PH", { timeZone: PH_TZ });
 }
 
-function absUrl(u) {
-  if (!u) return "";
-  let s = String(u).trim();
+function isExternalUrl(u) {
+  return /^https?:\/\//i.test(String(u || "").trim());
+}
+
+function normalizeExternalUrl(u) {
+  const s = safeStr(u).trim();
   if (!s) return "";
-
-  s = s.replace(/\\\//g, "/");
-
-  if (/^https?:\/\//i.test(s)) return s;
-
-  if (!s.startsWith("/")) s = "/" + s;
-
-  const joined = `${API_BASE}${s}`;
-  return joined.replace(/([^:]\/)\/+/g, "$1");
+  if (isExternalUrl(s)) return s;
+  return `https://${s.replace(/^\/+/, "")}`;
 }
 
 function fmtHHMM(v) {
@@ -186,7 +182,7 @@ function pickGymAvatarFromGym(gym) {
       ""
   ).trim();
 
-  if (raw) return absUrl(raw);
+  if (raw) return absoluteUrl(raw);
   return "/defaulticon.png";
 }
 
@@ -412,14 +408,12 @@ export default function GymInquiryHistory() {
   const detailAvatar = useMemo(() => pickGymAvatarFromGym(gym), [gym]);
 
   return (
-<div
-  className={`ih-page ${showList ? "show-list" : ""} ${showDetail ? "show-detail" : ""}`}
->
+    <div
+      className={`ih-page ${showList ? "show-list" : ""} ${showDetail ? "show-detail" : ""}`}
+    >
       <div className="ih-mobile-backdrop" onClick={closePanels} />
 
       <div className="app" ref={listRef}>
-
-
         <div className="wrapper">
           <div className="conversation-area">
             <div className="ih-panel-close-wrap">
@@ -446,7 +440,9 @@ export default function GymInquiryHistory() {
 
                   <div className="ih-left-text">
                     <div className="ih-left-h1">Inquiries</div>
-                    <div className="ih-left-sub">{loading ? "Loading…" : `${filteredLeft.length} shown`}</div>
+                    <div className="ih-left-sub">
+                      {loading ? "Loading…" : `${filteredLeft.length} shown`}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -593,7 +589,9 @@ export default function GymInquiryHistory() {
               {!activeConv ? (
                 <div className="ih-chat-empty">
                   <div className="ih-chat-empty-title">No inquiry selected</div>
-                  <div className="ih-chat-empty-sub">Choose one from the list or tap the plus button.</div>
+                  <div className="ih-chat-empty-sub">
+                    Choose one from the list or tap the plus button.
+                  </div>
                 </div>
               ) : thread.length === 0 ? (
                 <div className="ih-chat-empty">
@@ -709,7 +707,6 @@ export default function GymInquiryHistory() {
                 onChange={(e) => setSearchRight(e.target.value)}
               />
 
-
               <div className="fb-info">
                 <FbSection title="GYM DETAILS">
                   <FbRow
@@ -729,21 +726,24 @@ export default function GymInquiryHistory() {
 
                 {socials.length > 0 && (
                   <FbSection title="LINKS">
-                    {socials.map((s) => (
-                      <div className="fb-row" key={s.label}>
-                        <div className="fb-left">
-                          <div className="fb-ico" aria-hidden="true">
-                            🔗
+                    {socials.map((s) => {
+                      const href = normalizeExternalUrl(s.value);
+                      return (
+                        <div className="fb-row" key={s.label}>
+                          <div className="fb-left">
+                            <div className="fb-ico" aria-hidden="true">
+                              🔗
+                            </div>
+                            <div className="fb-k">{s.label}</div>
                           </div>
-                          <div className="fb-k">{s.label}</div>
+                          <div className="fb-v">
+                            <a className="fb-link" href={href} target="_blank" rel="noreferrer">
+                              {s.value}
+                            </a>
+                          </div>
                         </div>
-                        <div className="fb-v">
-                          <a className="fb-link" href={absUrl(s.value)} target="_blank" rel="noreferrer">
-                            {s.value}
-                          </a>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </FbSection>
                 )}
               </div>

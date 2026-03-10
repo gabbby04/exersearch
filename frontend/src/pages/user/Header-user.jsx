@@ -1,6 +1,5 @@
 // src/components/header/HeaderUser.jsx
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import axios from "axios";
 import "./HeaderUser.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
 import { useAuth } from "../../authcon";
@@ -22,6 +21,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { api } from "../../utils/apiClient";
 
 import {
   listNotifications,
@@ -30,9 +30,7 @@ import {
   markAllNotificationsRead,
 } from "../../utils/notificationApi";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "/defaulticon.png";
-const TOKEN_KEY = "token";
 const UI_MODE_KEY = "ui_mode";
 const THEME_KEY = "theme_mode";
 
@@ -51,7 +49,8 @@ function toAbsUrl(u) {
   const s = String(u).trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
-  const base = String(API_BASE || "").replace(/\/$/, "");
+
+  const base = String(api.defaults.baseURL || "").replace(/\/api\/v1\/?$/, "");
   const path = s.startsWith("/") ? s : `/${s}`;
   return `${base}${path}`;
 }
@@ -124,7 +123,7 @@ export default function HeaderUser() {
   const [meLoading, setMeLoading] = useState(false);
   const [userLogoUrl, setUserLogoUrl] = useState("");
 
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem("token");
   const effectiveUser = user || me;
 
   const currentUi = useMemo(() => {
@@ -157,12 +156,9 @@ export default function HeaderUser() {
       if (!token) return;
       setMeLoading(true);
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
+        const res = await api.get("/me");
         if (!mounted) return;
-        setMe(res.data || null);
+        setMe(res.data?.user || res.data || null);
       } catch (err) {
         console.log("[HeaderUser] /me failed:", err?.response?.status);
       } finally {
@@ -171,6 +167,7 @@ export default function HeaderUser() {
     }
 
     if (!user && !me && token) loadMe();
+
     return () => {
       mounted = false;
     };
@@ -181,21 +178,19 @@ export default function HeaderUser() {
 
     async function loadUserLogo() {
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/settings/public`, {
-          withCredentials: true,
-        });
-
+        const res = await api.get("/settings/public");
         const data = res.data?.data ?? res.data;
         const url = data?.user_logo_url || "";
 
         if (!mounted) return;
         setUserLogoUrl(toAbsUrl(url));
-      } catch (err) {
+      } catch {
         if (mounted) setUserLogoUrl("");
       }
     }
 
     loadUserLogo();
+
     return () => {
       mounted = false;
     };

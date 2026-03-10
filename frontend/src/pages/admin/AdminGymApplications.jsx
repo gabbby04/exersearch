@@ -1,4 +1,3 @@
-// src/pages/admin/AdminGymApplications.jsx
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
@@ -15,11 +14,10 @@ import {
 } from "../../utils/tableUtils";
 
 import { approveGym, rejectGym } from "../../utils/gymApprovalApi";
+import { absoluteUrl } from "../../utils/findGymsData";
 
 import "./AdminEquipments.css";
 import "./AdminOwnerApplications.css";
-
-const API_BASE = "https://exersearch.test";
 
 function normalizeStatus(s) {
   return String(s || "").trim().toLowerCase();
@@ -62,11 +60,7 @@ function peso(v) {
 function toAbsUrl(u) {
   const s = String(u || "").trim();
   if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-  if (s.startsWith("//")) return `https:${s}`;
-  const base = String(API_BASE).replace(/\/$/, "");
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return `${base}${path}`;
+  return absoluteUrl(s);
 }
 
 function normalizeStoragePath(u) {
@@ -141,7 +135,7 @@ function ReadOnlyMap({ lat, lng }) {
         markerRef.current = null;
       }
     };
-  }, []); // eslint-disable-line
+  }, []);
 
   useEffect(() => {
     if (mapRef.current) mapRef.current.setView([lat, lng], 16);
@@ -219,7 +213,7 @@ export default function AdminGymApplications() {
 
   const { isAdmin } = useAuthMe();
 
-  const { rows, loading: loadingRows, error, reload } = useApiList("/api/v1/admin/gyms", { authed: true });
+  const { rows, loading: loadingRows, error, reload } = useApiList("/admin/gyms", { authed: true });
 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("pending");
@@ -238,7 +232,7 @@ export default function AdminGymApplications() {
   const [err, setErr] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
-  const [tab, setTab] = useState("gym"); // gym | owner | media
+  const [tab, setTab] = useState("gym");
 
   useEffect(() => {
     const onKey = (e) => {
@@ -296,7 +290,7 @@ export default function AdminGymApplications() {
     }
   };
 
-  const sorted = useMemo(() => sortRows(filtered, sort, getValue), [filtered, sort, getValue]);
+  const sorted = useMemo(() => sortRows(filtered, sort, getValue), [filtered, sort]);
   const { totalPages, safePage, pageRows, left, right } = useMemo(
     () => paginate(sorted, page, pageSize),
     [sorted, page]

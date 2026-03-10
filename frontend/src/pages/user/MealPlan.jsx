@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { gsap } from "gsap";
 import "./MealPlan.css";
 import "./../owner/OwnerGymsPage.scss";
-import { api } from "../../utils/api";
+import { api } from "../../utils/apiClient";
 import {
   Utensils,
   ShoppingCart,

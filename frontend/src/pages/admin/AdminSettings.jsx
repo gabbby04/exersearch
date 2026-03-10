@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import axios from "axios";
+import { api } from "../../utils/apiClient";
 
 import { adminThemes, MAIN } from "./AdminLayout";
 import { useAuthMe } from "../../utils/useAuthMe";
@@ -10,29 +10,16 @@ import {
   alertInfo,
   alertSuccess,
 } from "../../utils/adminAlert";
+import { absoluteUrl } from "../../utils/findGymsData";
 
 import "./AdminEquipments.css";
 
-const API_BASE = "https://exersearch.test";
-const TOKEN_KEY = "token";
 const BRAND = "#d23f0b";
 const MAX_UPLOAD_MB = 5;
 const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
-function authHeaders() {
-  const token = localStorage.getItem(TOKEN_KEY);
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 function toAbsUrl(u) {
-  if (!u) return "";
-  const s = String(u).trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-
-  const base = String(API_BASE || "").replace(/\/$/, "");
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return `${base}${path}`;
+  return absoluteUrl(u);
 }
 
 const EMPTY = {
@@ -61,18 +48,12 @@ function safeStr(v) {
 }
 
 async function getAdminSettings() {
-  const res = await axios.get(`${API_BASE}/api/v1/admin/settings`, {
-    headers: authHeaders(),
-    withCredentials: true,
-  });
+  const res = await api.get("/admin/settings");
   return res.data?.data ?? res.data;
 }
 
 async function updateAdminSettings(payload) {
-  const res = await axios.put(`${API_BASE}/api/v1/admin/settings`, payload, {
-    headers: authHeaders(),
-    withCredentials: true,
-  });
+  const res = await api.put("/admin/settings", payload);
   return res.data?.data ?? res.data;
 }
 
@@ -82,11 +63,7 @@ async function uploadSettingsImage(file, kind = "logos") {
   fd.append("kind", kind);
   fd.append("file", file);
 
-  const res = await axios.post(`${API_BASE}/api/v1/media/upload`, fd, {
-    headers: { ...authHeaders() },
-    withCredentials: true,
-  });
-
+  const res = await api.post("/media/upload", fd);
   return res.data?.url || null;
 }
 
@@ -905,6 +882,12 @@ export default function AdminSettings() {
 }
 
 function LogoBox({ t, url, emptyText }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [url]);
+
   return (
     <div
       style={{
@@ -919,14 +902,12 @@ function LogoBox({ t, url, emptyText }) {
       }}
       title="Logo preview"
     >
-      {url ? (
+      {url && !imgFailed ? (
         <img
           src={url}
           alt="Logo"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
+          onError={() => setImgFailed(true)}
         />
       ) : (
         <div style={{ fontSize: 11, color: t.mutedText, fontWeight: 800 }}>{emptyText}</div>

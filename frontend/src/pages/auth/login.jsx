@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import {
@@ -19,6 +18,7 @@ import "./login.css";
 import { redirectAfterAuth } from "../../utils/redirects";
 import { allowedUiModes } from "../../utils/roles";
 import { setUiMode } from "../../utils/appMode";
+import { api } from "../../utils/apiClient";
 
 const LOGO_LEFT_SRC = "/src/assets/exersearchlogo.png";
 
@@ -603,7 +603,6 @@ function VerifyView({ email, onResend, onVerified, onLogout, loading }) {
 export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const API_BASE = "https://exersearch.test/api/v1";
 
   const getViewFromQuery = () => {
     const mode = searchParams.get("mode");
@@ -615,7 +614,7 @@ export default function Auth() {
   const [error, setError] = useState("");
 
   const [user, setUser] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
+  const [authToken, setAuthToken] = useState(localStorage.getItem("token") || null);
 
   const hasUiChoice = (role) => (allowedUiModes(role) || []).length > 1;
 
@@ -653,14 +652,13 @@ export default function Auth() {
         ? Object.values(data.errors)?.flat()?.[0]
         : null;
 
-    setError(firstValidation || data?.message || fallbackMsg);
+    setError(firstValidation || data?.message || err?.message || fallbackMsg);
     return true;
   };
 
   const fetchMe = async (token) => {
-    const res = await axios.get(`${API_BASE}/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-      withCredentials: true,
+    const res = await api.get("/me", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     return res.data;
   };
@@ -699,11 +697,9 @@ export default function Auth() {
       setLoading(true);
       setError("");
 
-      const res = await axios.post(
-        `${API_BASE}/auth/google`,
-        { id_token: credentialResponse.credential },
-        { withCredentials: true }
-      );
+      const res = await api.post("/auth/google", {
+        id_token: credentialResponse.credential,
+      });
 
       const token = res?.data?.token;
       if (!token) throw new Error("No token from backend");
@@ -724,11 +720,7 @@ export default function Auth() {
     setError("");
 
     try {
-      const res = await axios.post(
-        `${API_BASE}/auth/login`,
-        { email, password },
-        { withCredentials: true }
-      );
+      const res = await api.post("/auth/login", { email, password });
 
       const token = res?.data?.token;
       if (!token) {
@@ -756,16 +748,12 @@ export default function Auth() {
         data.lastName || ""
       ).trim()}`.trim();
 
-      const res = await axios.post(
-        `${API_BASE}/auth/register`,
-        {
-          name,
-          email: data.email,
-          password: data.password,
-          password_confirmation: data.confirm,
-        },
-        { withCredentials: true }
-      );
+      const res = await api.post("/auth/register", {
+        name,
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.confirm,
+      });
 
       const token = res?.data?.token;
       if (!token) {
@@ -790,10 +778,15 @@ export default function Auth() {
   };
 
   const resendVerificationEmail = async () => {
-    await axios.post(`${API_BASE}/auth/email/resend`, null, {
-      headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-      withCredentials: true,
-    });
+    await api.post(
+      "/auth/email/resend",
+      null,
+      authToken
+        ? {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        : undefined
+    );
   };
 
   useEffect(() => {

@@ -25,8 +25,8 @@ import "leaflet/dist/leaflet.css";
 
 import { getGym, updateGym, uploadMedia, getMyGyms } from "../../utils/ownerGymApi";
 import { ownerSetFreeVisitEnabled } from "../../utils/gymFreeVisitApi";
+import { api } from "../../utils/apiClient";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_GYM_IMAGE = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80";
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -42,7 +42,11 @@ function absUrl(u) {
   if (!s) return "";
   if (s.startsWith("http://") || s.startsWith("https://")) return s;
   if (s.startsWith("//")) return `https:${s}`;
-  if (s.startsWith("/")) return `${API_BASE}${s}`;
+
+  const rawBase = String(api?.defaults?.baseURL || "").replace(/\/+$/, "");
+  const originBase = rawBase.replace(/\/api\/v1$/i, "");
+
+  if (s.startsWith("/")) return `${originBase}${s}`;
   return s;
 }
 

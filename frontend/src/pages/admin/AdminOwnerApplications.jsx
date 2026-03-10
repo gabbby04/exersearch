@@ -1,4 +1,3 @@
-// src/pages/admin/AdminOwnerApplications.jsx
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
@@ -12,7 +11,7 @@ import { approveOwnerApplication, rejectOwnerApplication } from "../../utils/own
 import "./AdminEquipments.css";
 import "./AdminOwnerApplications.css";
 
-const API_BASE = "https://exersearch.test";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://exersearch.test";
 
 function formatDateTimeFallback(value) {
   if (!value) return "-";
@@ -29,7 +28,6 @@ function safeArr(v) {
       const parsed = JSON.parse(v);
       return Array.isArray(parsed) ? parsed : [];
     } catch {
-      // also handle comma-separated urls
       if (v.includes(",")) return v.split(",").map((s) => s.trim()).filter(Boolean);
       return [];
     }
@@ -49,7 +47,6 @@ function peso(v) {
   return `₱${n.toLocaleString()}`;
 }
 
-/** ✅ /storage/... -> https://exersearch.test/storage/... */
 function toAbsUrl(u) {
   const s = String(u || "").trim();
   if (!s) return "";
@@ -60,28 +57,16 @@ function toAbsUrl(u) {
   return `${base}${path}`;
 }
 
-/** ✅ harden: Laravel may return "public/storage/.." or "storage/.." */
 function normalizeStoragePath(u) {
   const s = String(u || "").trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s) || s.startsWith("//")) return s;
-
-  // if backend returned "public/storage/xxx"
   if (s.startsWith("public/storage/")) return `/${s.replace(/^public\//, "")}`;
-
-  // if backend returned "storage/xxx"
   if (s.startsWith("storage/")) return `/${s}`;
-
-  // if backend returned "/storage/xxx"
   if (s.startsWith("/storage/")) return s;
-
-  // default: leave as-is
   return s;
 }
 
-/* ============================
-   Read-only Map (Leaflet)
-   ============================ */
 function ReadOnlyMap({ lat, lng }) {
   const ref = useRef(null);
   const mapRef = useRef(null);
@@ -144,7 +129,7 @@ function ReadOnlyMap({ lat, lng }) {
         markerRef.current = null;
       }
     };
-  }, []); // eslint-disable-line
+  }, []);
 
   useEffect(() => {
     if (mapRef.current) mapRef.current.setView([lat, lng], 16);
@@ -154,9 +139,6 @@ function ReadOnlyMap({ lat, lng }) {
   return <div ref={ref} className="ao-map" />;
 }
 
-/* ============================
-   Media previews
-   ============================ */
 function DocumentPreview({ url }) {
   const normalized = normalizeStoragePath(url);
   const u = toAbsUrl(normalized);
@@ -223,9 +205,6 @@ function GalleryGrid({ urls }) {
   );
 }
 
-/* ============================
-   Page
-   ============================ */
 export default function AdminOwnerApplications() {
   const { theme } = useOutletContext();
   const t = adminThemes[theme]?.app || adminThemes.light.app;
@@ -233,7 +212,7 @@ export default function AdminOwnerApplications() {
 
   const { isAdmin } = useAuthMe();
 
-  const { rows, loading: loadingRows, error, reload } = useApiList("/api/v1/admin/owner-applications", {
+  const { rows, loading: loadingRows, error, reload } = useApiList("/admin/owner-applications", {
     authed: true,
   });
 
@@ -254,8 +233,7 @@ export default function AdminOwnerApplications() {
   const [err, setErr] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
-  // ✅ tabs inside view modal
-  const [tab, setTab] = useState("profile"); // profile | gym | media
+  const [tab, setTab] = useState("profile");
 
   useEffect(() => {
     const onKey = (e) => {
@@ -311,7 +289,7 @@ export default function AdminOwnerApplications() {
     }
   };
 
-  const sorted = useMemo(() => sortRows(filtered, sort, getValue), [filtered, sort, getValue]);
+  const sorted = useMemo(() => sortRows(filtered, sort, getValue), [filtered, sort]);
   const { totalPages, safePage, pageRows, left, right } = useMemo(
     () => paginate(sorted, page, pageSize),
     [sorted, page]
@@ -339,13 +317,10 @@ export default function AdminOwnerApplications() {
   const openView = (r) => {
     setErr("");
     setTab("profile");
-
-    // ✅ normalize gallery_urls to array
     const fixed = {
       ...r,
       gallery_urls: safeArr(r.gallery_urls),
     };
-
     setActive(fixed);
     setAppOpen(true);
   };
@@ -574,13 +549,9 @@ export default function AdminOwnerApplications() {
         </div>
       </div>
 
-      {/* ============================
-          VIEW MODAL (SCROLLABLE + TABS + MAP + PHOTOS)
-         ============================ */}
       {appOpen && active && (
         <div className="ae-backdrop" onClick={() => setAppOpen(false)}>
           <div className="ae-formModal ao-formModalScroll" onClick={(e) => e.stopPropagation()}>
-            {/* Sticky header */}
             <div className="ao-stickyTop">
               <div className="ae-modalTopRow">
                 <div>
@@ -597,7 +568,6 @@ export default function AdminOwnerApplications() {
 
               {err ? <div className="ae-alert ae-alertError">{err}</div> : null}
 
-              {/* Tabs */}
               <div className="ao-tabs">
                 <button
                   type="button"
@@ -619,17 +589,14 @@ export default function AdminOwnerApplications() {
               </div>
             </div>
 
-            {/* Scroll body */}
             <div className="ao-modalBody">
               {tab === "profile" && (
                 <Section title="Submitted Owner Profile Details">
                   <div className="ae-formGrid">
                     <ReadOnly label="User ID" value={String(active.user_id ?? "-")} />
                     <ReadOnly label="User" value={active.user?.name || active.user?.email || "-"} />
-
                     <ReadOnly label="Email" value={active.user?.email || "-"} />
                     <ReadOnly label="Contact" value={active.contact_number || "-"} />
-
                     <ReadOnly label="Business / Company" value={active.company_name || "-"} full />
                   </div>
                 </Section>
@@ -640,10 +607,8 @@ export default function AdminOwnerApplications() {
                   <div className="ae-formGrid">
                     <ReadOnly label="Gym name" value={active.gym_name || "-"} full />
                     <ReadOnly label="Address" value={active.address || "-"} full />
-
                     <ReadOnly label="Latitude" value={active.latitude ?? "-"} />
                     <ReadOnly label="Longitude" value={active.longitude ?? "-"} />
-
                     <ReadOnly
                       label="Pricing"
                       value={`Day: ${peso(active.daily_price)} | Monthly: ${peso(active.monthly_price)} | Quarterly: ${peso(
@@ -714,7 +679,6 @@ export default function AdminOwnerApplications() {
               </Section>
             </div>
 
-            {/* Sticky footer */}
             <div className="ao-stickyBottom">
               <div className="ae-modalFooter">
                 {isAdmin && active.status === "pending" ? (
@@ -737,7 +701,6 @@ export default function AdminOwnerApplications() {
         </div>
       )}
 
-      {/* APPROVE CONFIRM */}
       {approveOpen && active && (
         <div className="ae-backdrop ae-backdropTop" onClick={() => setApproveOpen(false)}>
           <div className="ae-confirmModalFancy" onClick={(e) => e.stopPropagation()}>
@@ -771,7 +734,6 @@ export default function AdminOwnerApplications() {
         </div>
       )}
 
-      {/* REJECT CONFIRM */}
       {rejectOpen && active && (
         <div className="ae-backdrop ae-backdropTop" onClick={() => setRejectOpen(false)}>
           <div className="ae-confirmModalFancy" onClick={(e) => e.stopPropagation()}>
@@ -817,9 +779,6 @@ export default function AdminOwnerApplications() {
   );
 }
 
-/* ============================
-   Small UI components
-   ============================ */
 function IconBtn({ children, title, className, onClick }) {
   return (
     <button type="button" title={title} onClick={onClick} className={className}>

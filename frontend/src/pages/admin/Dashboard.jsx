@@ -1,11 +1,10 @@
-﻿// src/pages/admin/AdminDashboard.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { MAIN, adminThemes } from "./AdminLayout";
 import { api } from "../../utils/apiClient";
 import "./AdminDashboard.css";
 
-const API_BASE = "https://exersearch.test";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://exersearch.test";
 
 function absoluteUrlMaybe(pathOrUrl) {
   if (!pathOrUrl) return "";
@@ -79,47 +78,47 @@ export default function AdminDashboard() {
   const top5Activity = useMemo(() => filteredActivity.slice(0, 5), [filteredActivity]);
 
   const kpiCards = useMemo(() => {
-  const safe = (v) => (v == null ? "—" : String(v));
+    const safe = (v) => (v == null ? "—" : String(v));
 
-  return [
-    {
-      key: "k1",
-      title: "Pending Applications",
-      value: safe(kpi?.pending_applications),
-      delta: rangeLabel,
-      badge: "Pending",
-      image: "/dashboard1.png",
-      onOpen: () => navigate("/admin/applications"),
-    },
-    {
-      key: "k2",
-      title: "Pending Gyms",
-      value: safe(kpi?.pending_gyms),
-      delta: rangeLabel,
-      badge: "Review",
-      image: "/dashboard2.png",
-      onOpen: () => navigate("/admin/gyms"),
-    },
-    {
-      key: "k3",
-      title: "Interactions",
-      value: safe(kpi?.interactions),
-      delta: rangeLabel,
-      badge: "Traffic",
-      image: "/dashboard3.png",
-      onOpen: () => navigate("/admin/activities"),
-    },
-    {
-      key: "k4",
-      title: "Blocked Gyms",
-      value: safe(kpi?.blocked_gyms),
-      delta: "Announcements",
-      badge: "Moderation",
-      image: "/dashboard4.png",
-      onOpen: () => navigate("/admin/announcements"),
-    },
-  ];
-}, [kpi, rangeLabel, navigate]);
+    return [
+      {
+        key: "k1",
+        title: "Pending Applications",
+        value: safe(kpi?.pending_applications),
+        delta: rangeLabel,
+        badge: "Pending",
+        image: "/dashboard1.png",
+        onOpen: () => navigate("/admin/applications"),
+      },
+      {
+        key: "k2",
+        title: "Pending Gyms",
+        value: safe(kpi?.pending_gyms),
+        delta: rangeLabel,
+        badge: "Review",
+        image: "/dashboard2.png",
+        onOpen: () => navigate("/admin/gyms"),
+      },
+      {
+        key: "k3",
+        title: "Interactions",
+        value: safe(kpi?.interactions),
+        delta: rangeLabel,
+        badge: "Traffic",
+        image: "/dashboard3.png",
+        onOpen: () => navigate("/admin/activities"),
+      },
+      {
+        key: "k4",
+        title: "Blocked Gyms",
+        value: safe(kpi?.blocked_gyms),
+        delta: "Announcements",
+        badge: "Moderation",
+        image: "/dashboard4.png",
+        onOpen: () => navigate("/admin/announcements"),
+      },
+    ];
+  }, [kpi, rangeLabel, navigate]);
 
   const fmtTime = (iso) => {
     if (!iso) return "";
@@ -176,10 +175,8 @@ export default function AdminDashboard() {
     "--axis": isDark ? "rgba(255,255,255,0.14)" : "rgba(15,23,42,0.12)",
     "--grid": isDark ? "rgba(255,255,255,0.07)" : "rgba(15,23,42,0.08)",
     "--label": isDark ? "rgba(255,255,255,0.78)" : "rgba(100,116,139,0.92)",
-
     "--trackTop": isDark ? "rgba(255,255,255,0.10)" : "rgba(148,163,184,0.18)",
     "--trackBot": isDark ? "rgba(255,255,255,0.06)" : "rgba(148,163,184,0.10)",
-
     "--accentArea1": isDark ? "rgba(255,60,0,0.22)" : "rgba(255,60,0,0.18)",
     "--accentArea2": isDark ? "rgba(255,60,0,0.08)" : "rgba(255,60,0,0.06)",
     "--accentGlow": isDark ? "rgba(255,122,69,0.40)" : "rgba(255,60,0,0.30)",
@@ -474,8 +471,6 @@ export default function AdminDashboard() {
   );
 }
 
-/* ---------------- UI Blocks ---------------- */
-
 function ChartBlock({ title, children }) {
   return (
     <div className="ad-chartBlock ad-chartBlockBig">
@@ -485,7 +480,6 @@ function ChartBlock({ title, children }) {
   );
 }
 
-/* ---------------- Infographic Bar Chart ---------------- */
 function InfographicBarChart({ data, height = 900, emptyLabel }) {
   const svgRef = useRef(null);
   const [hover, setHover] = useState(null);
@@ -498,8 +492,6 @@ function InfographicBarChart({ data, height = 900, emptyLabel }) {
   const trackW = 190;
   const fillW = 150;
   const topPad = 70;
-
-  // reserved bottom space for plain text labels
   const labelAreaH = 90;
 
   const width = Math.max(1100, pad * 2 + safe.length * trackW + (safe.length - 1) * colGap);
@@ -509,7 +501,7 @@ function InfographicBarChart({ data, height = 900, emptyLabel }) {
 
   const innerH = height - topPad - pad - labelAreaH;
 
-const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
+  const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
   const colX = (i) => pad + i * (trackW + colGap);
 
   const onMove = (e) => {
@@ -541,7 +533,6 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
     const d = safe[best];
     const v = Number(d.value) || 0;
 
-    // tooltip still okay even for zero, but you can disable if you want
     const fillH = (innerH * v) / max;
     const x0 = colX(best);
     const fillY = topPad + (innerH - fillH);
@@ -568,15 +559,14 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
           <feDropShadow dx="0" dy="18" stdDeviation="14" floodColor="rgba(0,0,0,0.18)" />
         </filter>
 
-<linearGradient id="trackGrad" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0%" stopColor="var(--trackTop)" />
-  <stop offset="100%" stopColor="var(--trackBot)" />
-</linearGradient>
+        <linearGradient id="trackGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--trackTop)" />
+          <stop offset="100%" stopColor="var(--trackBot)" />
+        </linearGradient>
       </defs>
 
       <GridLinesClean width={width} height={height} pad={pad} baseH={labelAreaH} />
 
-      {/* baseline */}
       <line
         x1={pad}
         y1={topPad + innerH}
@@ -613,15 +603,13 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
         const col = palette[i % palette.length];
 
         const showFill = v > 0;
-        const showBadge = v > 0; // hides the ugly 0 circles
+        const showBadge = v > 0;
 
-        // badge floats near top of fill (clamped)
         const badgeCx = x0 + trackW / 2;
         const badgeCy = Math.max(trackY + 54, fillY + 36);
 
         return (
           <g key={`${d.label}-${i}`}>
-            {/* outer track */}
             <rect
               x={trackX}
               y={trackY}
@@ -633,7 +621,6 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
               strokeWidth="2"
             />
 
-            {/* inner colored fill (only if > 0) */}
             {showFill && (
               <rect
                 x={fillX}
@@ -647,7 +634,6 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
               />
             )}
 
-            {/* bottom label as plain text (not rotated, not in a circle) */}
             <text
               x={x0 + trackW / 2}
               y={topPad + innerH + 58}
@@ -660,7 +646,6 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
               {String(d.label || "").slice(0, 14)}
             </text>
 
-            {/* value badge (only if > 0) */}
             {showBadge && (
               <g filter="url(#softShadow)">
                 <circle cx={badgeCx} cy={badgeCy} r="72" fill={col} opacity="0.18" />
@@ -683,7 +668,6 @@ const palette = ["#ff7a18", "#ff8a1f", "#ff5a00", "#ff3c00", "#ffb155"];
     </svg>
   );
 }
-/* ---------------- Line Chart ---------------- */
 
 function ThickLineChart({ points, height, stroke, emptyLabel }) {
   const svgRef = useRef(null);
@@ -823,8 +807,6 @@ function ThickLineChart({ points, height, stroke, emptyLabel }) {
   );
 }
 
-/* ---------------- Shared SVG helpers ---------------- */
-
 function GridLinesClean({ width, height, pad, baseH }) {
   const lines = 6;
   const top = pad;
@@ -851,6 +833,7 @@ function GridLinesClean({ width, height, pad, baseH }) {
     </g>
   );
 }
+
 function TooltipClean({ x, y, title, value }) {
   const w = 520;
   const h = 150;

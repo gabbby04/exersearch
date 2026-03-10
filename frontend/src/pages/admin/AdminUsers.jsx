@@ -1,4 +1,3 @@
-// src/pages/admin/AdminUsers.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { adminThemes } from "./AdminLayout";
@@ -19,7 +18,7 @@ import {
   absoluteUrl,
 } from "../../utils/userApi";
 
-import "./AdminEquipments.css"; // ✅ reuse the same CSS
+import "./AdminEquipments.css";
 
 function formatDateTimeFallback(value) {
   if (!value) return "-";
@@ -164,7 +163,7 @@ export default function AdminUsers() {
   const isDark = theme === "dark";
 
   const { rows, loading: loadingRows, error, reload } = useApiList(
-    "/api/v1/admin/users",
+    "/admin/users",
     { authed: true }
   );
 
@@ -344,8 +343,8 @@ export default function AdminUsers() {
   };
 
   const isOwner = String(activeUser?.role || "").toLowerCase() === "owner";
-  const userProfile = activeUser?.profile || null; // user_profiles
-  const ownerProfile = activeUser?.owner_profile || null; // owner_profiles (backend must include)
+  const userProfile = activeUser?.profile || null;
+  const ownerProfile = activeUser?.owner_profile || null;
 
   const avatarUrl =
     userProfile?.profile_photo_url ||
@@ -529,7 +528,6 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* ✅ view-only modal (scrollable) */}
       {userOpen && activeUser && (
         <div className="ae-backdrop" onClick={() => setUserOpen(false)}>
           <div className="ae-formModal" onClick={(e) => e.stopPropagation()}>
@@ -540,7 +538,6 @@ export default function AdminUsers() {
             <div style={{ maxHeight: "72vh", overflowY: "auto", paddingRight: 6 }}>
               {prefErr ? <div className="ae-alert ae-alertError">{prefErr}</div> : null}
 
-              {/* Top identity header */}
               <div style={sectionStyle("neutral")}>
                 <SectionHeader
                   title="Account"
@@ -578,7 +575,6 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              {/* USER PROFILE */}
               <div style={sectionStyle("user")}>
                 <SectionHeader
                   title="User profile"
@@ -596,7 +592,6 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              {/* OWNER PROFILE */}
               {isOwner ? (
                 <div style={sectionStyle("owner")}>
                   <SectionHeader
@@ -620,7 +615,6 @@ export default function AdminUsers() {
                 </div>
               ) : null}
 
-              {/* PREFERENCES */}
               <div style={sectionStyle("pref")}>
                 <SectionHeader
                   title="Preferences"
@@ -665,7 +659,6 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              {/* OWNER GYMS */}
               {isOwner ? (
                 <div style={sectionStyle("owner")}>
                   <SectionHeader
@@ -697,9 +690,9 @@ export default function AdminUsers() {
                               <td className="ae-td">
                                 <div className="ae-equipCell">
                                   <div className="ae-imgBox">
-                                    {g.image_url ? (
+                                    {g.image_url || g.main_image_url ? (
                                       <img
-                                        src={absoluteUrl(g.image_url)}
+                                        src={absoluteUrl(g.image_url || g.main_image_url)}
                                         alt={g.name || "gym"}
                                         className="ae-img"
                                         onError={(e) => { e.currentTarget.style.display = "none"; }}

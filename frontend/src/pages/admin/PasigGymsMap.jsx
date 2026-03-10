@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { api } from "../../utils/apiClient";
 
 const MAIN = "#d23f0b";
 const MATCH_GREEN = "#22c55e";
@@ -32,12 +33,17 @@ function flattenCoords(geometry) {
 
   const { type, coordinates } = geometry;
   if (type === "Polygon") {
-    for (const ring of coordinates) for (const pt of ring) out.push(pt);
+    for (const ring of coordinates) {
+      for (const pt of ring) out.push(pt);
+    }
   } else if (type === "MultiPolygon") {
-    for (const poly of coordinates)
-      for (const ring of poly)
+    for (const poly of coordinates) {
+      for (const ring of poly) {
         for (const pt of ring) out.push(pt);
+      }
+    }
   }
+
   return out;
 }
 
@@ -48,10 +54,10 @@ function getBboxFromFeature(feature) {
   }
 
   const coords = flattenCoords(feature.geometry);
-  let west = Infinity,
-    south = Infinity,
-    east = -Infinity,
-    north = -Infinity;
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
 
   for (const [lng, lat] of coords) {
     if (lng < west) west = lng;
@@ -94,11 +100,14 @@ function pointInRing(point, ring) {
   let inside = false;
 
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const xi = ring[i][0],
-      yi = ring[i][1];
-    const xj = ring[j][0],
-      yj = ring[j][1];
-    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+    const xj = ring[j][0];
+    const yj = ring[j][1];
+
+    const intersect =
+      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
     if (intersect) inside = !inside;
   }
 
@@ -107,12 +116,15 @@ function pointInRing(point, ring) {
 
 function pointInPolygon(point, geometry) {
   if (!geometry) return false;
+
   if (geometry.type === "Polygon") {
     return pointInRing(point, geometry.coordinates[0]);
   }
+
   if (geometry.type === "MultiPolygon") {
     return geometry.coordinates.some((p) => pointInRing(point, p[0]));
   }
+
   return false;
 }
 
@@ -143,6 +155,7 @@ out center tags;
 
   const text = await res.text();
   let data = null;
+
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
@@ -151,7 +164,7 @@ out center tags;
 
   if (!res.ok) throw new Error("Failed to fetch gyms from Overpass.");
 
-  const features = (data.elements || [])
+  const features = (data?.elements || [])
     .map((el) => {
       const lng = el.type === "node" ? el.lon : el.center?.lon;
       const lat = el.type === "node" ? el.lat : el.center?.lat;
@@ -173,43 +186,16 @@ out center tags;
 }
 
 async function fetchDbGymsInBbox(bbox) {
-  const params = new URLSearchParams({
-    south: String(bbox.south),
-    west: String(bbox.west),
-    north: String(bbox.north),
-    east: String(bbox.east),
-  });
-
-  const url = `/api/v1/gyms/map?${params.toString()}`;
-
-  const token =
-    localStorage.getItem("token") ||
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("auth_token");
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const res = await api.get("/gyms/map", {
+    params: {
+      south: bbox.south,
+      west: bbox.west,
+      north: bbox.north,
+      east: bbox.east,
     },
-    credentials: "include",
   });
 
-  const text = await res.text();
-  let json = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = null;
-  }
-
-  if (!res.ok) {
-    const msg =
-      (json && (json.message || json.error)) || `Failed to fetch DB gyms (HTTP ${res.status})`;
-    throw new Error(msg);
-  }
-
+  const json = res.data;
   const rows = json?.data || json?.rows || (Array.isArray(json) ? json : []);
 
   const features = (Array.isArray(rows) ? rows : [])
@@ -238,50 +224,23 @@ async function fetchDbGymsInBbox(bbox) {
 }
 
 async function fetchOwnerAppsInBbox(bbox) {
-  const params = new URLSearchParams({
-    south: String(bbox.south),
-    west: String(bbox.west),
-    north: String(bbox.north),
-    east: String(bbox.east),
-  });
-
-  const url = `/api/v1/owner-applications/map?${params.toString()}`;
-
-  const token =
-    localStorage.getItem("token") ||
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("auth_token");
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const res = await api.get("/owner-applications/map", {
+    params: {
+      south: bbox.south,
+      west: bbox.west,
+      north: bbox.north,
+      east: bbox.east,
     },
-    credentials: "include",
   });
 
-  const text = await res.text();
-  let json = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = null;
-  }
-
-  if (!res.ok) {
-    const msg =
-      (json && (json.message || json.error)) ||
-      `Failed to fetch owner applications (HTTP ${res.status})`;
-    throw new Error(msg);
-  }
-
+  const json = res.data;
   const rows = json?.data || (Array.isArray(json) ? json : []);
 
   const features = (Array.isArray(rows) ? rows : [])
     .map((a) => {
       const lng = parseFloat(a.longitude);
       const lat = parseFloat(a.latitude);
+
       if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
 
       return {
@@ -319,9 +278,13 @@ function haversineMeters([lng1, lat1], [lng2, lat2]) {
   const R = 6371000;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
+
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) ** 2;
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -344,9 +307,14 @@ function tokenSet(s) {
 function nameSimilarity(a, b) {
   const A = tokenSet(a);
   const B = tokenSet(b);
+
   if (!A.size || !B.size) return 0;
+
   let inter = 0;
-  for (const t of A) if (B.has(t)) inter++;
+  for (const t of A) {
+    if (B.has(t)) inter++;
+  }
+
   const union = A.size + B.size - inter;
   return union ? inter / union : 0;
 }
@@ -369,7 +337,9 @@ function matchOsmToDb(osmFC, dbFC) {
       const ok = sim >= NAME_SIM_THRESHOLD || dist <= 70;
 
       if (!ok) continue;
-      if (!best || dist < best.dist) best = { dbId, dist, sim };
+      if (!best || dist < best.dist) {
+        best = { dbId, dist, sim };
+      }
     }
 
     if (best) {
@@ -385,7 +355,13 @@ function matchOsmToDb(osmFC, dbFC) {
       };
     }
 
-    return { ...f, properties: { ...f.properties, in_db: false } };
+    return {
+      ...f,
+      properties: {
+        ...f.properties,
+        in_db: false,
+      },
+    };
   });
 
   const dbOnly = db.filter((d) => !usedDbIds.has(d.properties?.gym_id));
@@ -448,14 +424,20 @@ export default function AdminPasigGymsMap() {
             id: "mask-fill",
             type: "fill",
             source: "pasig-mask",
-            paint: { "fill-color": MAIN, "fill-opacity": 0.22 },
+            paint: {
+              "fill-color": MAIN,
+              "fill-opacity": 0.22,
+            },
           });
 
           map.addLayer({
             id: "pasig-outline",
             type: "line",
             source: "pasig-boundary",
-            paint: { "line-color": MAIN, "line-width": 3 },
+            paint: {
+              "line-color": MAIN,
+              "line-width": 3,
+            },
           });
 
           setStatus("Fetching OSM gyms + DB gyms + applications…");
@@ -465,6 +447,7 @@ export default function AdminPasigGymsMap() {
             fetchDbGymsInBbox(bbox),
             fetchOwnerAppsInBbox(bbox),
           ]);
+
           if (cancelled) return;
 
           const osmInside = {
@@ -486,7 +469,12 @@ export default function AdminPasigGymsMap() {
             source: "gyms-osm",
             paint: {
               "circle-radius": 7,
-              "circle-color": ["case", ["==", ["get", "in_db"], true], MATCH_GREEN, MAIN],
+              "circle-color": [
+                "case",
+                ["==", ["get", "in_db"], true],
+                MATCH_GREEN,
+                MAIN,
+              ],
               "circle-opacity": 0.95,
               "circle-stroke-width": 3,
               "circle-stroke-color": "#ffffff",
@@ -529,7 +517,10 @@ export default function AdminPasigGymsMap() {
           function popupHtml(title, lines = [], action = null) {
             const items = lines
               .filter(Boolean)
-              .map((l) => `<div style="margin-top:6px;opacity:.92">${escapeHtml(l)}</div>`)
+              .map(
+                (l) =>
+                  `<div style="margin-top:6px;opacity:.92">${escapeHtml(l)}</div>`
+              )
               .join("");
 
             const btn = action
@@ -551,9 +542,9 @@ export default function AdminPasigGymsMap() {
 
             return `
               <div style="min-width:220px">
-                <div style="font-weight:900; font-size:14px; margin-bottom:2px;">${escapeHtml(
-                  title
-                )}</div>
+                <div style="font-weight:900; font-size:14px; margin-bottom:2px;">
+                  ${escapeHtml(title)}
+                </div>
                 ${items}
                 ${btn}
               </div>
@@ -561,10 +552,10 @@ export default function AdminPasigGymsMap() {
           }
 
           function attachPopupButtonHandler(extra = {}) {
-            // wait for popup DOM to mount
             window.requestAnimationFrame(() => {
               const el = document.querySelector(".maplibregl-popup");
               if (!el) return;
+
               const btn = el.querySelector("button[data-action]");
               if (!btn) return;
 
@@ -577,6 +568,7 @@ export default function AdminPasigGymsMap() {
                 if (type === "gym_details" && extra.gymId) {
                   navigate(`/admin/gyms/${extra.gymId}`);
                 }
+
                 if (type === "app_details" && extra.appId) {
                   navigate(`/admin/owner-applications/${extra.appId}`);
                 }
@@ -594,8 +586,6 @@ export default function AdminPasigGymsMap() {
             const name = f.properties?.name || "Fitness Center";
             const inDb = !!f.properties?.in_db;
             const dist = f.properties?.match_dist_m;
-
-            // ✅ if matched, we can route to details
             const gymId = f.properties?.matched_gym_id;
 
             map.easeTo({
@@ -610,15 +600,22 @@ export default function AdminPasigGymsMap() {
                 inDb ? "✅ In database (matched)" : "❌ Not in database",
                 inDb && dist != null ? `Match distance: ${dist}m` : "",
               ],
-              inDb && gymId ? { type: "gym_details", label: "View full details" } : null
+              inDb && gymId
+                ? { type: "gym_details", label: "View full details" }
+                : null
             );
 
-            popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true })
+            popupRef.current = new maplibregl.Popup({
+              closeButton: true,
+              closeOnClick: true,
+            })
               .setLngLat([lng, lat])
               .setHTML(html)
               .addTo(map);
 
-            if (inDb && gymId) attachPopupButtonHandler({ gymId });
+            if (inDb && gymId) {
+              attachPopupButtonHandler({ gymId });
+            }
           });
 
           map.on("click", "gyms-db-only-circles", (e) => {
@@ -647,12 +644,17 @@ export default function AdminPasigGymsMap() {
               gymId ? { type: "gym_details", label: "View full details" } : null
             );
 
-            popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true })
+            popupRef.current = new maplibregl.Popup({
+              closeButton: true,
+              closeOnClick: true,
+            })
               .setLngLat([lng, lat])
               .setHTML(html)
               .addTo(map);
 
-            if (gymId) attachPopupButtonHandler({ gymId });
+            if (gymId) {
+              attachPopupButtonHandler({ gymId });
+            }
           });
 
           map.on("click", "owner-apps-circles", (e) => {
@@ -683,20 +685,42 @@ export default function AdminPasigGymsMap() {
               appId ? { type: "app_details", label: "View application" } : null
             );
 
-            popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true })
+            popupRef.current = new maplibregl.Popup({
+              closeButton: true,
+              closeOnClick: true,
+            })
               .setLngLat([lng, lat])
               .setHTML(html)
               .addTo(map);
 
-            if (appId) attachPopupButtonHandler({ appId });
+            if (appId) {
+              attachPopupButtonHandler({ appId });
+            }
           });
 
-          map.on("mouseenter", "gyms-osm-circles", () => (map.getCanvas().style.cursor = "pointer"));
-          map.on("mouseleave", "gyms-osm-circles", () => (map.getCanvas().style.cursor = ""));
-          map.on("mouseenter", "gyms-db-only-circles", () => (map.getCanvas().style.cursor = "pointer"));
-          map.on("mouseleave", "gyms-db-only-circles", () => (map.getCanvas().style.cursor = ""));
-          map.on("mouseenter", "owner-apps-circles", () => (map.getCanvas().style.cursor = "pointer"));
-          map.on("mouseleave", "owner-apps-circles", () => (map.getCanvas().style.cursor = ""));
+          map.on("mouseenter", "gyms-osm-circles", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseleave", "gyms-osm-circles", () => {
+            map.getCanvas().style.cursor = "";
+          });
+
+          map.on("mouseenter", "gyms-db-only-circles", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseleave", "gyms-db-only-circles", () => {
+            map.getCanvas().style.cursor = "";
+          });
+
+          map.on("mouseenter", "owner-apps-circles", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseleave", "owner-apps-circles", () => {
+            map.getCanvas().style.cursor = "";
+          });
 
           const allCoords = [
             ...(osm.features || []).map((f) => f.geometry.coordinates),
@@ -718,12 +742,22 @@ export default function AdminPasigGymsMap() {
         });
       } catch (err) {
         console.error(err);
-        setStatus(`Error: ${err.message}`);
+        setStatus(
+          `Error: ${
+            err?.response?.data?.message ||
+            err?.message ||
+            "Request failed."
+          }`
+        );
       }
     }
 
     init();
-    return () => mapRef.current?.remove();
+
+    return () => {
+      cancelled = true;
+      mapRef.current?.remove();
+    };
   }, [navigate]);
 
   const Legend = () => (

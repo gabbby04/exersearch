@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
 import "./ProfileStyle.css";
 import { useOutletContext } from "react-router-dom";
+import { api } from "../../utils/apiClient";
+import { absoluteUrl } from "../../utils/findGymsData";
 import { MAIN, adminThemes } from "./AdminLayout";
 import { alertSuccess, alertError, alertInfo } from "../../utils/adminAlert";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "/arellano.png";
+
+function toAbsoluteAvatarUrl(raw) {
+  if (!raw) return FALLBACK_AVATAR;
+  const u = absoluteUrl(raw);
+  return u || FALLBACK_AVATAR;
+}
 
 export default function Profile() {
   const { theme } = useOutletContext();
@@ -44,15 +50,10 @@ export default function Profile() {
 
   const [localPreview, setLocalPreview] = useState("");
 
-  const token = localStorage.getItem("token");
-
   const avatarSrc = useMemo(() => {
     if (localPreview) return localPreview;
-
     const raw = (isEditing ? formData.avatar_url : userData.avatar_url) || "";
-    if (!raw) return FALLBACK_AVATAR;
-    if (raw.startsWith("http")) return raw;
-    return `${API_BASE}${raw}`;
+    return toAbsoluteAvatarUrl(raw);
   }, [localPreview, isEditing, formData.avatar_url, userData.avatar_url]);
 
   const pageWrapStyle = useMemo(
@@ -117,13 +118,10 @@ export default function Profile() {
       setLoading(true);
 
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/admin/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
+        const res = await api.get("/admin/profile");
 
-        const u = res.data.user;
-        const p = res.data.admin_profile;
+        const u = res.data?.user;
+        const p = res.data?.admin_profile;
 
         const next = {
           name: u?.name || "",
@@ -140,6 +138,8 @@ export default function Profile() {
 
         setUserData(next);
         setFormData(next);
+
+        if (localPreview) URL.revokeObjectURL(localPreview);
         setLocalPreview("");
       } catch (err) {
         console.log(
@@ -148,33 +148,32 @@ export default function Profile() {
           err?.response?.data
         );
 
-        alertError({
-          title: "Failed to load profile",
-          text: err?.response?.data?.message || "Something went wrong.",
-          theme,
-          mainColor: MAIN,
-        });
+        const status = err?.response?.status;
+        const msg =
+          err?.response?.data?.message ||
+          (status === 401
+            ? "Your session expired. Please log in again."
+            : "Something went wrong.");
+
+        if (mounted) {
+          alertError({
+            title: "Failed to load profile",
+            text: msg,
+            theme,
+            mainColor: MAIN,
+          });
+        }
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    if (token) {
-      load();
-    } else {
-      setLoading(false);
-      alertInfo({
-        title: "Session missing",
-        text: "No token found. Please log in again.",
-        theme,
-        mainColor: MAIN,
-      });
-    }
+    load();
 
     return () => {
       mounted = false;
     };
-  }, [token, theme]);
+  }, [theme, localPreview]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -229,12 +228,10 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("photo", file);
 
-      const res = await axios.post(`${API_BASE}/api/v1/me/avatar/admin`, fd, {
+      const res = await api.post("/me/avatar/admin", fd, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: true,
       });
 
       const newUrl = res.data?.avatar_url;
@@ -274,7 +271,7 @@ export default function Profile() {
         err?.response?.data
       );
 
-      if (err.response?.data?.errors) {
+      if (err?.response?.data?.errors) {
         alertError({
           title: "Upload failed",
           text: Object.values(err.response.data.errors).flat().join("\n"),
@@ -304,10 +301,7 @@ export default function Profile() {
         notes: formData.notes,
       };
 
-      const res = await axios.put(`${API_BASE}/api/v1/admin/profile`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+      const res = await api.put("/admin/profile", payload);
 
       setUserData((prev) => ({
         ...prev,
@@ -331,7 +325,7 @@ export default function Profile() {
         err?.response?.data
       );
 
-      if (err.response?.data?.errors) {
+      if (err?.response?.data?.errors) {
         alertError({
           title: "Validation error",
           text: Object.values(err.response.data.errors).flat().join("\n"),
@@ -570,10 +564,7 @@ export default function Profile() {
                 <h3 className="section-title">Notes</h3>
 
                 <div className="info-grid">
-                  <div
-                    className="info-card"
-                    style={{ gridColumn: "1 / -1" }}
-                  >
+                  <div className="info-card" style={{ gridColumn: "1 / -1" }}>
                     <label>Admin Notes</label>
                     <strong>{userData.notes || "No notes yet."}</strong>
                   </div>

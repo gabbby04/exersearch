@@ -43,7 +43,7 @@ export default function AdminAmenities() {
   const isDark = theme === "dark";
 
   const { isAdmin } = useAuthMe();
-  const { rows, loading: loadingRows, error, reload } = useApiList("/api/v1/amenities", {
+  const { rows, loading: loadingRows, error, reload } = useApiList("/amenities", {
     authed: true,
   });
 

@@ -1,7 +1,5 @@
-// src/pages/admin/AdminFaqs.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import axios from "axios";
 import { adminThemes } from "./AdminLayout";
 
 import { useAuthMe } from "../../utils/useAuthMe";
@@ -15,16 +13,9 @@ import {
 } from "../../utils/tableUtils";
 
 import { createFaq, updateFaq, deleteFaq, toggleFaq } from "../../utils/faqApi";
+import { api } from "../../utils/apiClient";
 
 import "./AdminEquipments.css";
-
-const API_BASE = "https://exersearch.test";
-const TOKEN_KEY = "token";
-
-function authHeaders() {
-  const token = localStorage.getItem(TOKEN_KEY);
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 function formatDateTimeFallback(value) {
   if (!value) return "-";
@@ -87,9 +78,7 @@ export default function AdminFaqs() {
   }, []);
 
   const fetchFaqPage = async (p) => {
-    const res = await axios.get(`${API_BASE}/api/v1/faqs`, {
-      headers: authHeaders(),
-      withCredentials: true,
+    const res = await api.get("/faqs", {
       params: { page: p, per_page: 50 },
     });
     return res.data;
@@ -129,7 +118,6 @@ export default function AdminFaqs() {
 
   useEffect(() => {
     reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const categories = useMemo(() => ["All", ...FAQ_CATEGORY_OPTIONS], []);
