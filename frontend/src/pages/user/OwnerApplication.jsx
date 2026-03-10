@@ -1,4 +1,3 @@
-// ✅ src/pages/user/OwnerApplication.jsx
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
@@ -16,10 +15,10 @@ import {
   FaDumbbell,
   FaCheckCircle,
 } from "react-icons/fa";
-
+import { api } from "../../utils/apiClient";
 import { getMyOwnerApplication, submitOwnerApplication } from "../../utils/ownerApplicationApi";
 
-const API_BASE = "https://exersearch.test";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://exersearch.test";
 
 const STEPS = [
   { id: 0, label: "Owner Info", icon: FaUser },
@@ -94,25 +93,18 @@ function pointInPolygon(lat, lng, polygonLatLng) {
 const PASIG_CENTER = [14.5764, 121.0851];
 
 const INIT = {
-  // owner info
   fullName: "",
   email: "",
   contactNumber: "",
-  businessName: "", // maps to company_name
-
-  // gym details
+  businessName: "",
   gymName: "",
   description: "",
   amenityIds: [],
-
-  // location
   address: "",
   city: "Pasig City",
   landmark: "",
   lat: PASIG_CENTER[0],
   lng: PASIG_CENTER[1],
-
-  // hours (frontend-only for now)
   hours: {
     Monday: { open: "06:00", close: "22:00" },
     Tuesday: { open: "06:00", close: "22:00" },
@@ -125,17 +117,13 @@ const INIT = {
   sameHours: true,
   commonOpen: "06:00",
   commonClose: "22:00",
-
-  // pricing
   dayPass: "",
   monthly: "",
   quarterly: "",
-
-  // uploads
-  businessReg: null, // File
-  gymPhotos: [], // File[]
-  galleryUrls: [], // string[] returned by upload
-  mainImageUrl: "", // string (first gallery url)
+  businessReg: null,
+  gymPhotos: [],
+  galleryUrls: [],
+  mainImageUrl: "",
 };
 
 const fmtTime = (val) => HOURS.find((h) => h.value === val)?.label || val;
@@ -169,9 +157,6 @@ function getAmenityId(a) {
   return Number.isFinite(n) ? n : null;
 }
 
-/* ============================
-   TimePicker
-   ============================ */
 function TimePicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -212,9 +197,6 @@ function TimePicker({ value, onChange }) {
   );
 }
 
-/* ============================
-   API helpers (frontend)
-   ============================ */
 function getTokenMaybe() {
   return localStorage.getItem("token") || "";
 }
@@ -227,34 +209,14 @@ async function safeJson(res) {
   }
 }
 
-async function apiRequest(path, options = {}) {
-  const token = getTokenMaybe();
-  const url = `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
-
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Accept: "application/json",
-      ...(options.headers || {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    credentials: "include",
-  });
-
-  const data = await safeJson(res);
-
-  if (!res.ok) {
-    throw new Error(data?.message || `Request failed (HTTP ${res.status})`);
-  }
-  return data;
-}
-
 async function getAmenities() {
-  return apiRequest(`/api/v1/amenities`);
+  const res = await api.get("/amenities");
+  return res.data;
 }
 
 async function getMe() {
-  return apiRequest(`/api/v1/me`);
+  const res = await api.get("/me");
+  return res.data;
 }
 
 async function reverseGeocode(lat, lng) {
@@ -273,9 +235,6 @@ function bestEffortAddressFromNominatim(data) {
   return { street, city };
 }
 
-/* ======================================================
-   Upload helper: MediaUploadController
-   ====================================================== */
 async function uploadOwnerApplicationFile(file, kind = "docs") {
   const token = getTokenMaybe();
   const form = new FormData();
@@ -304,7 +263,6 @@ async function uploadOwnerApplicationFile(file, kind = "docs") {
   return url;
 }
 
-/* ── Leaflet Map Component with Search + Geocode ── */
 function LeafletMap({ lat, lng, onPinAccepted }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -423,7 +381,6 @@ function LeafletMap({ lat, lng, onPinAccepted }) {
         markerRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -496,13 +453,9 @@ function LeafletMap({ lat, lng, onPinAccepted }) {
   );
 }
 
-/* ============================
-   STATUS SCREENS
-   ============================ */
 function PendingScreen({ form, serverStatus }) {
   return (
     <div className="oa-app">
-
       <div className="oa-success">
         <div className="oa-success-card">
           <div className="oa-success-icon">
@@ -553,7 +506,6 @@ function PendingScreen({ form, serverStatus }) {
 function ApprovedScreen({ form }) {
   return (
     <div className="oa-app">
-
       <div className="oa-success">
         <div className="oa-success-card">
           <div className="oa-success-icon">
@@ -623,7 +575,6 @@ export default function OwnerApplication() {
     setErrors((e) => ({ ...e, [field]: "" }));
   };
 
-  // ✅ FIX: amenities clicking
   const toggleAmenityId = useCallback((amenityObjOrId) => {
     const aid =
       typeof amenityObjOrId === "object" ? getAmenityId(amenityObjOrId) : Number(amenityObjOrId);
@@ -663,14 +614,12 @@ export default function OwnerApplication() {
     setForm((f) => ({ ...f, hours: filled, [key]: val }));
   };
 
-  // ✅ build & cleanup preview URLs (no memory leaks)
   useEffect(() => {
     const urls = form.gymPhotos.map((f) => URL.createObjectURL(f));
     setPhotoURLs(urls);
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
   }, [form.gymPhotos]);
 
-  // Load amenities list from DB
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -710,9 +659,7 @@ export default function OwnerApplication() {
           email: f.email || user?.email || "",
           contactNumber: f.contactNumber || user?.contact_number || "",
         }));
-      } catch {
-        // non-blocking
-      }
+      } catch {}
 
       try {
         const json = await getMyOwnerApplication();
@@ -729,24 +676,18 @@ export default function OwnerApplication() {
             address: app.address ?? f.address,
             lat: app.latitude ?? f.lat,
             lng: app.longitude ?? f.lng,
-
             description: app.description ?? f.description,
             businessName: app.company_name ?? f.businessName,
             contactNumber: app.contact_number ?? f.contactNumber,
-
             dayPass: app.daily_price ?? f.dayPass,
             monthly: app.monthly_price ?? f.monthly,
             quarterly: app.quarterly_price ?? f.quarterly,
-
             amenityIds: Array.isArray(app.amenity_ids) ? app.amenity_ids : f.amenityIds,
-
             mainImageUrl: app.main_image_url ?? f.mainImageUrl,
             galleryUrls: Array.isArray(app.gallery_urls) ? app.gallery_urls : f.galleryUrls,
           }));
         }
-      } catch {
-        // ok
-      }
+      } catch {}
     }
 
     load();
@@ -801,7 +742,6 @@ export default function OwnerApplication() {
   const validate = () => {
     const e = {};
 
-    // STEP 0 validations
     if (step === 0) {
       if (!String(form.fullName || "").trim()) e.fullName = "Full name is required.";
       if (!String(form.email || "").trim()) e.email = "Email is required.";
@@ -815,7 +755,6 @@ export default function OwnerApplication() {
       else if (String(form.businessName).trim().length < 2) e.businessName = "Business name is too short.";
     }
 
-    // STEP 1 validations
     if (step === 1) {
       if (!String(form.gymName || "").trim()) e.gymName = "Gym name is required.";
       else if (String(form.gymName).trim().length < 2) e.gymName = "Gym name is too short.";
@@ -824,13 +763,11 @@ export default function OwnerApplication() {
       else if (String(form.description).trim().length < 20)
         e.description = "Add a bit more detail (at least 20 characters).";
 
-      // pricing
       if (!isNonNegNumberOrEmpty(form.dayPass)) e.dayPass = "Must be a non-negative number.";
       if (!isNonNegNumberOrEmpty(form.monthly)) e.monthly = "Must be a non-negative number.";
       if (!isNonNegNumberOrEmpty(form.quarterly)) e.quarterly = "Must be a non-negative number.";
     }
 
-    // STEP 2 validations
     if (step === 2) {
       if (!String(form.address || "").trim()) e.address = "Street address is required.";
       if (!String(form.city || "").trim()) e.city = "City is required.";
@@ -840,7 +777,6 @@ export default function OwnerApplication() {
       else if (!pointInPolygon(la, ln, PASIG_POLYGON_LATLNG)) e.map = "Pin must be inside Pasig City.";
     }
 
-    // STEP 3 validations
     if (step === 3) {
       if (!form.businessReg && !serverApp?.document_path) e.businessReg = "Business registration upload is required.";
 
@@ -849,7 +785,7 @@ export default function OwnerApplication() {
         if (!okTypes.includes(form.businessReg.type)) {
           e.businessReg = "Invalid file type. Upload PDF/JPG/PNG/WebP.";
         }
-        const max = 10 * 1024 * 1024; // 10MB
+        const max = 10 * 1024 * 1024;
         if (form.businessReg.size > max) e.businessReg = "File too large (max 10MB).";
       }
 
@@ -861,7 +797,7 @@ export default function OwnerApplication() {
           e.gymPhotos = "Gym photos must be images only.";
           break;
         }
-        const maxImg = 8 * 1024 * 1024; // 8MB each
+        const maxImg = 8 * 1024 * 1024;
         if (f.size > maxImg) {
           e.gymPhotos = "One of the images is too large (max 8MB each).";
           break;
@@ -912,9 +848,7 @@ export default function OwnerApplication() {
       }));
 
       setErrors((e) => ({ ...e, address: "", city: "", map: "" }));
-    } catch {
-      // ok
-    }
+    } catch {}
   };
 
   const uploadSelectedGymPhotos = async () => {
@@ -964,19 +898,14 @@ export default function OwnerApplication() {
         address: `${form.address}${form.landmark ? `, ${form.landmark}` : ""}${form.city ? `, ${form.city}` : ""}`,
         latitude: Number(form.lat),
         longitude: Number(form.lng),
-
         document_path,
-
         description: String(form.description || "").trim() || null,
         contact_number: normalizePhone(form.contactNumber) || null,
         company_name: String(form.businessName || "").trim() || null,
-
         daily_price: form.dayPass === "" ? null : Number(form.dayPass),
         monthly_price: form.monthly === "" ? null : Number(form.monthly),
         quarterly_price: form.quarterly === "" ? null : Number(form.quarterly),
-
         amenity_ids: Array.isArray(form.amenityIds) ? form.amenityIds : [],
-
         main_image_url,
         gallery_urls: mergedGallery,
       };
@@ -995,7 +924,6 @@ export default function OwnerApplication() {
         businessReg: null,
       }));
 
-      // ✅ important: show waiting screen immediately
       setSubmitted(true);
     } catch (err) {
       alert(err?.message || "Failed to submit application.");
@@ -1020,7 +948,6 @@ export default function OwnerApplication() {
     return labels.length ? labels.join(", ") : "None";
   }, [amenities, form.amenityIds]);
 
-  // ✅ ROLE/STATUS GATING (THIS IS WHAT YOU ASKED FOR)
   const normalizedStatus = String(serverStatus || "").toLowerCase();
   const isApproved = normalizedStatus === "approved" || normalizedStatus === "accepted";
   const isPending = normalizedStatus === "pending";
@@ -1034,24 +961,20 @@ export default function OwnerApplication() {
     me?.is_owner === true ||
     me?.isOwner === true;
 
-  // ✅ If already owner OR application accepted -> show approved screen
   if (isOwnerByRole || isApproved) {
     return <ApprovedScreen form={form} />;
   }
 
-  // ✅ If pending on server -> always show waiting page (even after refresh)
   if (isPending) {
     return <PendingScreen form={form} serverStatus={serverStatus} />;
   }
 
-  // ✅ If just submitted in this session -> show waiting page
   if (submitted) {
     return <PendingScreen form={form} serverStatus={serverStatus || "pending"} />;
   }
 
   return (
     <div className="oa-app">
-
       <div className="oa-stepper-bar">
         <div className="oa-stepper">
           {STEPS.map((s, i) => {
@@ -1105,7 +1028,6 @@ export default function OwnerApplication() {
 
         <main className="oa-main">
           <div className="oa-card" key={step}>
-            {/* STEP 0 */}
             {step === 0 && (
               <div className="oa-fields">
                 <div className="oa-grid-2">
@@ -1164,7 +1086,6 @@ export default function OwnerApplication() {
               </div>
             )}
 
-            {/* STEP 1 */}
             {step === 1 && (
               <div className="oa-fields">
                 <div className={`oa-field ${errors.gymName ? "has-error" : ""}`}>
@@ -1292,7 +1213,6 @@ export default function OwnerApplication() {
               </div>
             )}
 
-            {/* STEP 2 */}
             {step === 2 && (
               <div className="oa-fields">
                 <div className={`oa-field ${errors.address ? "has-error" : ""}`}>
@@ -1354,7 +1274,6 @@ export default function OwnerApplication() {
               </div>
             )}
 
-            {/* STEP 3 */}
             {step === 3 && (
               <div className="oa-fields">
                 <div className={`oa-field ${errors.businessReg ? "has-error" : ""}`}>
@@ -1444,7 +1363,6 @@ export default function OwnerApplication() {
               </div>
             )}
 
-            {/* STEP 4 */}
             {step === 4 && (
               <div className="oa-review">
                 {[
@@ -1550,7 +1468,7 @@ export default function OwnerApplication() {
         </main>
       </div>
 
-
+      <Footer />
     </div>
   );
 }

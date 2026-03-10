@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Footer from "../user/Footer";
 import "./EditGym.css";
 import {
   Save,
@@ -24,9 +23,7 @@ import { MapContainer, TileLayer, Marker, Polygon, useMap, useMapEvents } from "
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { createGym, uploadGymImage, getTokenMaybe, absoluteUrl } from "../../utils/gymApi";
-
-const API_BASE = "https://exersearch.test";
+import { createGym, uploadGymImage, absoluteUrl } from "../../utils/gymApi";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -41,7 +38,7 @@ const PASIG_POLYGON_LATLNG = [
   [14.61, 121.043],
   [14.614, 121.05],
   [14.616, 121.058],
-  [14.613, 121.066], 
+  [14.613, 121.066],
   [14.609, 121.074],
   [14.605, 121.082],
   [14.601, 121.089],
@@ -170,10 +167,12 @@ function bestEffortAddressFromNominatim(data) {
 
 function Recenter({ center }) {
   const map = useMap();
+
   useEffect(() => {
     if (!center) return;
     map.setView(center, map.getZoom(), { animate: true });
   }, [center, map]);
+
   return null;
 }
 
@@ -185,12 +184,12 @@ function MapClick({ onPick }) {
       onPick(ll);
     },
   });
+
   return null;
 }
 
 export default function OwnerGymApplication() {
   const navigate = useNavigate();
-
   const fileInputRef = useRef(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -448,6 +447,7 @@ export default function OwnerGymApplication() {
 
       if (!String(form.monthly_price ?? "").trim()) e.monthly_price = "Monthly price is required.";
       else if (!isNonNegNumberOrEmpty(form.monthly_price)) e.monthly_price = "Monthly price must be a non-negative number.";
+
       if (!isNonNegNumberOrEmpty(form.daily_price)) e.daily_price = "Daily price must be a non-negative number.";
       if (!isNonNegNumberOrEmpty(form.annual_price)) e.annual_price = "Annual price must be a non-negative number.";
     }
@@ -564,6 +564,7 @@ export default function OwnerGymApplication() {
 
   const submit = async () => {
     const mustValidate = ["basic", "location", "hours", "pricing", "contact", "media"];
+
     for (const t of mustValidate) {
       if (!validateTab(t)) {
         setActiveTab(t);
@@ -574,12 +575,6 @@ export default function OwnerGymApplication() {
         });
         return;
       }
-    }
-
-    const token = getTokenMaybe();
-    if (!token) {
-      Swal.fire({ icon: "error", title: "Not logged in", text: "No session token found. Please log in again." });
-      return;
     }
 
     setSubmitting(true);
@@ -631,6 +626,7 @@ export default function OwnerGymApplication() {
 
   if (submitted) {
     const gymId = createdGym?.gym_id ?? createdGym?.id ?? null;
+
     return (
       <div className="eg-app">
         <div className="eg-container">
@@ -706,7 +702,6 @@ export default function OwnerGymApplication() {
 
   return (
     <div className="eg-app">
-
       <div className="eg-container">
         <div className="eg-sticky-header">
           <div className="eg-header-content">
@@ -1331,7 +1326,13 @@ export default function OwnerGymApplication() {
                         ["Instagram", normalizeUrlNullable(form.instagram_page) || "—"],
                       ],
                     },
-                    { title: "Media", rows: [["Photos", `${rawPhotos.length} photo(s)`], ["Main Image", form.main_image_url ? "Yes" : "Auto (first)"]] },
+                    {
+                      title: "Media",
+                      rows: [
+                        ["Photos", `${rawPhotos.length} photo(s)`],
+                        ["Main Image", form.main_image_url ? "Yes" : "Auto (first)"],
+                      ],
+                    },
                   ].map((card) => (
                     <div
                       key={card.title}
@@ -1412,7 +1413,6 @@ export default function OwnerGymApplication() {
           )}
         </div>
       </div>
-
     </div>
   );
 }
