@@ -1,26 +1,27 @@
 // src/utils/findGymsData.js
-export const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "https://exersearch.test";
+import { api, RAW_API_BASE } from "./apiClient";
 
 // ---------- URL helpers ----------
 export function absoluteUrl(url) {
   if (!url) return "";
   if (String(url).startsWith("http")) return url;
-  return `${API_BASE}${url}`;
+
+  const base = RAW_API_BASE.replace(/\/+$/, "");
+  const path = String(url).replace(/^\/+/, "");
+
+  return `${base}/${path}`;
 }
 
 // ---------- Fetchers (PUBLIC endpoints) ----------
 export async function fetchAmenities() {
-  const res = await fetch(`${API_BASE}/api/v1/amenities`);
-  if (!res.ok) throw new Error(`Amenities fetch failed: ${res.status}`);
-  const json = await res.json();
+  const res = await api.get("/amenities");
+  const json = res.data;
   return Array.isArray(json) ? json : json?.data ?? [];
 }
 
 export async function fetchEquipments() {
-  const res = await fetch(`${API_BASE}/api/v1/equipments`);
-  if (!res.ok) throw new Error(`Equipments fetch failed: ${res.status}`);
-  const json = await res.json();
+  const res = await api.get("/equipments");
+  const json = res.data;
   return Array.isArray(json) ? json : json?.data ?? [];
 }
 
@@ -28,8 +29,9 @@ export async function fetchEquipments() {
 export function parseTargets(target) {
   const raw = String(target || "").trim();
   if (!raw) return [];
-  // normalize separators to commas
+
   const norm = raw.replace(/[\/|;]+/g, ",");
+
   return norm
     .split(",")
     .map((s) => s.trim())
@@ -118,14 +120,16 @@ export function isAccessory(e) {
 export function prettyCategory(cat) {
   const c = String(cat || "").toLowerCase();
   if (!c) return "";
+
   if (c === "free_weight") return "Free Weight";
   if (c === "machine") return "Machine";
   if (c === "cardio") return "Cardio";
   if (c === "accessory") return "Accessory";
+
   return c.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
-// ---------- Grouping: Machines & Free Weights by Muscle Group ----------
+// ---------- Grouping ----------
 function pushGrouped(map, label, equipment) {
   if (!map[label]) map[label] = [];
   map[label].push(equipment);
@@ -133,7 +137,9 @@ function pushGrouped(map, label, equipment) {
 
 function sortGroups(groups) {
   Object.keys(groups).forEach((k) => {
-    groups[k].sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
+    groups[k].sort((a, b) =>
+      String(a?.name || "").localeCompare(String(b?.name || ""))
+    );
   });
 
   const priority = [
@@ -154,14 +160,17 @@ function sortGroups(groups) {
   ];
 
   const keys = Object.keys(groups);
+
   keys.sort((a, b) => {
     const ia = priority.indexOf(a);
     const ib = priority.indexOf(b);
+
     if (ia !== -1 || ib !== -1) {
       if (ia === -1) return 1;
       if (ib === -1) return -1;
       return ia - ib;
     }
+
     return a.localeCompare(b);
   });
 
@@ -183,14 +192,17 @@ export function groupEquipmentsByTypeAndMuscle(equipments) {
       labels.forEach((lbl) => pushGrouped(machines, lbl, e));
       continue;
     }
+
     if (isFreeWeight(e)) {
       labels.forEach((lbl) => pushGrouped(freeWeights, lbl, e));
       continue;
     }
+
     if (isCardio(e)) {
       labels.forEach((lbl) => pushGrouped(cardio, lbl, e));
       continue;
     }
+
     if (isAccessory(e)) {
       labels.forEach((lbl) => pushGrouped(accessory, lbl, e));
       continue;
@@ -214,20 +226,25 @@ export function labelForSelectedKey(key, amenities, equipments) {
     const a = (amenities || []).find((x) => Number(x.amenity_id) === id);
     return a ? `Amenity: ${a.name}` : key;
   }
+
   if (key.startsWith("equipment:")) {
     const id = Number(key.split(":")[1]);
     const e = (equipments || []).find((x) => Number(x.equipment_id) === id);
     return e ? `Equipment: ${e.name}` : key;
   }
+
   if (key.startsWith("budget:")) {
     const val = key.split(":")[1];
     return `Budget: ₱${val}`;
   }
+
   if (key.startsWith("gymtype:")) {
     return `Gym Type: ${key.slice("gymtype:".length)}`;
   }
+
   if (key.startsWith("location:")) {
     return `Location: ${key.slice("location:".length)}`;
   }
+
   return key;
 }

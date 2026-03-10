@@ -138,9 +138,6 @@ export default function Profile() {
 
         setUserData(next);
         setFormData(next);
-
-        if (localPreview) URL.revokeObjectURL(localPreview);
-        setLocalPreview("");
       } catch (err) {
         console.log(
           "[ADMIN PROFILE] load error:",
@@ -173,11 +170,14 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [theme, localPreview]);
+  }, [theme]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const onPickFile = (e) => {
@@ -210,8 +210,21 @@ export default function Profile() {
     setLocalPreview(url);
   };
 
-  const uploadAvatar = async () => {
+  const clearPickedImage = (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
+    if (localPreview) URL.revokeObjectURL(localPreview);
+    setLocalPreview("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const uploadAvatar = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     const file = fileRef.current?.files?.[0];
+
     if (!file) {
       alertInfo({
         title: "No image selected",
@@ -228,11 +241,7 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("photo", file);
 
-      const res = await api.post("/me/avatar/admin", fd, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await api.post("/me/avatar/admin", fd);
 
       const newUrl = res.data?.avatar_url;
 
@@ -248,12 +257,18 @@ export default function Profile() {
         return;
       }
 
-      setUserData((prev) => ({ ...prev, avatar_url: newUrl }));
-      setFormData((prev) => ({ ...prev, avatar_url: newUrl }));
+      setUserData((prev) => ({
+        ...prev,
+        avatar_url: newUrl,
+      }));
+
+      setFormData((prev) => ({
+        ...prev,
+        avatar_url: newUrl,
+      }));
 
       if (localPreview) URL.revokeObjectURL(localPreview);
       setLocalPreview("");
-
       if (fileRef.current) fileRef.current.value = "";
 
       alertSuccess({
@@ -265,33 +280,33 @@ export default function Profile() {
         mainColor: MAIN,
       });
     } catch (err) {
-      console.log(
-        "[ADMIN AVATAR UPLOAD] error:",
-        err?.response?.status,
-        err?.response?.data
-      );
+      console.log("[ADMIN AVATAR UPLOAD] full error:", err);
+      console.log("[ADMIN AVATAR UPLOAD] status:", err?.response?.status);
+      console.log("[ADMIN AVATAR UPLOAD] data:", err?.response?.data);
 
-      if (err?.response?.data?.errors) {
-        alertError({
-          title: "Upload failed",
-          text: Object.values(err.response.data.errors).flat().join("\n"),
-          theme,
-          mainColor: MAIN,
-        });
-      } else {
-        alertError({
-          title: "Upload failed",
-          text: err?.response?.data?.message || "Failed to upload avatar",
-          theme,
-          mainColor: MAIN,
-        });
-      }
+      const validationText = err?.response?.data?.errors
+        ? Object.values(err.response.data.errors).flat().join("\n")
+        : null;
+
+      alertError({
+        title: "Upload failed",
+        text:
+          validationText ||
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to upload avatar.",
+        theme,
+        mainColor: MAIN,
+      });
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     setSaving(true);
 
     try {
@@ -319,39 +334,37 @@ export default function Profile() {
         mainColor: MAIN,
       });
     } catch (err) {
-      console.log(
-        "[ADMIN PROFILE] save error:",
-        err?.response?.status,
-        err?.response?.data
-      );
+      console.log("[ADMIN PROFILE] save error:", err);
 
-      if (err?.response?.data?.errors) {
-        alertError({
-          title: "Validation error",
-          text: Object.values(err.response.data.errors).flat().join("\n"),
-          theme,
-          mainColor: MAIN,
-        });
-      } else {
-        alertError({
-          title: "Save failed",
-          text: err?.response?.data?.message || "Failed to save",
-          theme,
-          mainColor: MAIN,
-        });
-      }
+      const validationText = err?.response?.data?.errors
+        ? Object.values(err.response.data.errors).flat().join("\n")
+        : null;
+
+      alertError({
+        title: "Save failed",
+        text:
+          validationText ||
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to save.",
+        theme,
+        mainColor: MAIN,
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     setFormData({ ...userData });
 
     if (localPreview) URL.revokeObjectURL(localPreview);
     setLocalPreview("");
-
     if (fileRef.current) fileRef.current.value = "";
+
     setIsEditing(false);
   };
 
@@ -401,6 +414,7 @@ export default function Profile() {
 
           {!isEditing && (
             <button
+              type="button"
               className="primary-btn"
               onClick={() => setIsEditing(true)}
               style={{ margin: 0 }}
@@ -452,6 +466,7 @@ export default function Profile() {
 
                 <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                   <button
+                    type="button"
                     className="primary-btn"
                     onClick={uploadAvatar}
                     disabled={uploading}
@@ -461,12 +476,9 @@ export default function Profile() {
                   </button>
 
                   <button
+                    type="button"
                     className="secondary-btn"
-                    onClick={() => {
-                      if (localPreview) URL.revokeObjectURL(localPreview);
-                      setLocalPreview("");
-                      if (fileRef.current) fileRef.current.value = "";
-                    }}
+                    onClick={clearPickedImage}
                     disabled={uploading}
                     style={{ flex: 1, margin: 0 }}
                   >
@@ -519,6 +531,7 @@ export default function Profile() {
 
                 <div className="edit-actions">
                   <button
+                    type="button"
                     className="primary-btn"
                     onClick={handleSave}
                     disabled={saving || uploading}
@@ -527,6 +540,7 @@ export default function Profile() {
                   </button>
 
                   <button
+                    type="button"
                     className="secondary-btn"
                     onClick={handleCancel}
                     disabled={saving || uploading}

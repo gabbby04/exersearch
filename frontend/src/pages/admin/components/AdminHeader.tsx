@@ -75,7 +75,7 @@ const ROLE_LEVEL: Record<string, number> = {
 };
 
 function roleLevel(role?: string | null) {
-  return ROLE_LEVEL[String(role || "")] ?? 0;
+  return ROLE_LEVEL[String(role || "").toLowerCase()] ?? 0;
 }
 
 function hasAtLeastRole(
@@ -86,14 +86,21 @@ function hasAtLeastRole(
 }
 
 function toAbsUrl(u: string | null | undefined) {
-  if (!u) return "";
+  if (!u) return FALLBACK_AVATAR;
+
   const s = String(u).trim();
-  if (!s) return "";
+  if (!s) return FALLBACK_AVATAR;
+
   if (/^https?:\/\//i.test(s)) return s;
 
-  const base = String(api?.defaults?.baseURL || "").replace(/\/+$/, "");
-  const path = s.startsWith("/") ? s : `/${s}`;
-  return base ? `${base}${path}` : s;
+  try {
+    const apiBase = String(api?.defaults?.baseURL || "").trim();
+    const origin = apiBase ? new URL(apiBase).origin : "";
+    if (!origin) return s.startsWith("/") ? s : `/${s}`;
+    return `${origin}${s.startsWith("/") ? s : `/${s}`}`;
+  } catch {
+    return s.startsWith("/") ? s : `/${s}`;
+  }
 }
 
 function iconForNotifType(type?: string | null) {
@@ -200,47 +207,46 @@ export default function AdminHeader({
 
     if (currentUi === "superadmin") {
       raw =
-        u?.admin_profile?.avatar_url ||
-        u?.adminProfile?.avatar_url ||
-        u?.owner_profile?.profile_photo_url ||
-        u?.ownerProfile?.profile_photo_url ||
-        u?.user_profile?.profile_photo_url ||
-        u?.userProfile?.profile_photo_url ||
-        u?.avatar_url ||
-        u?.profile_photo_url ||
-        u?.photoURL ||
-        u?.avatar ||
+        u.admin_profile?.avatar_url ||
+        u.adminProfile?.avatar_url ||
+        u.owner_profile?.profile_photo_url ||
+        u.ownerProfile?.profile_photo_url ||
+        u.user_profile?.profile_photo_url ||
+        u.userProfile?.profile_photo_url ||
+        u.avatar_url ||
+        u.profile_photo_url ||
+        u.photoURL ||
+        u.avatar ||
         "";
     } else if (currentUi === "owner") {
       raw =
-        u?.owner_profile?.profile_photo_url ||
-        u?.ownerProfile?.profile_photo_url ||
-        u?.admin_profile?.avatar_url ||
-        u?.adminProfile?.avatar_url ||
-        u?.user_profile?.profile_photo_url ||
-        u?.userProfile?.profile_photo_url ||
-        u?.avatar_url ||
-        u?.profile_photo_url ||
-        u?.photoURL ||
-        u?.avatar ||
+        u.owner_profile?.profile_photo_url ||
+        u.ownerProfile?.profile_photo_url ||
+        u.admin_profile?.avatar_url ||
+        u.adminProfile?.avatar_url ||
+        u.user_profile?.profile_photo_url ||
+        u.userProfile?.profile_photo_url ||
+        u.avatar_url ||
+        u.profile_photo_url ||
+        u.photoURL ||
+        u.avatar ||
         "";
     } else {
       raw =
-        u?.user_profile?.profile_photo_url ||
-        u?.userProfile?.profile_photo_url ||
-        u?.owner_profile?.profile_photo_url ||
-        u?.ownerProfile?.profile_photo_url ||
-        u?.admin_profile?.avatar_url ||
-        u?.adminProfile?.avatar_url ||
-        u?.avatar_url ||
-        u?.profile_photo_url ||
-        u?.photoURL ||
-        u?.avatar ||
+        u.user_profile?.profile_photo_url ||
+        u.userProfile?.profile_photo_url ||
+        u.owner_profile?.profile_photo_url ||
+        u.ownerProfile?.profile_photo_url ||
+        u.admin_profile?.avatar_url ||
+        u.adminProfile?.avatar_url ||
+        u.avatar_url ||
+        u.profile_photo_url ||
+        u.photoURL ||
+        u.avatar ||
         "";
     }
 
-    const abs = toAbsUrl(raw);
-    return abs || FALLBACK_AVATAR;
+    return toAbsUrl(raw);
   }, [me, currentUi]);
 
   const canSwitchToUser = hasAtLeastRole(me?.role, "user");
@@ -782,15 +788,24 @@ export default function AdminHeader({
             title="Profile menu"
             type="button"
           >
-            <div
+            <img
+              src={avatarSrc}
+              alt={displayName}
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (target.src !== window.location.origin + FALLBACK_AVATAR) {
+                  target.src = FALLBACK_AVATAR;
+                }
+              }}
               style={{
                 width: 30,
                 height: 30,
                 borderRadius: 999,
-                backgroundImage: `url(${avatarSrc})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+                objectFit: "cover",
                 border: `1px solid ${t.border}`,
+                display: "block",
+                background: t.soft2,
+                flex: "0 0 auto",
               }}
             />
 

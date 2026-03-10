@@ -2,9 +2,11 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://exersearch.test";
+export const RAW_API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "https://exersearch.test";
+
 const TOKEN_KEY = "token";
-const ROLE_KEY = "role"; 
+const ROLE_KEY = "role";
 
 function authHeaders() {
   const token = localStorage.getItem(TOKEN_KEY);
@@ -14,7 +16,7 @@ function authHeaders() {
 let handlingMaintenance = false;
 
 export const api = axios.create({
-  baseURL: `${API_BASE}/api/v1`,
+  baseURL: `${RAW_API_BASE}/api/v1`,
   withCredentials: true,
 });
 
@@ -66,4 +68,4 @@ api.interceptors.response.use(
 
     return Promise.reject(error);
   }
-);
+);  
