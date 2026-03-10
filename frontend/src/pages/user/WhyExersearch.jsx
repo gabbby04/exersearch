@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import "./WhyExerSearch.css";
+import "./WhyExersearch.css";
 
 import {
   Zap,
