@@ -46,7 +46,7 @@ const TEAM = [
     role: 'Technical Support & Data Assistant',
     quote: 'The small details behind the scenes are what keep everything running.',
     image: 'philo2.png',
-    socials: { facebook: '#', instagram: '#', email: '#' },
+    socials: { facebook: 'https://www.facebook.com/share/1DUoLHHDHw/', instagram: 'https://www.instagram.com/_koyskie?igsh=NzNtYndmeXA0MWs3&fbclid=IwY2xjawQc7wZleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAEwAAEe4xgzM0VorLtt2AVVLBgLc7299E7ot4wKi1xjfF60g7j5DYe-78m2JVKtnPw_aem_t5pyfTcEquTsykBdszOPww', email: 'hael.marklawrence@gmail.com' },
   },
 ];
 

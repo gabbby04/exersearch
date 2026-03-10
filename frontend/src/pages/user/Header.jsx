@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { useTheme } from "./ThemeContext";
 import "./HeaderFooter.css";
-import logo from "../../assets/exersearchlogo.png";
+
+import logoFull from "../../assets/exersearchlogo1.png";
+import logoMobile from "../../assets/exersearchlogo.png"; // ← change this filename later
 
 const LEFT_LINKS = [
   { to: "/about-us", label: "About Us" },
@@ -17,14 +20,8 @@ const RIGHT_LINKS = [
 ];
 
 export default function LandingHeader() {
+  const { isDark } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -35,8 +32,9 @@ export default function LandingHeader() {
 
   return (
     <>
-      <header className={`lnd-bar ${scrolled ? "lnd-bar--light" : "lnd-bar--dark"}`}>
+      <header className={`lnd-bar ${isDark ? "lnd-bar--dark" : "lnd-bar--light"}`}>
         <div className="lnd-bar__inner">
+
           <nav className="lnd-nav lnd-nav--left">
             {LEFT_LINKS.map(({ to, label }) => (
               <NavLink
@@ -52,7 +50,10 @@ export default function LandingHeader() {
           </nav>
 
           <Link to="/" className="lnd-wordmark" onClick={() => setMenuOpen(false)}>
-            <img src={logo} alt="ExerSearch" className="lnd-wordmark__img" />
+            <div className="lnd-wordmark__wrap">
+              <img src={logoFull} alt="ExerSearch" className="logo-full" />
+              <img src={logoMobile} alt="ExerSearch" className="logo-mobile" />
+            </div>
           </Link>
 
           <div className="lnd-right">
@@ -92,11 +93,13 @@ export default function LandingHeader() {
             <span />
             <span />
           </button>
+
         </div>
       </header>
 
       <div className={`lnd-sheet ${menuOpen ? "lnd-sheet--open" : ""}`}>
         <div className="lnd-sheet__body">
+
           <nav className="lnd-sheet__nav">
             {[...LEFT_LINKS, ...RIGHT_LINKS].map(({ to, label }) => (
               <NavLink
@@ -120,6 +123,7 @@ export default function LandingHeader() {
             >
               Log in
             </Link>
+
             <Link
               to="/login?mode=signup"
               className="lnd-pill lnd-pill--solid lnd-pill--wide"
@@ -128,6 +132,7 @@ export default function LandingHeader() {
               Get started
             </Link>
           </div>
+
         </div>
       </div>
 

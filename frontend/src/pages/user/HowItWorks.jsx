@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import "./HowItWorks.css";
+import ScrollThemeWidget from '../../utils/ScrollThemeWidget';
 
 import {
   UserPlus, Search, Brain, Dumbbell, TrendingUp, ArrowRight,
@@ -54,10 +55,10 @@ const STEPS = [
 ];
 
 const FEATURES = [
-  { icon: Zap,            label: "Instant AI plans",       desc: "Generated in under 3 seconds" },
+  { icon: Zap,            label: "Instant workout plans",       desc: "Generated in under 3 seconds" },
   { icon: Shield,         label: "Verified gyms only",     desc: "Every partner is vetted" },
-  { icon: UtensilsCrossed,label: "Meal planning",          desc: "Nutrition that actually fits" },
-  { icon: Trophy,         label: "Progress milestones",    desc: "Celebrate every win" },
+  { icon: UtensilsCrossed,label: "Meal planning",          desc: "Nutrition that actually fits you" },
+  { icon: Trophy,         label: "Recalibrate results",    desc: "Based on your preferences" },
   { icon: Users,          label: "Owner dashboard",        desc: "For gym businesses too" },
   { icon: MapPin,         label: "Location-based match",   desc: "Find gyms near you" },
 ];
@@ -714,7 +715,7 @@ export default function HowItWorks() {
                 { day: "Day 2",  event: "Gym matched",        detail: "Top 3 gyms near you, ranked by fit." },
                 { day: "Day 3",  event: "First workout",      detail: "Guided session with step-by-step instructions." },
                 { day: "Day 5",  event: "First check-in",     detail: "AI reviews your session logs and adjusts." },
-                { day: "Day 7",  event: "7-day streak 🔥",    detail: "Your first milestone. Many more coming." },
+                { day: "Day 7",  event: "7-day streak ",    detail: "Your first milestone. Many more coming." },
               ].map((item, i) => (
                 <div
                   key={i}
@@ -762,6 +763,7 @@ export default function HowItWorks() {
       </div>
 
       <Footer />
+      <ScrollThemeWidget/>
     </>
   );
 }

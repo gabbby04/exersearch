@@ -173,9 +173,6 @@ export default function Footer() {
               />
             </Link>
 
-            <p className="lnd-foot__desc">
-              Your AI-powered fitness companion. Find gyms, plan workouts, and achieve your goals.
-            </p>
 
             <div className="lnd-foot__contact">
               <div className="lnd-foot__contact-item">

@@ -114,7 +114,7 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
-// ← MAKE SURE THIS EXPORT EXISTS!
+
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import "./WhyExersearch.css";
+import "./WhyExerSearch.css";
 
 import {
   Zap,
@@ -412,6 +412,7 @@ export default function WhyExerSearch() {
       </div>
 
       <Footer />
+      <ScrollThemeWidget />
     </>
   );
 }

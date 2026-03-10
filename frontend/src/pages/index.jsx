@@ -4,11 +4,11 @@ import Header from "./user/Header";
 import Footer from "./user/Footer";
 import {
   MapPinned, Inbox, TrendingUp, BadgeCheck,
-  Moon, Sun, Check, ArrowRight, ChevronDown,
+  Check, ArrowRight, ChevronDown,
   Sparkles, Trophy, Dumbbell, Flame, Activity,
   Target, Zap,
 } from "lucide-react";
-
+import ScrollThemeWidget from './../utils/ScrollThemeWidget';
 /* ════════════════════════════════════════
    DATA
 ════════════════════════════════════════ */
@@ -183,31 +183,6 @@ function Cursor() {
   );
 }
 
-function ThemeToggle({ theme, onToggle }) {
-  const isLight = theme === "light";
-  return (
-    <button className="tt" onClick={onToggle} aria-label="Toggle theme" data-h>
-      <div className={`tt-track${isLight?" tt-track--l":""}`}>
-        <div className="tt-knob">{isLight?<Sun size={10} strokeWidth={2.5}/>:<Moon size={10} strokeWidth={2.5}/>}</div>
-        <Moon size={9} className="tt-ic tt-ic--left"/>
-        <Sun size={9} className="tt-ic tt-ic--right"/>
-      </div>
-    </button>
-  );
-}
-
-/* ════════════════════════════════════════
-   S1 — HERO  (interactive goal selector)
-
-   Left: big serif headline that MORPHS when
-   you pick a goal chip. Desc changes too.
-
-   Right: live plan preview card —
-   sessions slide in one-by-one (staggered),
-   then gym match slides up,
-   then meal fades in last.
-   Auto-cycles every 4 s when idle.
-════════════════════════════════════════ */
 
 function PlanCard({ goal }) {
   const [shown, setShown] = useState(0);
@@ -742,10 +717,9 @@ export default function Index() {
   }, [theme]);
 
   return (
-    <div className="es" data-theme={theme}>
+    <div className="es">
       <Cursor/>
       <div className="es-spot"/>
-      <ThemeToggle theme={theme} onToggle={toggle}/>
       <Header/>
       <main>
         <Hero/>
@@ -758,6 +732,7 @@ export default function Index() {
         <CTA/>
       </main>
       <Footer/>
+      <ScrollThemeWidget/>
     </div>
   );
 }

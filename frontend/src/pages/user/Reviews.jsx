@@ -19,6 +19,7 @@ import {
   Filter,
 } from "lucide-react";
 import "./Reviews.css";
+import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -594,6 +595,7 @@ export default function ReviewsPage() {
 
       </div>
       <Footer />
+      <ScrollThemeWidget/>
     </>
   );
 }

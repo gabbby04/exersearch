@@ -40,10 +40,11 @@
 
 .wy {
   font-family: var(--fh);
-  background: var(--cream);
-  color: var(--ink);
+  background: var(--lnd-bg-secondary, var(--cream));
+  color: var(--lnd-text-primary, var(--ink));
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .wy-wrap {
@@ -85,8 +86,9 @@
   font-size: clamp(2rem, 3.5vw, 3.25rem);
   font-weight: 900;
   letter-spacing: -0.04em;
-  color: var(--ink);
+  color: var(--lnd-text-primary, var(--ink));
   line-height: 1.08;
+  transition: color 0.3s ease;
 }
 
 .wy-sec-title em {
@@ -140,7 +142,7 @@
 
 .wy-btn--white {
   background: #fff;
-  color: var(--blk);
+  color: var(--lnd-bg-primary, var(--blk));
 }
 .wy-btn--white:hover {
   background: var(--or);
@@ -162,13 +164,14 @@
    HERO
 ══════════════════════════════════════════ */
 .wy-hero {
-  background: var(--blk);
+  background: var(--lnd-bg-primary, var(--blk));
   min-height: 100vh;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
   padding-top: 72px;
+  transition: background 0.3s ease;
 }
 
 .wy-hero__bg {
@@ -208,8 +211,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    linear-gradient(var(--lnd-border, rgba(255,255,255,0.025)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lnd-border, rgba(255,255,255,0.025)) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
 }
@@ -228,10 +231,11 @@
 .wy-hero__h1 {
   font-size: clamp(2.75rem, 5vw, 5.5rem);
   font-weight: 900;
-  color: #fff;
+  color: var(--lnd-text-primary, #fff);
   letter-spacing: -0.05em;
   line-height: 1.0;
   margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
 }
 
 .wy-hero__h1 em {
@@ -241,11 +245,12 @@
 
 .wy-hero__sub {
   font-size: 0.95rem;
-  color: rgba(255,255,255,0.45);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.45));
   line-height: 1.75;
   font-weight: 400;
   max-width: 480px;
   margin-bottom: 2.5rem;
+  transition: color 0.3s ease;
 }
 
 .wy-hero__actions {
@@ -266,10 +271,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  background: rgba(255,255,255,0.06);
+  background: var(--lnd-border, rgba(255,255,255,0.06));
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--lnd-border, rgba(255,255,255,0.06));
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-stat {
@@ -278,7 +284,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background: rgba(255,255,255,0.03);
+  background: var(--lnd-bg-secondary, rgba(255,255,255,0.03));
   gap: 6px;
   animation: statIn 0.6s ease both;
   animation-delay: calc(var(--i) * 0.1s + 0.3s);
@@ -305,18 +311,20 @@
 .wy-stat__l {
   font-size: 0.6rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.3);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.3));
   text-transform: uppercase;
   letter-spacing: 0.14em;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .wy-hero__card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--lnd-bg-secondary, rgba(255,255,255,0.04));
+  border: 1px solid var(--lnd-border, rgba(255,255,255,0.08));
   border-radius: 14px;
   padding: 1.5rem 1.75rem;
   backdrop-filter: blur(12px);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-hero__card-row {
@@ -328,19 +336,21 @@
 
 .wy-hero__card-quote {
   font-size: 0.9rem;
-  color: rgba(255,255,255,0.7);
+  color: var(--lnd-text-secondary, rgba(255,255,255,0.7));
   font-weight: 500;
   font-style: italic;
   line-height: 1.6;
   margin-bottom: 0.625rem;
+  transition: color 0.3s ease;
 }
 
 .wy-hero__card-author {
   font-size: 0.65rem;
-  color: rgba(255,255,255,0.3);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.3));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  transition: color 0.3s ease;
 }
 
 /* ══════════════════════════════════════════
@@ -387,11 +397,12 @@
 ══════════════════════════════════════════ */
 .wy-pillars {
   padding: 7rem 0;
-  background: var(--blk-2);
+  background: var(--lnd-bg-tertiary, var(--blk-2));
+  transition: background 0.3s ease;
 }
 
 .wy-pillars .wy-sec-hdr { margin-bottom: 4rem; }
-.wy-pillars .wy-sec-title { color: #fff; }
+.wy-pillars .wy-sec-title { color: var(--lnd-text-primary, #fff); }
 .wy-pillars .wy-eyebrow--dk {
   color: var(--or);
   background: rgba(255, 90, 22, 0.12);
@@ -402,14 +413,15 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--lnd-border, rgba(255,255,255,0.05));
+  border: 1px solid var(--lnd-border, rgba(255,255,255,0.05));
   border-radius: 20px;
   overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-pillar {
-  background: var(--blk-2);
+  background: var(--lnd-bg-tertiary, var(--blk-2));
   padding: 2.5rem 2rem;
   position: relative;
   opacity: 0;
@@ -454,8 +466,9 @@
 .wy-pillar__num {
   font-size: 0.6rem;
   font-weight: 800;
-  color: rgba(255,255,255,0.15);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.15));
   letter-spacing: 0.2em;
+  transition: color 0.3s ease;
 }
 
 .wy-pillar__tag {
@@ -493,17 +506,19 @@
 .wy-pillar__title {
   font-size: 1rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--lnd-text-primary, #fff);
   letter-spacing: -0.02em;
   margin-bottom: 0.75rem;
   line-height: 1.3;
+  transition: color 0.3s ease;
 }
 
 .wy-pillar__body {
   font-size: 0.825rem;
-  color: rgba(255,255,255,0.38);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.38));
   line-height: 1.75;
   font-weight: 400;
+  transition: color 0.3s ease;
 }
 
 /* ══════════════════════════════════════════
@@ -511,7 +526,8 @@
 ══════════════════════════════════════════ */
 .wy-split {
   padding: 7rem 0;
-  background: var(--surface);
+  background: var(--lnd-bg-secondary, var(--surface));
+  transition: background 0.3s ease;
 }
 
 .wy-split__inner {
@@ -524,10 +540,11 @@
 .wy-split__title {
   font-size: clamp(1.75rem, 3vw, 2.75rem);
   font-weight: 900;
-  color: var(--ink);
+  color: var(--lnd-text-primary, var(--ink));
   letter-spacing: -0.04em;
   line-height: 1.1;
   margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
 }
 
 .wy-split__title em {
@@ -537,10 +554,11 @@
 
 .wy-split__body {
   font-size: 0.9rem;
-  color: var(--ink-3);
+  color: var(--lnd-text-tertiary, var(--ink-3));
   line-height: 1.8;
   font-weight: 400;
   margin-bottom: 1rem;
+  transition: color 0.3s ease;
 }
 
 /* VS cards */
@@ -584,18 +602,20 @@
 }
 
 .wy-split__card--a {
-  background: var(--warm-50);
-  border: 1.5px solid var(--warm-100);
+  background: var(--lnd-bg-tertiary, var(--warm-50));
+  border: 1.5px solid var(--lnd-border, var(--warm-100));
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-.wy-split__card--a .wy-split__card-label { color: var(--ink-3); }
-.wy-split__card--a p { color: var(--ink-3); }
-.wy-split__card--a p::before { background: var(--ink-4); }
+.wy-split__card--a .wy-split__card-label { color: var(--lnd-text-tertiary, var(--ink-3)); }
+.wy-split__card--a p { color: var(--lnd-text-tertiary, var(--ink-3)); }
+.wy-split__card--a p::before { background: var(--lnd-text-muted, var(--ink-4)); }
 
 .wy-split__card--b {
-  background: var(--blk);
+  background: var(--lnd-bg-primary, var(--blk));
   border: 1.5px solid rgba(255, 90, 22, 0.25);
   box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(255, 90, 22, 0.1);
+  transition: background 0.3s ease;
 }
 
 .wy-split__card--b .wy-split__card-label { color: var(--or); }
@@ -607,25 +627,28 @@
 ══════════════════════════════════════════ */
 .wy-compare {
   padding: 7rem 0;
-  background: var(--cream);
+  background: var(--lnd-bg-accent, var(--cream));
+  transition: background 0.3s ease;
 }
 
 .wy-compare__table {
   max-width: 760px;
   margin: 0 auto;
   border-radius: 16px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--lnd-border, var(--border));
   overflow: hidden;
-  background: var(--surface);
+  background: var(--lnd-bg-secondary, var(--surface));
   box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-compare__head {
   display: grid;
   grid-template-columns: 1fr 120px 120px;
-  background: var(--blk);
+  background: var(--lnd-bg-primary, var(--blk));
   padding: 1.125rem 1.75rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--lnd-border, rgba(255,255,255,0.06));
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-compare__col-hd {
@@ -633,8 +656,9 @@
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.35));
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .wy-compare__col-hd--us {
@@ -645,20 +669,21 @@
   display: grid;
   grid-template-columns: 1fr 120px 120px;
   padding: 1rem 1.75rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--lnd-border, var(--border));
   align-items: center;
   animation: rowIn 0.4s ease both;
   animation-delay: var(--delay);
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.3s ease;
 }
 
 .wy-compare__row:last-child { border-bottom: none; }
-.wy-compare__row:hover { background: var(--warm-50); }
+.wy-compare__row:hover { background: var(--lnd-bg-tertiary, var(--warm-50)); }
 
 .wy-compare__label {
   font-size: 0.825rem;
   font-weight: 600;
-  color: var(--ink-2);
+  color: var(--lnd-text-secondary, var(--ink-2));
+  transition: color 0.3s ease;
 }
 
 .wy-compare__cell {
@@ -686,11 +711,12 @@
    MARQUEE
 ══════════════════════════════════════════ */
 .wy-marquee {
-  background: var(--blk-3);
+  background: var(--lnd-bg-accent, var(--blk-3));
   padding: 1.25rem 0;
   overflow: hidden;
-  border-top: 1px solid rgba(255,255,255,0.04);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid var(--lnd-border, rgba(255,255,255,0.04));
+  border-bottom: 1px solid var(--lnd-border, rgba(255,255,255,0.04));
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-marquee__track {
@@ -712,12 +738,13 @@
   gap: 8px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.35);
+  color: var(--lnd-text-muted, rgba(255,255,255,0.35));
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 0 2.5rem;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid var(--lnd-border, rgba(255,255,255,0.06));
   white-space: nowrap;
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-marquee__item svg { color: var(--or); }
@@ -732,19 +759,21 @@
 ══════════════════════════════════════════ */
 .wy-tabs-section {
   padding: 7rem 0;
-  background: var(--surface);
+  background: var(--lnd-bg-secondary, var(--surface));
+  transition: background 0.3s ease;
 }
 
 .wy-tabs__hd {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: var(--warm-50);
-  border: 1.5px solid var(--border);
+  background: var(--lnd-bg-tertiary, var(--warm-50));
+  border: 1.5px solid var(--lnd-border, var(--border));
   border-radius: 10px;
   padding: 5px;
   width: fit-content;
   margin: 0 auto 3rem;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .wy-tab-btn {
@@ -755,14 +784,14 @@
   font-family: var(--fh);
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--ink-3);
+  color: var(--lnd-text-tertiary, var(--ink-3));
   cursor: pointer;
   transition: all 0.18s ease;
   letter-spacing: 0.02em;
 }
 
 .wy-tab-btn.active {
-  background: var(--blk);
+  background: var(--lnd-bg-primary, var(--blk));
   color: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
@@ -790,9 +819,9 @@
   align-items: flex-start;
   padding: 1.5rem;
   border-radius: 14px;
-  background: var(--cream);
-  border: 1.5px solid var(--border);
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  background: var(--lnd-bg-accent, var(--cream));
+  border: 1.5px solid var(--lnd-border, var(--border));
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s, background 0.3s ease;
 }
 
 .wy-tab-item:hover {
@@ -817,26 +846,29 @@
 .wy-tab-item h4 {
   font-size: 0.875rem;
   font-weight: 800;
-  color: var(--ink);
+  color: var(--lnd-text-primary, var(--ink));
   letter-spacing: -0.015em;
   margin-bottom: 4px;
+  transition: color 0.3s ease;
 }
 
 .wy-tab-item p {
   font-size: 0.775rem;
-  color: var(--ink-3);
+  color: var(--lnd-text-tertiary, var(--ink-3));
   line-height: 1.65;
   font-weight: 400;
+  transition: color 0.3s ease;
 }
 
 /* ══════════════════════════════════════════
    CTA
 ══════════════════════════════════════════ */
 .wy-cta {
-  background: var(--blk);
+  background: var(--lnd-bg-primary, var(--blk));
   padding: 7rem 0;
   position: relative;
   overflow: hidden;
+  transition: background 0.3s ease;
 }
 
 .wy-cta__inner {
@@ -853,7 +885,6 @@
   pointer-events: none;
 }
 
-/* Orange glow behind */
 .wy-cta::before {
   content: '';
   position: absolute;
@@ -878,10 +909,11 @@
 .wy-cta__title {
   font-size: clamp(2.25rem, 4.5vw, 4.5rem);
   font-weight: 900;
-  color: #fff;
+  color: var(--lnd-text-primary, #fff);
   letter-spacing: -0.045em;
   line-height: 1.05;
   margin-bottom: 2.5rem;
+  transition: color 0.3s ease;
 }
 
 .wy-cta__title em {
