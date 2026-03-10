@@ -13,6 +13,7 @@ import {
   Dumbbell,
 } from "lucide-react";
 
+import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
 /* EMAILJS ENV */
 const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
 const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
@@ -341,6 +342,7 @@ export default function Contact() {
       </div>
 
       <Footer />
+      <ScrollThemeWidget/>
     </>
   );
 }

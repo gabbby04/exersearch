@@ -17,7 +17,7 @@ const GOALS = [
   {
     id: "lose", chip: "Lose weight", Icon: Flame,
     tag: "Fat loss protocol",
-    h1: "Burn fat.", h2: "Keep your adobo.",
+    h1: "Burn fat.", h2: "Keep your sweets.",
     desc: "Calorie deficit dialed to your body. Filipino meals counted. No crash diets.",
     color: "#ff5a16",
     sessions: [
@@ -25,7 +25,7 @@ const GOALS = [
       { day: "WED", name: "Low-impact Cardio",     detail: "30 min · Zone 2",       pct: 65 },
       { day: "FRI", name: "Full-Body Strength",    detail: "50 min · compound lifts", pct: 75 },
     ],
-    gym: { name: "CardioLab QC", loc: "Quezon City · ₱800/mo", match: 97 },
+    gym: { name: "J's Fitness Gym", loc: "Pasig City · ₱800/mo", match: 97 },
     meal: { name: "Sinigang na Isda", kcal: 260, tag: "Low-cal · High protein" },
     stat: { n: "−6kg", lbl: "avg. in 12 weeks" },
   },
@@ -40,7 +40,7 @@ const GOALS = [
       { day: "WED", name: "Lower Pull",            detail: "4 sets · 6–8 reps",     pct: 84 },
       { day: "FRI", name: "Full-Body Power",       detail: "5 sets · 5 reps",       pct: 96 },
     ],
-    gym: { name: "IronForge Manila", loc: "BGC · ₱1,200/mo", match: 98 },
+    gym: { name: "IronForge Pasig", loc: "Pasig City · ₱1,200/mo", match: 98 },
     meal: { name: "Chicken Adobo", kcal: 380, tag: "High protein · 38g/serving" },
     stat: { n: "+18kg", lbl: "avg. squat gain, 10 wks" },
   },
@@ -55,7 +55,7 @@ const GOALS = [
       { day: "THU", name: "Active Recovery + Core",  detail: "20 min · bodyweight",  pct: 55 },
       { day: "SAT", name: "Cardio + Stretch",        detail: "35 min · Zone 2",      pct: 68 },
     ],
-    gym: { name: "GrindHouse QC", loc: "Quezon City · ₱700/mo", match: 94 },
+    gym: { name: "GrindHouse Fitness", loc: "Pasig City · ₱700/mo", match: 94 },
     meal: { name: "Tinolang Manok", kcal: 265, tag: "Balanced · Light on carbs" },
     stat: { n: "92%", lbl: "still active at 90 days" },
   },
@@ -70,7 +70,7 @@ const GOALS = [
       { day: "WED", name: "Rest + 20-min Walk",     detail: "Active recovery",          pct: 30 },
       { day: "FRI", name: "Beginner Full-Body B",   detail: "3 sets · 10 reps",         pct: 50 },
     ],
-    gym: { name: "PeakForm Studio", loc: "Makati · ₱900/mo", match: 95 },
+    gym: { name: "PeakGains Gym", loc: "Pasig City · ₱900/mo", match: 95 },
     meal: { name: "Lugaw na Manok", kcal: 210, tag: "Easy digest · Recovery" },
     stat: { n: "64%", lbl: "of members started here" },
   },
@@ -296,7 +296,7 @@ function Hero() {
         <div className="hero-copy">
           <div className="hero-eyebrow">
             <span className="hero-pip"/>
-            AI fitness · Metro Manila &amp; beyond
+           Fitness Platform · Pasig City 
           </div>
 
           {/* morphing headline */}

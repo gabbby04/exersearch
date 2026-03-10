@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
+<<<<<<< Updated upstream
 import { api } from "../../utils/apiClient";
+=======
+import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
+>>>>>>> Stashed changes
 
 import {
   Search,
@@ -26,7 +30,7 @@ import {
 import "./FAQs.css";
 
 // ═══════════════════════════════════════════════════════════════════
-//  SEARCH ENGINE
+//  SEARCH ENGINE (unchanged)
 // ═══════════════════════════════════════════════════════════════════
 
 const STOP_WORDS = new Set([
@@ -282,10 +286,17 @@ function expandQuery(rawQuery) {
 }
 
 function buildSearchIndex(faqs) {
+<<<<<<< Updated upstream
   const docs = faqs.map((faq) => {
     const qTokens = tokenize(faq.question, { removeStops: true, doStem: true });
     const aTokens = tokenize(faq.answer, { removeStops: true, doStem: true });
     const bigrams = ngrams(qTokens, 2);
+=======
+  const docs = faqs.map(faq => {
+    const qTokens = tokenize(faq.question, { removeStops: true, doStem: true });
+    const aTokens = tokenize(faq.answer,   { removeStops: true, doStem: true });
+    const bigrams  = ngrams(qTokens, 2);
+>>>>>>> Stashed changes
     const trigrams = ngrams(qTokens, 3);
     const soundexSet = new Set([
       ...qTokens.filter((t) => t.length > 3).map(soundex),
@@ -307,7 +318,6 @@ function buildSearchIndex(faqs) {
       len: allTokens.length,
     };
   });
-
   const N = docs.length;
   const df = new Map();
 
@@ -327,8 +337,12 @@ function buildSearchIndex(faqs) {
   return { docs, idf, avgLen, N };
 }
 
+<<<<<<< Updated upstream
 const BM25_K1 = 1.5;
 const BM25_B = 0.75;
+=======
+const BM25_K1 = 1.5, BM25_B = 0.75;
+>>>>>>> Stashed changes
 
 function bm25Score(tf, idf, docLen, avgLen) {
   const norm = 1 - BM25_B + BM25_B * (docLen / avgLen);
@@ -336,8 +350,7 @@ function bm25Score(tf, idf, docLen, avgLen) {
 }
 
 function phraseBonus(text, rawQuery) {
-  const t = text.toLowerCase();
-  const q = rawQuery.toLowerCase();
+  const t = text.toLowerCase(), q = rawQuery.toLowerCase();
   if (t.includes(q)) return 40;
 
   let bonus = 0;
@@ -419,19 +432,21 @@ function detectIntentBoost(rawQuery, faqCategory) {
 
 function searchFaqs(query, faqs, index, category = "all") {
   const q = query.trim();
+<<<<<<< Updated upstream
   if (!q) {
     return category === "all" ? faqs : faqs.filter((f) => f.category === category);
   }
 
+=======
+  if (!q) return category === "all" ? faqs : faqs.filter(f => f.category === category);
+>>>>>>> Stashed changes
   const { terms, stemmed, soundexCodes, raw } = expandQuery(q);
   const { docs, idf, avgLen } = index;
   const results = [];
-
   for (const doc of docs) {
     if (category !== "all" && doc.faq.category !== category) continue;
 
     let score = 0;
-
     for (const term of stemmed) {
       const tf_a = doc.aTokens.filter((t) => t === term).length;
       const qtf = doc.qTokens.filter((t) => t === term).length;
@@ -440,8 +455,8 @@ function searchFaqs(query, faqs, index, category = "all") {
       if (qtf > 0) score += WEIGHT.question * bm25Score(qtf, termIdf, doc.qTokens.length, avgLen * 0.4);
       if (tf_a > 0) score += WEIGHT.answer * bm25Score(tf_a, termIdf, doc.aTokens.length, avgLen * 0.6);
     }
-
     score += WEIGHT.question * phraseBonus(doc.faq.question, raw);
+<<<<<<< Updated upstream
     score += WEIGHT.answer * phraseBonus(doc.faq.answer, raw) * 0.5;
 
     const qLower = doc.faq.question.toLowerCase();
@@ -458,21 +473,27 @@ function searchFaqs(query, faqs, index, category = "all") {
       if (doc.trigrams.includes(tg)) score += 18 * WEIGHT.trigram;
     }
 
+=======
+    score += WEIGHT.answer   * phraseBonus(doc.faq.answer,   raw) * 0.5;
+    const qLower = doc.faq.question.toLowerCase();
+    if (qLower.startsWith(raw)) score += 30 * WEIGHT.questionStart;
+    else if (raw.split(" ").every(w => qLower.includes(w))) score += 15;
+    const queryBigrams  = ngrams(stemmed, 2);
+    const queryTrigrams = ngrams(stemmed, 3);
+    for (const bg of queryBigrams)  if (doc.bigrams.includes(bg))  score += 10 * WEIGHT.bigram;
+    for (const tg of queryTrigrams) if (doc.trigrams.includes(tg)) score += 18 * WEIGHT.trigram;
+>>>>>>> Stashed changes
     let phoneticHits = 0;
-    for (const code of soundexCodes) {
-      if (doc.soundexSet.has(code)) phoneticHits++;
-    }
+    for (const code of soundexCodes) { if (doc.soundexSet.has(code)) phoneticHits++; }
     score += phoneticHits * 4 * WEIGHT.phonetic;
 
     score += WEIGHT.proximity * proximityBonus([...doc.qTokens, ...doc.aTokens], stemmed);
     score += detectIntentBoost(raw, doc.faq.category);
-
     for (const qt of terms) {
       if (qt.length < 3) continue;
-      for (const dt of doc.qTokens) {
-        if (dt.startsWith(qt) && dt !== qt) score += 3;
-      }
+      for (const dt of doc.qTokens) { if (dt.startsWith(qt) && dt !== qt) score += 3; }
     }
+<<<<<<< Updated upstream
 
     const hitsQ = stemmed.filter((t) => doc.qTokens.includes(t)).length;
     const hitsA = stemmed.filter((t) => doc.aTokens.includes(t)).length;
@@ -482,9 +503,16 @@ function searchFaqs(query, faqs, index, category = "all") {
     const coverage = stemmed.length > 0 ? covered / stemmed.length : 0;
     score *= 0.5 + 0.5 * coverage;
 
+=======
+    const hitsQ = stemmed.filter(t => doc.qTokens.includes(t)).length;
+    const hitsA = stemmed.filter(t => doc.aTokens.includes(t)).length;
+    if (hitsQ > 0 && hitsA > 0) score += 5;
+    const covered = stemmed.filter(t => doc.tf.has(t)).length;
+    const coverage = stemmed.length > 0 ? covered / stemmed.length : 0;
+    score *= (0.5 + 0.5 * coverage);
+>>>>>>> Stashed changes
     if (score > 0.5) results.push({ faq: doc.faq, score });
   }
-
   results.sort((a, b) => b.score - a.score);
   return results.map((r) => r.faq);
 }
@@ -592,7 +620,6 @@ function FaqItem({ faq, index, isOpen, onToggle, catMeta, gmailUrl }) {
         <p className="fq-item__q">{faq.question}</p>
         <ChevronDown size={13} className={`fq-item__chev ${isOpen ? "fq-item__chev--open" : ""}`} />
       </div>
-
       <div className="fq-item__body">
         <div className="fq-item__body-inner">
           <span className="fq-item__cat-tag">{catMeta?.label}</span>
@@ -746,9 +773,13 @@ export default function FAQsPage() {
   }, [supportEmail]);
 
   const filteredFaqs = useMemo(() => {
+<<<<<<< Updated upstream
     if (!searchIndex) {
       return activeCategory === "all" ? faqs : faqs.filter((f) => f.category === activeCategory);
     }
+=======
+    if (!searchIndex) return activeCategory === "all" ? faqs : faqs.filter(f => f.category === activeCategory);
+>>>>>>> Stashed changes
     return searchFaqs(searchQuery, faqs, searchIndex, activeCategory);
   }, [faqs, searchQuery, activeCategory, searchIndex]);
 
@@ -758,6 +789,7 @@ export default function FAQsPage() {
     <>
       <Header />
 
+<<<<<<< Updated upstream
       <div className={`fq ${heroIn ? "fq--in" : ""}`}>
         <section className="fq-banner">
           <div className="fq-banner__noise" />
@@ -798,9 +830,29 @@ export default function FAQsPage() {
             <div className="fq-sb-search">
               <Search size={14} className="fq-sb-search__ico" />
 
+=======
+        {/* ── HERO ── */}
+        <section className="fq-hero">
+          <div className="fq-hero__noise" />
+          <div className="fq-hero__glow" />
+          <div className="fq-hero__grid" />
+
+          <div className="fq-hero__inner">
+            <p className="fq-hero__eyebrow">Help Center</p>
+            <h1 className="fq-hero__title">
+              How can we<br /><em>help you?</em>
+            </h1>
+            <p className="fq-hero__sub">
+              {faqs.length ? faqs.length : "—"} articles across {CATEGORIES.length - 1} topics.
+            </p>
+
+            {/* Search */}
+            <div className="fq-hero__search">
+              <Search size={16} className="fq-hero__search-ico" />
+>>>>>>> Stashed changes
               <input
                 ref={searchRef}
-                className="fq-sb-search__input"
+                className="fq-hero__input"
                 type="text"
                 placeholder="Search articles…"
                 value={searchQuery}
@@ -809,6 +861,7 @@ export default function FAQsPage() {
               />
 
               {searchQuery && (
+<<<<<<< Updated upstream
                 <button
                   className="fq-sb-search__clear"
                   onClick={() => {
@@ -817,20 +870,32 @@ export default function FAQsPage() {
                   }}
                 >
                   <X size={10} />
+=======
+                <button className="fq-hero__clear" onClick={() => { setSearchQuery(""); searchRef.current?.focus(); }}>
+                  <X size={11} />
+>>>>>>> Stashed changes
                 </button>
               )}
             </div>
 
+            {/* Quick chips */}
             {!searchQuery && (
-              <div className="fq-sb-quick">
+              <div className="fq-hero__chips">
+                <span className="fq-hero__chip-label">Try:</span>
                 {QUICK_SEARCHES.map((t, i) => (
+<<<<<<< Updated upstream
                   <button key={i} className="fq-sb-chip" onClick={() => setSearchQuery(t)}>
                     {t}
                   </button>
+=======
+                  <button key={i} className="fq-qchip" onClick={() => setSearchQuery(t)}>{t}</button>
+>>>>>>> Stashed changes
                 ))}
               </div>
             )}
+          </div>
 
+<<<<<<< Updated upstream
             <p className="fq-sb-heading">Browse topics</p>
 
             <nav className="fq-sb-nav">
@@ -872,11 +937,44 @@ export default function FAQsPage() {
               <div className="fq-sb-clink fq-sb-clink--soon">
                 <MessageSquare size={13} />
                 <span>Live chat — coming soon</span>
+=======
+          {/* Stats strip */}
+          <div className="fq-hero__stats">
+            {[["50+", "Partner gyms"], ["24h", "Reply time"], ["100%", "Free forever"]].map(([v, l]) => (
+              <div key={l} className="fq-hstat">
+                <span className="fq-hstat__v">{v}</span>
+                <span className="fq-hstat__l">{l}</span>
+>>>>>>> Stashed changes
               </div>
-            </div>
-          </aside>
+            ))}
+          </div>
+        </section>
 
-          <main className="fq-panel">
+        {/* ── CATEGORY PILLS ── */}
+        <div className="fq-cats">
+          <div className="fq-cats__inner">
+            {CATEGORIES.map(cat => {
+              const Icon = cat.icon;
+              return (
+                <button
+                  key={cat.id}
+                  className={`fq-cat ${activeCategory === cat.id ? "fq-cat--on" : ""}`}
+                  onClick={() => setActiveCategory(cat.id)}
+                >
+                  <Icon size={12} />
+                  {cat.label}
+                  <span className="fq-cat__n">{countFor(cat.id)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── BODY ── */}
+        <div className="fq-body">
+          <div className="fq-wrap">
+
+            {/* Toolbar */}
             <div className="fq-panel__bar">
               <span className="fq-panel__label">
                 {loading ? (
@@ -911,6 +1009,7 @@ export default function FAQsPage() {
               )}
             </div>
 
+            {/* FAQ list */}
             {loading ? (
               <div className="fq-skeleton">
                 {[...Array(6)].map((_, i) => (
@@ -956,11 +1055,32 @@ export default function FAQsPage() {
                 ))}
               </div>
             )}
-          </main>
+
+            {/* Contact strip */}
+            <div className="fq-contact">
+              <div className="fq-contact__left">
+                <h3>Still need help?</h3>
+                <p>We reply within 24 hours. No bots, real people.</p>
+              </div>
+              <div className="fq-contact__links">
+                <a href={gmailUrl} target="_blank" rel="noopener noreferrer" className="fq-clink">
+                  <Mail size={13} /><span>{supportEmail}</span>
+                </a>
+                <a href={`tel:${contactPhone.replace(/\s+/g, "")}`} className="fq-clink">
+                  <Phone size={13} /><span>{contactPhone}</span>
+                </a>
+                <div className="fq-clink fq-clink--soon">
+                  <MessageSquare size={13} /><span>Live chat soon</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
       <Footer />
+      <ScrollThemeWidget />
     </>
   );
 }

@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import Header from "./Header";
 import Footer from "./Footer";
+import { useTheme } from "./ThemeContext";
+import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
 
 import {
   CheckCircle2,
@@ -13,8 +15,8 @@ import {
   Megaphone,
 } from "lucide-react";
 
-import "./Philosophy.css";  
-import "./philosophy.scss";  
+import "./philosophy.css";
+import "./philosophy.scss";
 
 /* ─── DATA ─── */
 const panels = [
@@ -87,8 +89,8 @@ const OWNER_FEATURES = [
 export default function OurPhilosophyPage() {
   const heroRef   = useRef(null);
   const tappedRef = useRef(false);
+  const { isDark } = useTheme();
 
-  /* ── GSAP hero — completely unchanged ── */
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
@@ -119,16 +121,16 @@ export default function OurPhilosophyPage() {
         defaults: { duration: 0.95, ease: "power3.inOut" },
       });
 
-      tl.to(".philoPanel--1", { xPercent: -80 }, 0)
-        .to(".philoPanel--2", { xPercent: -40 }, 0)
-        .to(".philoPanel--3", { xPercent:   0 }, 0)
-        .to(".philoPanel--4", { xPercent:  40 }, 0)
-        .to(".philoPanel--5", { xPercent:  80 }, 0)
-        .to(".philoPanel--1 .philoPanel__cuboid", { rotateY: -90 }, 0)
-        .to(".philoPanel--2 .philoPanel__cuboid", { rotateY: -90 }, 0)
+      tl.to(".philoPanel--1", { xPercent: -120 }, 0)
+        .to(".philoPanel--2", { xPercent:  -55 }, 0)
+        .to(".philoPanel--3", { xPercent:    0 }, 0)
+        .to(".philoPanel--4", { xPercent:   55 }, 0)
+        .to(".philoPanel--5", { xPercent:  120 }, 0)
+        .to(".philoPanel--1 .philoPanel__cuboid", { rotateY: -72 }, 0)
+        .to(".philoPanel--2 .philoPanel__cuboid", { rotateY: -36 }, 0)
         .to(".philoPanel--3 .philoPanel__cuboid", { rotateY:   0 }, 0)
-        .to(".philoPanel--4 .philoPanel__cuboid", { rotateY:  90 }, 0)
-        .to(".philoPanel--5 .philoPanel__cuboid", { rotateY:  90 }, 0);
+        .to(".philoPanel--4 .philoPanel__cuboid", { rotateY:  36 }, 0)
+        .to(".philoPanel--5 .philoPanel__cuboid", { rotateY:  72 }, 0);
 
       const onEnter = () => tl.play();
       const onLeave = () => { tappedRef.current = false; tl.reverse(); };
@@ -154,9 +156,9 @@ export default function OurPhilosophyPage() {
   return (
     <>
       <Header />
-      <div className="ph-page">
+      <div className="ph-page" data-theme={isDark ? "dark" : "light"}>
 
-        {/* ══ HERO — unchanged structure, recolored via CSS ══ */}
+        {/* ══ HERO ══ */}
         <section className="philoHero">
           <div className="philoHero__hero" ref={heroRef}>
             <div className="philoHero__panels">
@@ -194,10 +196,10 @@ export default function OurPhilosophyPage() {
                 find the right gym, or figure out meals that support their goals.
               </p>
             </div>
-
             <div className="ph-principles__grid">
               {PRINCIPLES.map((item, i) => (
                 <div key={i} className="ph-card">
+                  <span className="ph-card__num">0{i + 1}</span>
                   <div className="ph-card__ico">{item.icon}</div>
                   <h3 className="ph-card__title">{item.title}</h3>
                   <p className="ph-card__desc">{item.desc}</p>
@@ -210,13 +212,20 @@ export default function OurPhilosophyPage() {
         {/* ══ CTA 1 ══ */}
         <section className="ph-cta">
           <div className="fq-wrap ph-cta__inner">
-            <h2 className="ph-cta__title">
-              Fitness should not feel like <em>hidden knowledge</em>
-            </h2>
-            <p className="ph-cta__sub">
-              The right guidance, tools, and access can help more people begin with
-              confidence and stay consistent.
-            </p>
+            <div className="ph-cta__left">
+              <span className="ph-cta__label">Why it matters</span>
+              <h2 className="ph-cta__title">
+                Fitness should not feel like <em>hidden knowledge</em>
+              </h2>
+              <p className="ph-cta__sub">
+                The right guidance, tools, and access can help more people begin with
+                confidence and stay consistent.
+              </p>
+            </div>
+            <div className="ph-cta__stat">
+              <span className="ph-cta__stat-val">73%</span>
+              <span className="ph-cta__stat-label">of beginners quit within 3 months</span>
+            </div>
           </div>
         </section>
 
@@ -231,7 +240,6 @@ export default function OurPhilosophyPage() {
                 that feel practical in real life.
               </p>
             </div>
-
             <div className="philoUsersAlt__grid">
               {USER_FEATURES.map((item, i) => (
                 <article key={i} className="philoUsersAlt__card">
@@ -249,13 +257,20 @@ export default function OurPhilosophyPage() {
         {/* ══ CTA 2 ══ */}
         <section className="ph-cta">
           <div className="fq-wrap ph-cta__inner">
-            <h2 className="ph-cta__title">
-              Better guidance creates better <em>confidence</em>
-            </h2>
-            <p className="ph-cta__sub">
-              When people understand their options, fitness becomes less scary, less
-              confusing, and more sustainable.
-            </p>
+            <div className="ph-cta__left">
+              <span className="ph-cta__label">The difference we make</span>
+              <h2 className="ph-cta__title">
+                Better guidance creates better <em>confidence</em>
+              </h2>
+              <p className="ph-cta__sub">
+                When people understand their options, fitness becomes less scary, less
+                confusing, and more sustainable.
+              </p>
+            </div>
+            <div className="ph-cta__stat">
+              <span className="ph-cta__stat-val">3×</span>
+              <span className="ph-cta__stat-label">more likely to stick with a plan they understand</span>
+            </div>
           </div>
         </section>
 
@@ -274,10 +289,10 @@ export default function OurPhilosophyPage() {
                 discover by the audiences that matter to them.
               </p>
             </div>
-
             <div className="ph-owners__grid">
               {OWNER_FEATURES.map((item, i) => (
                 <div key={i} className="ph-ocard">
+                  <span className="ph-ocard__num">0{i + 1}</span>
                   <div className="ph-ocard__ico">{item.icon}</div>
                   <h3 className="ph-ocard__title">{item.title}</h3>
                   <p className="ph-ocard__desc">{item.desc}</p>
@@ -289,6 +304,7 @@ export default function OurPhilosophyPage() {
 
       </div>
       <Footer />
+      <ScrollThemeWidget />
     </>
   );
 }

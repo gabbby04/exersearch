@@ -11,31 +11,31 @@ export const ThemeProvider = ({ children }) => {
   });
 
   // Light mode colors
-  const lightTheme = {
-    // Orange palette
-    primary: '#ff5a16',
-    primaryMedium: '#fc4a00',
-    primaryDark: '#ab3200',
-    primaryDim: 'rgba(255, 90, 22, 0.12)',
-    primaryGlow: 'rgba(255, 90, 22, 0.3)',
-    
-    // Backgrounds
-    bgPrimary: '#ffffff',
-    bgSecondary: '#f6f8fa',
-    bgTertiary: '#f1f4f8',
-    bgAccent: '#ebf0f5',
-    
-    // Text colors
-    textPrimary: '#0d141b',
-    textSecondary: '#3a3530',
-    textTertiary: '#4a6080',
-    textMuted: '#7a90a8',
-    
-    // UI elements
-    border: '#e6ddd6',
-    shadow: 'rgba(0, 0, 0, 0.1)',
-    overlay: 'rgba(0, 0, 0, 0.5)',
-  };
+const lightTheme = {
+  // Orange palette
+  primary: '#ff5a16',
+  primaryMedium: '#fc4a00',
+  primaryDark: '#ab3200',
+  primaryDim: 'rgba(255, 90, 22, 0.10)',
+  primaryGlow: 'rgba(255, 90, 22, 0.25)',
+
+  // Backgrounds
+  bgPrimary: '#ffffff',
+  bgSecondary: '#f4f7fb',
+  bgTertiary: '#edf1f7',
+  bgAccent: '#e4eaf3',
+
+  // Text colors
+  textPrimary: '#0b1017',
+  textSecondary: 'rgba(11, 16, 23, 0.82)',
+  textTertiary: 'rgba(11, 16, 23, 0.62)',
+  textMuted: 'rgba(11, 16, 23, 0.42)',
+
+  // UI elements
+  border: 'rgba(11, 16, 23, 0.12)',
+  shadow: 'rgba(11, 16, 23, 0.10)',
+  overlay: 'rgba(0, 0, 0, 0.5)',
+};
 
   // Dark mode colors
   const darkTheme = {

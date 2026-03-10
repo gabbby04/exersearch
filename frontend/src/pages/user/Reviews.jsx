@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import "./Reviews.css";
 import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
+import { useTheme } from "./ThemeContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -143,7 +144,7 @@ const USER_REVIEWS = [
   },
 ];
 
-const STAR_FILTERS = [0, 5, 4, 3, 2, 1]; // 0 = all
+const STAR_FILTERS = [0, 5, 4, 3, 2, 1];
 const SORT_OPTIONS = ["Most Recent", "Highest Rated", "Most Helpful"];
 
 /* ── star display ── */
@@ -179,7 +180,6 @@ function ReviewCard({ review }) {
 
   return (
     <article className="rvc">
-      {/* header row */}
       <div className="rvc__hdr">
         <div className="rvc__avatar">{review.initials}</div>
         <div className="rvc__meta">
@@ -197,7 +197,6 @@ function ReviewCard({ review }) {
         </div>
       </div>
 
-      {/* tag + body */}
       <div className="rvc__body-wrap">
         <span className="rv-tag rv-tag--dark">{review.tag}</span>
         <p className="rvc__body">{displayBody}</p>
@@ -209,7 +208,6 @@ function ReviewCard({ review }) {
         )}
       </div>
 
-      {/* footer */}
       <div className="rvc__footer">
         <span className="rvc__helpful-label">Helpful?</span>
         <button
@@ -224,7 +222,6 @@ function ReviewCard({ review }) {
     </article>
   );
 }
-
 
 /* ── mouse-tilt card ── */
 function TiltCard({ children, className = "", style }) {
@@ -265,6 +262,7 @@ function TiltCard({ children, className = "", style }) {
 
 /* ─── PAGE ─── */
 export default function ReviewsPage() {
+  const { isDark } = useTheme();
   const sectionRef  = useRef(null);
   const logoPathRef = useRef(null);
   const [activeTab, setActiveTab] = useState(TABS[0]);
@@ -272,16 +270,14 @@ export default function ReviewsPage() {
   const [starFilter, setStarFilter] = useState(0);
   const [sortBy, setSortBy] = useState(SORT_OPTIONS[0]);
 
-  // derived reviews
   const filteredReviews = USER_REVIEWS
     .filter((r) => starFilter === 0 || r.stars === starFilter)
     .sort((a, b) => {
       if (sortBy === "Highest Rated") return b.stars - a.stars;
       if (sortBy === "Most Helpful")  return b.helpful - a.helpful;
-      return b.id - a.id; // Most Recent
+      return b.id - a.id;
     });
 
-  // rating breakdown
   const avgRating = (USER_REVIEWS.reduce((s, r) => s + r.stars, 0) / USER_REVIEWS.length).toFixed(1);
   const breakdown = [5,4,3,2,1].map((s) => ({
     star: s,
@@ -299,7 +295,6 @@ export default function ReviewsPage() {
     let heightRatio = window.innerWidth / window.innerHeight;
 
     const ctx = gsap.context(() => {
-      /* hero scroll pin — logic untouched */
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -312,7 +307,7 @@ export default function ReviewsPage() {
       });
 
       tl.fromTo(
-        [".reviews-hero-bg-svg", ".reviews-hero-content"],
+        ".reviews-hero-content",
         { autoAlpha: 0 },
         { autoAlpha: 1, duration: 0.25 }
       )
@@ -335,7 +330,6 @@ export default function ReviewsPage() {
         )
         .to({}, { duration: 0.25 });
 
-      /* section reveals */
       gsap.fromTo(".rv-stat",
         { y: 20, autoAlpha: 0 },
         { y: 0, autoAlpha: 1, duration: 0.55, stagger: 0.08, ease: "power3.out",
@@ -366,7 +360,7 @@ export default function ReviewsPage() {
   return (
     <>
       <Header />
-      <div className="reviews-page">
+      <div className="reviews-page" data-theme={isDark ? "dark" : "light"}>
 
         {/* ══ HERO ══ */}
         <section className="reviews-hero-section" ref={sectionRef}>
@@ -444,7 +438,7 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-        {/* ══ USER REVIEWS — main section ══ */}
+        {/* ══ USER REVIEWS ══ */}
         <section className="rv-reviews-section">
           <div className="reviews-wrap">
             <div className="rv-reviews-hdr">
@@ -455,17 +449,13 @@ export default function ReviewsPage() {
             </div>
 
             <div className="rv-reviews-layout">
-
-              {/* ── LEFT: rating summary + filters ── */}
               <aside className="rv-reviews-sidebar">
-                {/* overall score */}
                 <div className="rv-score-box">
                   <span className="rv-score-box__num">{avgRating}</span>
                   <StarRow n={Math.round(parseFloat(avgRating))} size={16} />
                   <span className="rv-score-box__total">{USER_REVIEWS.length} reviews</span>
                 </div>
 
-                {/* bar breakdown */}
                 <div className="rv-breakdown">
                   {breakdown.map(({ star, count, pct }) => (
                     <button
@@ -482,7 +472,6 @@ export default function ReviewsPage() {
                   ))}
                 </div>
 
-                {/* sort */}
                 <div className="rv-sort">
                   <div className="rv-sort__label"><Filter size={12} /> Sort by</div>
                   <div className="rv-sort__btns">
@@ -505,7 +494,6 @@ export default function ReviewsPage() {
                 )}
               </aside>
 
-              {/* ── RIGHT: review cards ── */}
               <div className="rv-reviews-list">
                 {filteredReviews.length === 0 ? (
                   <div className="rv-empty">No reviews match this filter.</div>
@@ -517,17 +505,17 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-        {/* ══ HIGHLIGHTS — tabbed ══ */}
+        {/* ══ HIGHLIGHTS ══ */}
         <section className="reviews-highlights">
           <div className="reviews-wrap">
             <div className="reviews-section-head reviews-section-head--center">
-              <p className="reviews-section-eyebrow reviews-section-eyebrow--dark">
+              <p className="reviews-section-eyebrow reviews-section-eyebrow--accent">
                 <Star size={13} /> What Reviews Cover
               </p>
-              <h2 className="reviews-section-title reviews-section-title--dark">
+              <h2 className="reviews-section-title reviews-section-title--themed">
                 What Makes a <span>Great Gym Review</span>
               </h2>
-              <p className="reviews-section-sub reviews-section-sub--dark">
+              <p className="reviews-section-sub reviews-section-sub--themed">
                 As more members share their experiences, reviews will help people decide
                 faster and with more confidence.
               </p>
