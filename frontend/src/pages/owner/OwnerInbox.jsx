@@ -1,4 +1,3 @@
-// OwnerInbox.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./OwnerInbox.css";
 import {
@@ -14,6 +13,7 @@ import Swal from "sweetalert2";
 
 import { getAllMyGyms } from "../../utils/ownerGymApi";
 import { absoluteUrl } from "../../utils/findGymsData";
+import { api } from "../../utils/apiClient";
 import {
   OWNER_INQUIRY_TABS,
   ownerListGymInquiries,
@@ -60,10 +60,17 @@ function pickGymName(g) {
   );
 }
 
-/**
- * ✅ Ensures "/storage/..." becomes "https://exersearch.test/storage/..."
- * Also supports already-absolute URLs.
- */
+function getApiOrigin() {
+  const base = safeStr(api?.defaults?.baseURL).trim();
+  if (!base) return window.location.origin;
+
+  try {
+    return new URL(base).origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
 function toExersearchUrl(raw) {
   const s = safeStr(raw).trim();
   if (!s) return "";
@@ -71,7 +78,7 @@ function toExersearchUrl(raw) {
   if (s.startsWith("//")) return `https:${s}`;
 
   const path = s.startsWith("/") ? s : `/${s}`;
-  const full = `https://exersearch.test${path}`.replace(/([^:]\/)\/+/g, "$1");
+  const full = `${getApiOrigin()}${path}`.replace(/([^:]\/)\/+/g, "$1");
   return full;
 }
 
@@ -160,7 +167,6 @@ function pickUserNameRaw(rawInq) {
 function pickUserAvatarRaw(rawInq) {
   const u = rawInq?.user ?? rawInq?.asked_by ?? rawInq?.askedBy ?? null;
 
-  // ✅ OPTION A: prefer the flattened url from backend
   const raw =
     rawInq?.user_profile_photo_url ||
     u?.avatar_url ||
@@ -304,7 +310,6 @@ export default function OwnerInbox() {
             gymId: pickInquiryGymId(rawInq) || gymId,
             userId: pickUserIdRaw(rawInq),
             userName: pickUserNameRaw(rawInq),
-            // ✅ comes from backend: rawInq.user_profile_photo_url
             userAvatar: pickUserAvatarRaw(rawInq),
             question: pickInquiryQuestion(rawInq),
             createdAt: pickInquiryCreatedAt(rawInq),
@@ -382,7 +387,6 @@ export default function OwnerInbox() {
   useEffect(() => {
     if (!gyms.length) return;
     refreshSummary();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gyms.length]);
 
   const gymsSortedForAutoPick = useMemo(() => {
@@ -423,7 +427,6 @@ export default function OwnerInbox() {
       alive = false;
       clearTimeout(t);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGymId, statusFilter, inqQuery]);
 
   const filteredGyms = useMemo(() => {
@@ -586,7 +589,7 @@ export default function OwnerInbox() {
 
       if (openMsgs.length > 0) {
         const latestOpen = [...openMsgs].sort(
-          (a, b) => safeTime(b.createdAt) - safeTime(b.createdAt)
+          (a, b) => safeTime(b.createdAt) - safeTime(a.createdAt)
         )[0];
         const olderOpen = openMsgs.filter((m) => m.id !== latestOpen.id);
 

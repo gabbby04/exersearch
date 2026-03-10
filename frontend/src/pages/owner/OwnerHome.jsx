@@ -1,4 +1,3 @@
-// src/pages/owner/OwnerHome.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "./Header2";
@@ -35,12 +34,12 @@ import {
   getOwnerActivities,
   getOwnerHomeCards,
 } from "../../utils/ownerDashboardApi";
+import { api } from "../../utils/apiClient";
 
 /* -------------------------------------------
   Config
 ------------------------------------------- */
 
-const API_BASE = "https://exersearch.test";
 const DEFAULT_GYM_IMAGE =
   "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80";
 
@@ -74,7 +73,7 @@ function areaLabelFromGym(gym) {
 /**
  * ✅ Image URL resolver:
  * - supports absolute URLs (imgur, etc.)
- * - supports laravel "/storage/..." relative paths by prefixing API_BASE
+ * - supports laravel "/storage/..." relative paths by prefixing app origin
  * - normalizes double slashes (except after https:)
  * - if empty/unusable -> DEFAULT_GYM_IMAGE
  */
@@ -84,16 +83,14 @@ function resolveImageUrl(v) {
   const s0 = String(v).trim();
   if (!s0) return DEFAULT_GYM_IMAGE;
 
-  // already full url
   if (/^https?:\/\//i.test(s0)) return s0;
 
-  // normalize leading slashes
+  const rawBase = String(api?.defaults?.baseURL || "").replace(/\/+$/, "");
+  const originBase = rawBase.replace(/\/api\/v1$/i, "");
+
   const s = s0.replace(/^\/+/, "");
+  const out = `${originBase}/${s}`;
 
-  // prefix base for relative paths (including storage/*)
-  const out = `${API_BASE}/${s}`;
-
-  // remove double slashes except after scheme
   return out.replace(/([^:]\/)\/+/g, "$1");
 }
 
@@ -170,7 +167,6 @@ function computeGymAlerts({ analytics }) {
       .slice(0, 2);
   }
 
-  // try both shapes
   const views = Number(analytics?.total_views ?? analytics?.views ?? analytics?.totals?.views?.total ?? 0);
   const inquiries = Number(
     analytics?.total_inquiries ?? analytics?.inquiries ?? analytics?.totals?.inquiries?.total ?? 0
@@ -258,18 +254,14 @@ export default function OwnerHome() {
   const [activities, setActivities] = useState([]);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
 
-  // collapsible
   const [gymsOpen, setGymsOpen] = useState(true);
   const [activityOpen, setActivityOpen] = useState(true);
 
-  // show more
   const [showAllGyms, setShowAllGyms] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
 
-  // ✅ prevents img flicker: once broken -> always fallback for that gym
   const [brokenGymImages, setBrokenGymImages] = useState({});
 
-  // right-side cards
   const [cards, setCards] = useState({
     latest_inquiries: [],
     latest_reviews: [],
@@ -318,10 +310,8 @@ export default function OwnerHome() {
         setGymsOpen(true);
         setShowAllGyms(false);
 
-        // reset broken images cache when gyms list changes
         setBrokenGymImages({});
 
-        // load per-gym analytics
         if (list.length) {
           setAnalyticsLoading(true);
 
@@ -343,7 +333,6 @@ export default function OwnerHome() {
           setAnalyticsByGym(map);
         }
 
-        // activities
         setActivitiesLoading(true);
         try {
           const actRes = await getOwnerActivities();
@@ -359,7 +348,6 @@ export default function OwnerHome() {
           if (alive) setActivitiesLoading(false);
         }
 
-        // right-side cards
         setCardsLoading(true);
         try {
           const cardsRes = await getOwnerHomeCards({ days: 3 });
@@ -539,7 +527,6 @@ export default function OwnerHome() {
       <Header />
 
       <div className="od-container">
-        {/* Hero */}
         <div className="od-hero-section">
           <div className="od-hero-background">
             <div className="od-hero-orb od-hero-orb-1"></div>
@@ -623,7 +610,6 @@ export default function OwnerHome() {
           </div>
         </div>
 
-        {/* Needs Your Attention */}
         <div className="od-urgent-section">
           <div className="od-urgent-header">
             <div className="od-urgent-title">
@@ -652,9 +638,7 @@ export default function OwnerHome() {
         </div>
 
         <div className="od-main-grid">
-          {/* LEFT */}
           <div className="od-left-column">
-            {/* Your Gyms */}
             <div className="od-gyms-section">
               <div
                 className="od-section-header od-collapsible-header"
@@ -680,7 +664,7 @@ export default function OwnerHome() {
               <div className={`od-collapse-body ${gymsOpen ? "open" : ""}`}>
                 <div className="od-gyms-list">
                   {visibleGyms.map((gym) => {
-                    const showStatusBadge = gym.status && gym.status !== "approved"; // ✅ remove APPROVED display
+                    const showStatusBadge = gym.status && gym.status !== "approved";
                     return (
                       <div
                         key={gym.id}
@@ -799,7 +783,6 @@ export default function OwnerHome() {
               </div>
             </div>
 
-            {/* Recent Activity */}
             <div className="od-activity-section">
               <div
                 className="od-section-header od-collapsible-header"
@@ -847,7 +830,6 @@ export default function OwnerHome() {
               </div>
             </div>
 
-            {/* Owner Tools */}
             <div className="od-tips-section">
               <h3>Owner Tools</h3>
               <div className="od-tips-grid">
@@ -915,11 +897,9 @@ export default function OwnerHome() {
             </div>
           </div>
 
-          {/* RIGHT */}
           <div className="od-right-column">
             {selectedGymUi ? (
               <>
-                {/* Selected Gym Analytics */}
                 <div className="od-rank-card">
                   <div className="od-rank-header">
                     <Award size={20} />
@@ -943,7 +923,6 @@ export default function OwnerHome() {
                   </div>
                 </div>
 
-                {/* Performance */}
                 <div className="od-performance-card">
                   <div className="od-perf-header">
                     <h3>Performance</h3>
@@ -953,7 +932,6 @@ export default function OwnerHome() {
                   </div>
 
                   <div className="od-perf-stats">
-                    {/* Views */}
                     <div className="od-perf-stat">
                       <div className="od-perf-label">
                         <Eye size={16} />
@@ -968,7 +946,6 @@ export default function OwnerHome() {
                       </div>
                     </div>
 
-                    {/* Saves */}
                     <div className="od-perf-stat">
                       <div className="od-perf-label">
                         <Star size={16} />
@@ -983,7 +960,6 @@ export default function OwnerHome() {
                       </div>
                     </div>
 
-                    {/* Members (✅ show 0 instead of Soon) */}
                     <div className="od-perf-stat">
                       <div className="od-perf-label">
                         <Users size={16} />
@@ -998,7 +974,6 @@ export default function OwnerHome() {
                       </div>
                     </div>
 
-                    {/* Inquiries */}
                     <div className="od-perf-stat">
                       <div className="od-perf-label">
                         <Mail size={16} />
@@ -1015,7 +990,6 @@ export default function OwnerHome() {
                   </div>
                 </div>
 
-                {/* Member Inquiries (latest 5) */}
                 <div className="od-inquiries-section">
                   <div className="od-section-header" style={{ justifyContent: "space-between" }}>
                     <h2>
@@ -1065,7 +1039,6 @@ export default function OwnerHome() {
                   </div>
                 </div>
 
-                {/* Reviews */}
                 <div className="od-reviews-card">
                   <div className="od-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h3>
@@ -1115,7 +1088,6 @@ export default function OwnerHome() {
                   </div>
                 </div>
 
-                {/* Upcoming Renewals */}
                 <div className="od-renewals-card">
                   <div className="od-card-header">
                     <h3>
@@ -1162,7 +1134,6 @@ export default function OwnerHome() {
                   </div>
                 </div>
 
-                {/* Recent Sign-ups */}
                 <div className="od-signups-card">
                   <div className="od-card-header">
                     <h3>
@@ -1215,7 +1186,6 @@ export default function OwnerHome() {
           </div>
         </div>
       </div>
-
     </div>
   );
 }

@@ -20,9 +20,10 @@ function toAbsUrl(u?: string | null) {
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
 
-  const base = String(api?.defaults?.baseURL || "").replace(/\/$/, "");
+  const rawBase = String(api?.defaults?.baseURL || "").replace(/\/+$/, "");
+  const originBase = rawBase.replace(/\/api\/v1$/i, "");
   const path = s.startsWith("/") ? s : `/${s}`;
-  return `${base}${path}`;
+  return `${originBase}${path}`;
 }
 
 const StyledSidebarHeader = styled.div`
@@ -68,7 +69,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ rtl, ...rest }) =>
 
     const loadSettings = async () => {
       try {
-        const res = await api.get("/api/v1/admin/settings");
+        const res = await api.get("/admin/settings");
         const data: AdminSettings = res.data?.data ?? res.data;
 
         if (!mounted) return;

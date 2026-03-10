@@ -44,7 +44,8 @@ function getApiOrigin() {
   if (!base) return window.location.origin;
 
   try {
-    return new URL(base).origin;
+    const url = new URL(base);
+    return `${url.protocol}//${url.host}`;
   } catch {
     return window.location.origin;
   }
@@ -166,10 +167,7 @@ export default function HeaderOwnerStatic() {
       setMeLoading(true);
 
       try {
-        const res = await api.get("/me", {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-
+        const res = await api.get("/me");
         if (!mounted) return;
         setMe(res.data || null);
       } catch (err) {

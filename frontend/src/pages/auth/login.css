@@ -45,8 +45,9 @@
 }
 
 .auth-left__photo {
-  position: absolute; inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1400&q=80');
+  position: absolute;
+  inset: 0;
+  background-image: url("/cover.png");
   background-size: cover;
   background-position: center top;
   background-color: #130800;
