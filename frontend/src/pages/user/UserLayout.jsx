@@ -21,12 +21,13 @@ function hasAtLeastRole(role, required) {
 
 export default function UserLayout({ skipAuth = false }) {
   const [ready, setReady] = useState(skipAuth);
-  const [showLoader] = useState(() => !sessionStorage.getItem(USER_LAYOUT_LOADED_KEY));
+  const [showLoader] = useState(
+    () => !sessionStorage.getItem(USER_LAYOUT_LOADED_KEY)
+  );
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Authentication check
   useEffect(() => {
     if (skipAuth) return;
 
@@ -46,13 +47,17 @@ export default function UserLayout({ skipAuth = false }) {
           : Promise.resolve();
 
         const [meRes] = await Promise.all([
-          api.get("/me"),
-          minDelay
+          api.get("/me", {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          }),
+          minDelay,
         ]);
 
         const user = meRes.data?.user ?? meRes.data;
 
         if (!hasAtLeastRole(user?.role, "user")) {
+          localStorage.removeItem("token");
+          sessionStorage.removeItem(USER_LAYOUT_LOADED_KEY);
           navigate("/login", { replace: true });
           return;
         }
@@ -61,9 +66,7 @@ export default function UserLayout({ skipAuth = false }) {
 
         sessionStorage.setItem(USER_LAYOUT_LOADED_KEY, "1");
         setReady(true);
-
       } catch (err) {
-
         if (err?.response?.status === 503) {
           navigate("/maintenance", { replace: true });
           return;
@@ -71,6 +74,8 @@ export default function UserLayout({ skipAuth = false }) {
 
         localStorage.removeItem("token");
         sessionStorage.removeItem(USER_LAYOUT_LOADED_KEY);
+
+        if (!active) return;
         navigate("/login", { replace: true });
       }
     };
@@ -80,10 +85,8 @@ export default function UserLayout({ skipAuth = false }) {
     return () => {
       active = false;
     };
-
   }, [navigate, skipAuth, showLoader]);
 
-  // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -91,7 +94,6 @@ export default function UserLayout({ skipAuth = false }) {
     });
   }, [location.pathname]);
 
-  // Loading states
   if (!ready && !skipAuth && showLoader) return <UserLoading />;
   if (!ready && !skipAuth) return null;
 
@@ -99,21 +101,15 @@ export default function UserLayout({ skipAuth = false }) {
 
   return (
     <div className="user-app">
-
-      {/* Header */}
       {!hideHeader && <HeaderUser />}
 
-      {/* Page Content */}
       <main>
         <Outlet />
       </main>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Scroll + Theme widget */}
       <ScrollThemeWidget />
-
     </div>
   );
 }

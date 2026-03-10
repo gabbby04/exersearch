@@ -104,7 +104,7 @@ export function useApiList(
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load]);`1 `
 
   return { rows, loading, error, reload: load, setRows };
 }

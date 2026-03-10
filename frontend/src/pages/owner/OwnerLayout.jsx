@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import OwnerLoading from "./OwnerLoading";
 import HeaderOwnerStatic from "./Header2";
 import Footer from "../user/Footer";
 import "./OwnerLayout.css";
+import { api } from "../../utils/apiClient";
 
 export default function OwnerLayout() {
   const [ready, setReady] = useState(false);
@@ -23,10 +23,7 @@ export default function OwnerLayout() {
         }
 
         const minDelay = new Promise((r) => setTimeout(r, 800));
-        const meReq = axios.get("https://exersearch.test/api/v1/me", {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
+        const meReq = api.get("/me");
 
         const [meRes] = await Promise.all([meReq, minDelay]);
         const fetchedUser = meRes.data.user || meRes.data;
@@ -40,18 +37,19 @@ export default function OwnerLayout() {
         setReady(true);
       } catch {
         localStorage.removeItem("token");
+        localStorage.removeItem("role");
         navigate("/login", { replace: true });
       }
     };
 
     run();
+
     return () => {
       alive = false;
     };
   }, [navigate]);
 
   const pathname = String(location.pathname || "");
-
   const hideFooter = pathname.startsWith("/owner/view-gyms");
 
   if (!ready) return <OwnerLoading />;

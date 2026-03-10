@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import axios from "axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./OwnerHeaderStatic.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
@@ -17,6 +16,7 @@ import {
   Settings,
 } from "lucide-react";
 
+import { api } from "../../utils/apiClient";
 import {
   listNotifications,
   getUnreadNotificationsCount,
@@ -25,7 +25,6 @@ import {
   getNotificationUrl,
 } from "../../utils/notificationApi";
 
-const API_BASE = "https://exersearch.test";
 const FALLBACK_AVATAR = "https://i.pravatar.cc/60?img=12";
 const TOKEN_KEY = "token";
 const UI_MODE_KEY = "ui_mode";
@@ -35,23 +34,39 @@ const ROLE_LEVEL = { user: 1, owner: 2, superadmin: 3 };
 function roleLevel(role) {
   return ROLE_LEVEL[role] ?? 0;
 }
+
 function hasAtLeastRole(role, required) {
   return roleLevel(role) >= roleLevel(required);
 }
+
+function getApiOrigin() {
+  const base = String(api?.defaults?.baseURL || "").trim();
+  if (!base) return window.location.origin;
+
+  try {
+    return new URL(base).origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
 function toAbsUrl(u) {
   if (!u) return "";
   const s = String(u).trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
-  const base = String(API_BASE || "").replace(/\/$/, "");
+
+  const base = getApiOrigin().replace(/\/$/, "");
   const path = s.startsWith("/") ? s : `/${s}`;
   return `${base}${path}`;
 }
+
 function routeForUiMode(mode) {
   if (mode === "owner") return "/owner/home";
   if (mode === "superadmin") return "/admin/dashboard";
   return "/home";
 }
+
 function labelForUiMode(mode) {
   if (mode === "user") return "User UI";
   if (mode === "superadmin") return "Admin UI";
@@ -145,14 +160,16 @@ export default function HeaderOwnerStatic() {
 
   useEffect(() => {
     let mounted = true;
+
     async function loadMe() {
       if (!token) return;
       setMeLoading(true);
+
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        const res = await api.get("/me", {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
+
         if (!mounted) return;
         setMe(res.data || null);
       } catch (err) {
@@ -161,25 +178,35 @@ export default function HeaderOwnerStatic() {
         if (mounted) setMeLoading(false);
       }
     }
+
     if (!user && !me && token) loadMe();
-    return () => (mounted = false);
+
+    return () => {
+      mounted = false;
+    };
   }, [user, me, token]);
 
   useEffect(() => {
     let mounted = true;
+
     async function loadUserLogo() {
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/settings/public`, { withCredentials: true });
+        const res = await api.get("/settings/public");
         const data = res.data?.data ?? res.data;
         const url = data?.user_logo_url || "";
+
         if (!mounted) return;
         setUserLogoUrl(toAbsUrl(url));
       } catch {
         if (mounted) setUserLogoUrl("");
       }
     }
+
     loadUserLogo();
-    return () => (mounted = false);
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const avatarSrc = useMemo(() => {
@@ -234,9 +261,14 @@ export default function HeaderOwnerStatic() {
 
   useEffect(() => {
     function onDocClick(e) {
-      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
-      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
     }
+
     function onEsc(e) {
       if (e.key === "Escape") {
         setNotifOpen(false);
@@ -244,8 +276,10 @@ export default function HeaderOwnerStatic() {
         setMobileMenuOpen(false);
       }
     }
+
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
+
     return () => {
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);

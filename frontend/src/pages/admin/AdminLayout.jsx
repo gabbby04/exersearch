@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import AdminLoading from "./AdminLoading";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminHeader from "./components/AdminHeader";
+import { api } from "../../utils/apiClient";
 
 export const MAIN = "#d23f0b";
 const THEME_KEY = "admin_theme";
@@ -60,21 +60,22 @@ export default function AdminLayout() {
     async function run() {
       try {
         const token = localStorage.getItem("token");
+
         if (!token) {
-          navigate("/login");
+          navigate("/login", { replace: true });
           return;
         }
 
-        const meRes = await axios.get("https://exersearch.test/api/v1/me", {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        const meRes = await api.get("/me", {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
 
         const user = meRes.data?.user || meRes.data;
         const role = user?.role;
 
         if (role !== "admin" && role !== "superadmin") {
-          navigate("/login");
+          localStorage.removeItem("token");
+          navigate("/login", { replace: true });
           return;
         }
 
@@ -82,8 +83,14 @@ export default function AdminLayout() {
         setMe(user);
         setReady(true);
       } catch (e) {
+        if (e?.response?.status === 503) {
+          navigate("/maintenance", { replace: true });
+          return;
+        }
+
         localStorage.removeItem("token");
-        navigate("/login");
+        if (!alive) return;
+        navigate("/login", { replace: true });
       }
     }
 
