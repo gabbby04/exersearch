@@ -103,6 +103,41 @@
   background-size: 200px;
 }
 
+.faq-orb {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fc4a00;
+  box-shadow: 0 0 12px rgba(252,90,22,0.6);
+  overflow: visible;
+}
+
+/* style all child spans as extra orbs */
+.faq-orb span {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fc4a00;
+  opacity: 0.5;
+  box-shadow: 0 0 8px rgba(252,90,22,0.5);
+  animation: pulse 2s infinite ease-in-out alternate;
+}
+
+/* position each orb differently */
+.faq-orb span:nth-child(1) { top: -10px; left: -8px; }
+.faq-orb span:nth-child(2) { top: 5px; left: -12px; }
+.faq-orb span:nth-child(3) { top: 15px; left: 0px; }
+.faq-orb span:nth-child(4) { top: -5px; left: 12px; }
+.faq-orb span:nth-child(5) { top: 10px; left: 8px; }
+
+/* subtle pulsing animation */
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.1); opacity: 0.5; }
+}
 .wrap { max-width: 1280px; margin: 0 auto; padding: 0 2.5rem; }
 
 .es-spot {

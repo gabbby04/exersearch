@@ -63,7 +63,7 @@ const GOALS = [
     id: "begin", chip: "Total beginner", Icon: Target,
     tag: "Day one friendly",
     h1: "Never lifted before.", h2: "Perfect time to start.",
-    desc: "8 questions. 60 seconds. A 12-week plan that starts where you are.",
+    desc: "Answer questions. 60 seconds. A beginner-friendly plan that starts where you are.",
     color: "#fc4a00",
     sessions: [
       { day: "MON", name: "Beginner Full-Body A",   detail: "3 sets · 10 reps · easy", pct: 50 },
@@ -77,10 +77,10 @@ const GOALS = [
 ];
 
 const BENTO = [
-  { id:"ai",    type:"ai-demo",   tag:"AI Planning",  },
+  { id:"ai",    type:"ai-demo",   tag:"Generating your plan",  },
   { id:"gyms",  type:"gym-count", tag:"Gym Network",  },
   { id:"meal",  type:"meal",      tag:"Nutrition",    },
-  { id:"free",  type:"big-stat",  tag:"Price",        },
+  { id:"free",  type:"big-stat",  tag:"Pricing",        },
   { id:"retain",type:"progress",  tag:"Retention",    },
   { id:"local", type:"local",     tag:"Built for PH", },
 ];
@@ -220,7 +220,11 @@ function PlanCard({ goal }) {
 
 function Hero() {
   const [idx, setIdx] = useState(0);
-  const [count, setCount] = useState(12438);
+
+  const [count, setCount] = useState(
+    () => 1000 + Math.floor(Math.random() * 900)
+);
+
   const [userPicked, setUserPicked] = useState(false);
   const timerRef = useRef(null);
   const goal = GOALS[idx];
@@ -285,7 +289,7 @@ function Hero() {
           </div>
 
           <div className="hero-actions">
-            <a href="/register" className="btn-primary" data-h>
+            <a href="/login" className="btn-primary" data-h>
               Start free — ₱0 <ArrowRight size={15} strokeWidth={2.5}/>
             </a>
             <a href="#what" className="btn-ghost" data-h>See what's inside</a>
@@ -298,7 +302,7 @@ function Hero() {
               ))}
             </div>
             <span className="hero-proof">
-              <strong>{count.toLocaleString()}</strong> Filipinos training now
+              <strong>{count.toLocaleString()}</strong> people started their fitness journey
             </span>
           </div>
         </div>
@@ -351,11 +355,11 @@ function Manifesto() {
 
 function AIDemoCell() {
   const [line, setLine] = useState(0);
-  const lines = ["Analyzing your schedule…","Setting progressive overload…","Calibrating recovery days…","Building Week 1–4 block…","Plan ready. 12 weeks."];
+  const lines = ["Analyzing your schedule…","Setting progressive overload…","Calibrating recovery days…","Building workout plan…","Plan ready. 12 weeks."];
   useEffect(() => { const t=setInterval(()=>setLine(p=>(p+1)%lines.length),1400); return ()=>clearInterval(t); },[]);
   return (
     <div className="bc-ai">
-      <div className="bc-ai-tag"><Sparkles size={11}/> AI · generating</div>
+      <div className="bc-ai-tag"><Sparkles size={11}/> Preparing...</div>
       <div className="bc-ai-line" key={line}><span className="bc-ai-cursor"/>{lines[line]}</div>
       <div className="bc-ai-bars">
         {[70,45,82,60,93,55,78].map((h,i)=>(
@@ -367,20 +371,21 @@ function AIDemoCell() {
 }
 
 function GymCountCell() {
-  const [ref,vis] = useInView(0.2);
-  const n = useCounter(847,vis,0,1400);
+  const [ref, vis] = useInView(0.2);
+  const n = useCounter(50, vis, 0, 1400); 
+
   return (
     <div className="bc-gyms" ref={ref}>
-      <div className="bc-gyms-n">{n}</div>
+      <div className="bc-gyms-n">{n}+</div> 
       <div className="bc-gyms-lbl">Verified gyms</div>
-      <div className="bc-gyms-sub">across the Philippines</div>
+      <div className="bc-gyms-sub">across Pasig City</div>
       <div className="bc-gyms-ring"/>
     </div>
   );
 }
 
 function MealCell() {
-  const dishes = ["Chicken Adobo","Sinigang","Tinola","Lugaw","Kare-kare"];
+  const dishes = ["Chicken Adobo","Sinigang","Tinola","Lugaw","Kare-kare","Caldereta", "Sisig"];
   const [active,setActive] = useState(0);
   useEffect(()=>{ const t=setInterval(()=>setActive(p=>(p+1)%dishes.length),1700); return ()=>clearInterval(t); },[]);
   return (
@@ -410,14 +415,21 @@ function FreeCell() {
 }
 
 function RetainCell() {
-  const [ref,vis] = useInView(0.2);
-  const n = useCounter(92,vis,0,1400);
+  const [ref, vis] = useInView(0.2);
+  const n = useCounter(96, vis, 0, 1400);
+
   return (
     <div className="bc-retain" ref={ref}>
-      <div className="bc-retain-n">{n}<span>%</span></div>
-      <div className="bc-retain-lbl">still active at 90 days</div>
+      <div className="bc-retain-n">{n} <span>%</span></div> 
+      <div className="bc-retain-lbl">still active at 60 days</div>
       <div className="bc-retain-track">
-        <div className="bc-retain-fill" style={{width:vis?"92%":"0%",transition:"width 1.6s cubic-bezier(.22,1,.36,1)"}}/>
+        <div
+          className="bc-retain-fill"
+          style={{
+            width: vis ? "92%" : "0%",
+            transition: "width 1.6s cubic-bezier(.22,1,.36,1)",
+          }}
+        />
       </div>
       <div className="bc-retain-note">Industry avg: 38%</div>
     </div>
@@ -428,9 +440,9 @@ function LocalCell() {
   return (
     <div className="bc-local">
       <div className="bc-local-flag">🇵🇭</div>
-      <div className="bc-local-h">Made in Manila.<br/>Not adapted for it.</div>
+      <div className="bc-local-h">Made in Pasig.<br/>Not adapted for it.</div>
       <div className="bc-local-tags">
-        {["Filipino meals","PHP pricing","Metro Manila gyms","Local schedules"].map((t,i)=>(
+        {["Filipino meals","PHP pricing","Pasig gyms","Local schedules"].map((t,i)=>(
           <span key={i} className="bc-local-tag">{t}</span>
         ))}
       </div>
@@ -508,17 +520,17 @@ function GymMap() {
       <div className="gmap-inner wrap">
         <div className={`gmap-copy${vis?" in":""}`}>
           <div className="gmap-eyebrow">Gym network</div>
-          <h2 className="gmap-h">847 verified gyms.<br/><em>One matches you.</em></h2>
-          <p className="gmap-sub">Filter by price, equipment, vibe, and distance. Every gym verified before it appears.</p>
+          <h2 className="gmap-h">50+ verified gyms.<br/><em>One matches you.</em></h2>
+          <p className="gmap-sub">Filter by price, equipment, amenities, and distance. Every gym verified before it appears.</p>
           <div className="gmap-stats">
-            {[["847","Partner gyms"],["15+","Cities covered"],["₱700","Starting price/mo"]].map(([n,l],i)=>(
+            {[["50+","Partner gyms"],["Pasig","coverage"],["₱500","Starting price/mo"]].map(([n,l],i)=>(
               <div key={i} className="gmap-stat">
                 <div className="gmap-stat-n">{n}</div>
                 <div className="gmap-stat-l">{l}</div>
               </div>
             ))}
           </div>
-          <a href="/gyms" className="btn-primary" data-h>Find my gym <ArrowRight size={14} strokeWidth={2.5}/></a>
+          <a href="/login" className="btn-primary" data-h>Find my gym <ArrowRight size={14} strokeWidth={2.5}/></a>
         </div>
         <div className={`gmap-map${vis?" in":""}`} aria-hidden="true">
           <div className="gmap-grid">
@@ -540,7 +552,7 @@ function GymMap() {
               )}
             </div>
           ))}
-          <div className="gmap-badge"><span>+841</span> more gyms</div>
+          <div className="gmap-badge"><span>+50</span> more gyms</div>
         </div>
       </div>
     </section>
@@ -568,23 +580,23 @@ function OwnerStrip() {
               </div>
             ))}
           </div>
-          <a href="/owners" className="btn-white" data-h>List my gym free <ArrowRight size={14} strokeWidth={2.5}/></a>
+          <a href="become-an-owner" className="btn-white" data-h>List my gym free <ArrowRight size={14} strokeWidth={2.5}/></a>
         </div>
         <div className={`owners-mock${vis?" in":""}`}>
           <div className="mock">
             <div className="mock-bar">
               <span className="md r"/><span className="md y"/><span className="md g"/>
-              <span className="mock-url">exersearch.ph/owners/ironforge</span>
+              <span className="mock-url">exersearch.online/owner/view-gyms</span>
             </div>
             <div className="mock-body">
-              <div className="mock-head">IronForge Manila</div>
+              <div className="mock-head">Pasig Fitness Gym</div>
               <div className="mock-kpis">
                 {[["847","Views"],["34","Inquiries"],["12","Members"]].map(([v,l],i)=>(
                   <div key={i} className="mock-kpi"><div className="mock-kv">{v}</div><div className="mock-kl">{l}</div></div>
                 ))}
               </div>
               <div className="mock-line"/><div className="mock-sec">Recent inquiries</div>
-              {[{ini:"KR",n:"Kyla R.",m:"98%",c:"#fc4a00"},{ini:"MD",n:"Marco D.",m:"94%",c:"#ab3200"},{ini:"BL",n:"Bea L.",m:"89%",c:"#ff5a16"}].map((r,i)=>(
+              {[{ini:"AJ",n:"Arnie Javier",m:"98%",c:"#fc4a00"},{ini:"DP",n:"Daniel Pontiga",m:"94%",c:"#ab3200"},{ini:"MH",n:"Mark H.",m:"89%",c:"#ff5a16"}].map((r,i)=>(
                 <div key={i} className="mock-row" data-h>
                   <div className="mock-av" style={{background:r.c}}>{r.ini}</div>
                   <span className="mock-nm">{r.n}</span><span className="mock-mt">{r.m} match</span>
@@ -612,7 +624,13 @@ function FAQ() {
           <div className="faq-eyebrow">FAQ</div>
           <h2 className="faq-h">Questions<br/><em>answered.</em></h2>
           <p className="faq-sub">Still stuck? <a href="mailto:hello@exersearch.ph" className="faq-link" data-h>hello@exersearch.ph</a></p>
-          <div className="faq-orb"/>
+          <div className="faq-orb">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
         <div className={`faq-list${vis?" in":""}`}>
           {FAQS.map((faq,i)=>(
@@ -644,8 +662,8 @@ function CTA() {
         <div className={`cta-kicker${vis?" in":""}`}><span className="cta-pip"/>Free forever · No credit card · Setup in 60 seconds</div>
         <h2 className={`cta-h${vis?" in":""}`}>Start<br/><span className="cta-em">right now.</span></h2>
         <div className={`cta-actions${vis?" in":""}`}>
-          <a href="/register" className="btn-white" data-h>Create free account <ArrowRight size={16} strokeWidth={2.5}/></a>
-          <a href="/gyms" className="btn-outline-white" data-h>Browse gyms</a>
+          <a href="/login" className="btn-white" data-h>Create free account <ArrowRight size={16} strokeWidth={2.5}/></a>
+          <a href="/login" className="btn-outline-white" data-h>Browse gyms</a>
         </div>
       </div>
     </section>
