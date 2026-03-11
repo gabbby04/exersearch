@@ -3,6 +3,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import "./WhyExersearch.css";
 
+import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
 import {
   Zap,
   Map,
