@@ -28,7 +28,6 @@ import {
   UtensilsCrossed,
   Leaf,
   Salad,
-  Church,
   Milk,
   Wheat,
   Navigation,
@@ -42,7 +41,13 @@ import {
 } from "lucide-react";
 import "./Onboardingstyle.css";
 
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { api } from "../../utils/apiClient";
@@ -135,16 +140,22 @@ export default function Onboarding() {
 
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  const AGE_MIN = 13;
-  const AGE_MAX = 90;
-  const WEIGHT_MIN = 30;
-  const WEIGHT_MAX = 250;
-  const HEIGHT_MIN = 120;
-  const HEIGHT_MAX = 230;
+  const AGE_MIN = 10;
+  const AGE_MAX = 100;
+  const WEIGHT_MIN = 25;
+  const WEIGHT_MAX = 350;
+  const HEIGHT_MIN = 100;
+  const HEIGHT_MAX = 260;
 
   const KG_TO_LB = 2.2046226218;
   const CM_PER_IN = 2.54;
   const IN_PER_FT = 12;
+
+  useEffect(() => {
+    return () => {
+      if (inputRef.current) clearTimeout(inputRef.current);
+    };
+  }, []);
 
   const cmToFeetInches = (cmValue) => {
     const cm = Number(cmValue);
@@ -234,7 +245,7 @@ export default function Onboarding() {
       options: [
         { value: "lose_fat", icon: Flame, label: "Lose Fat" },
         { value: "build_muscle", icon: Dumbbell, label: "Build Muscle" },
-        { value: "endurance", icon: Activity, label: "Endurance" },
+        { value: "endurance", icon: HeartPulse, label: "Endurance" },
         { value: "strength", icon: Zap, label: "Strength" },
       ],
     },
@@ -264,8 +275,8 @@ export default function Onboarding() {
       question: "Gender?",
       options: [
         { value: "male", icon: User, label: "Male" },
-        { value: "female", icon: Users, label: "Female" },
-        { value: "other", icon: UserCircle, label: "Other" },
+        { value: "female", icon: UserCircle, label: "Female" },
+        { value: "other", icon: Users, label: "Other" },
       ],
     },
     {
@@ -315,7 +326,7 @@ export default function Onboarding() {
         { value: 31, icon: Droplets, label: "Shower" },
         { value: 30, icon: Lock, label: "Locker Room" },
         { value: 45, icon: Wifi, label: "Free Wi-Fi" },
-        { value: 41, icon: Flame, label: "Sauna / Steam" },
+        { value: 41, icon: Sun, label: "Sauna / Steam" },
         { value: 47, icon: Car, label: "Parking" },
       ],
     },
@@ -324,11 +335,11 @@ export default function Onboarding() {
       type: "multi-choice",
       question: "Equipment you use?",
       options: [
-        { value: 6, icon: HeartPulse, label: "Cardio (Bike)" },
-        { value: 39, icon: Weight, label: "Free Weights" },
+        { value: 6, icon: Activity, label: "Cardio (Bike)" },
+        { value: 39, icon: Dumbbell, label: "Free Weights" },
         { value: 8, icon: Cog, label: "Machines (Smith)" },
-        { value: 35, icon: Target, label: "Functional (Bands)" },
-        { value: 44, icon: Scan, label: "Core (Ab Roller)" },
+        { value: 35, icon: Zap, label: "Functional (Bands)" },
+        { value: 44, icon: Target, label: "Core (Ab Roller)" },
       ],
     },
     {
@@ -348,11 +359,11 @@ export default function Onboarding() {
       type: "single-choice",
       question: "Minutes per workout session?",
       options: [
-        { value: "20", icon: Clock, label: "20 min" },
+        { value: "20", icon: Zap, label: "20 min" },
         { value: "30", icon: Clock, label: "30 min" },
-        { value: "45", icon: Clock, label: "45 min" },
-        { value: "60", icon: Clock, label: "60 min" },
-        { value: "90", icon: Clock, label: "90+ min" },
+        { value: "45", icon: Activity, label: "45 min" },
+        { value: "60", icon: Award, label: "60 min" },
+        { value: "90", icon: Trophy, label: "90+ min" },
       ],
     },
     {
@@ -371,10 +382,10 @@ export default function Onboarding() {
       question: "Preferred workout style?",
       options: [
         { value: "strength", icon: Dumbbell, label: "Strength" },
-        { value: "hypertrophy", icon: Trophy, label: "Muscle/Hypertrophy" },
+        { value: "hypertrophy", icon: Award, label: "Muscle/Hypertrophy" },
         { value: "endurance", icon: Activity, label: "Endurance" },
         { value: "hiit", icon: Zap, label: "HIIT" },
-        { value: "mixed", icon: Target, label: "Mixed" },
+        { value: "mixed", icon: Layers, label: "Mixed" },
       ],
     },
     {
@@ -383,10 +394,10 @@ export default function Onboarding() {
       question: "Any injuries or areas to be careful with?",
       options: [
         { value: "none", icon: ShieldAlert, label: "None" },
-        { value: "knee", icon: BadgeAlert, label: "Knee" },
-        { value: "lower_back", icon: BadgeAlert, label: "Lower back" },
-        { value: "shoulder", icon: BadgeAlert, label: "Shoulder" },
-        { value: "wrist", icon: BadgeAlert, label: "Wrist" },
+        { value: "knee", icon: Activity, label: "Knee" },
+        { value: "lower_back", icon: Weight, label: "Lower back" },
+        { value: "shoulder", icon: Dumbbell, label: "Shoulder" },
+        { value: "wrist", icon: Cog, label: "Wrist" },
       ],
     },
     {
@@ -418,7 +429,7 @@ export default function Onboarding() {
         { value: "None", icon: UtensilsCrossed, label: "None" },
         { value: "Vegan", icon: Leaf, label: "Vegan" },
         { value: "Vegetarian", icon: Salad, label: "Vegetarian" },
-        { value: "Halal", icon: Church, label: "Halal" },
+        { value: "Halal", icon: ShieldAlert, label: "Halal" },
         { value: "Lactose", icon: Milk, label: "Lactose Free" },
         { value: "Gluten", icon: Wheat, label: "Gluten Free" },
       ],
@@ -444,24 +455,33 @@ export default function Onboarding() {
       );
       const data = await response.json();
 
-      const suggestions = (data.features || []).map((feature) => {
-        const name = feature.properties?.name || "";
-        const city =
-          feature.properties?.city || feature.properties?.county || "";
-        const display = `${name}, ${city}`.replace(/^, |, $/g, "");
-        const coords = feature.geometry?.coordinates;
+      const suggestions = (data.features || [])
+        .map((feature) => {
+          const name = feature.properties?.name || "";
+          const city =
+            feature.properties?.city || feature.properties?.county || "";
+          const display = `${name}, ${city}`.replace(/^, |, $/g, "");
+          const coords = feature.geometry?.coordinates;
 
-        return {
-          display,
-          latitude: Array.isArray(coords) ? coords[1] : null,
-          longitude: Array.isArray(coords) ? coords[0] : null,
-        };
-      });
+          return {
+            display,
+            latitude: Array.isArray(coords) ? coords[1] : null,
+            longitude: Array.isArray(coords) ? coords[0] : null,
+          };
+        })
+        .filter(
+          (item) =>
+            item.display &&
+            item.latitude != null &&
+            item.longitude != null
+        );
 
       setLocationSuggestions(suggestions);
       setShowSuggestions(true);
     } catch (error) {
       console.error("Error fetching locations:", error);
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
     }
   };
 
@@ -481,6 +501,17 @@ export default function Onboarding() {
           ? filtered.filter((x) => x !== value)
           : [...filtered, value];
         return { ...prev, injuries: next };
+      }
+
+      if (questionId === "dietaryRestrictions") {
+        if (value === "None") {
+          return { ...prev, dietaryRestrictions: ["None"] };
+        }
+        const filtered = current.filter((x) => x !== "None");
+        const next = filtered.includes(value)
+          ? filtered.filter((x) => x !== value)
+          : [...filtered, value];
+        return { ...prev, dietaryRestrictions: next };
       }
 
       return {
@@ -613,10 +644,12 @@ export default function Onboarding() {
 
         if (!name) {
           alert(
-            "We saved your coordinates, but couldn't detect a readable address. You can type it manually."
+            "We got your coordinates, but couldn't detect a readable address. You can still continue because the map pin was saved."
           );
         }
 
+        setShowSuggestions(false);
+        setLocationSuggestions([]);
         setIsGettingLocation(false);
       },
       (error) => {
@@ -712,7 +745,11 @@ export default function Onboarding() {
       if (heightUnit === "cm") {
         if (formData.height === "") return "";
       } else {
-        if (formData.heightFeet === "" && formData.heightInches === "") return "";
+        if (
+          formData.heightFeet === "" &&
+          formData.heightInches === ""
+        )
+          return "";
       }
 
       return numberInRange(formData.height, HEIGHT_MIN, HEIGHT_MAX)
@@ -722,6 +759,18 @@ export default function Onboarding() {
 
     return "";
   }, [currentQ, formData, heightUnit, weightUnit]);
+
+  const locationError = useMemo(() => {
+    if (currentQ.id !== "location") return "";
+
+    if (!String(formData.location || "").trim()) return "";
+
+    if (formData.latitude == null || formData.longitude == null) {
+      return "Please select a suggestion, use current location, or pin your exact spot on the map.";
+    }
+
+    return "";
+  }, [currentQ.id, formData.location, formData.latitude, formData.longitude]);
 
   const canContinue = useMemo(() => {
     if (submitting) return false;
@@ -757,7 +806,14 @@ export default function Onboarding() {
       return String(v).trim().length > 0;
     }
 
-    if (currentQ.type === "input-autocomplete") return !!formData.location;
+    if (currentQ.type === "input-autocomplete") {
+      return (
+        String(formData.location || "").trim().length > 0 &&
+        formData.latitude != null &&
+        formData.longitude != null
+      );
+    }
+
     if (currentQ.type === "single-choice") return !!formData[currentQ.id];
 
     if (currentQ.type === "multi-choice") {
@@ -779,6 +835,14 @@ export default function Onboarding() {
     setSubmitting(true);
 
     const { latitude, longitude } = await geocodeIfMissing();
+
+    if (formData.location && (latitude == null || longitude == null)) {
+      alert(
+        "Please select a valid location from suggestions, use current location, or pin it on the map."
+      );
+      setSubmitting(false);
+      return;
+    }
 
     const profilePayload = {
       age: formData.age ? Number(formData.age) : null,
@@ -812,7 +876,9 @@ export default function Onboarding() {
       injuries: injuriesPayload,
       food_budget: formData.foodBudget ? Number(formData.foodBudget) : null,
       dietary_restrictions: Array.isArray(formData.dietaryRestrictions)
-        ? formData.dietaryRestrictions
+        ? formData.dietaryRestrictions.includes("None")
+          ? []
+          : formData.dietaryRestrictions
         : [],
     };
 
@@ -830,12 +896,6 @@ export default function Onboarding() {
       });
 
       await api.post("/user/onboarding/complete", {});
-
-      if ((latitude == null || longitude == null) && formData.location) {
-        alert(
-          "Saved your address, but we could not determine latitude/longitude. You can update it later in profile."
-        );
-      }
 
       setShowSuccess(true);
     } catch (error) {
@@ -1023,7 +1083,8 @@ export default function Onboarding() {
                           : ""
                       }`}
                       onClick={() =>
-                        !submitting && handleMultiChoice(currentQ.id, option.value)
+                        !submitting &&
+                        handleMultiChoice(currentQ.id, option.value)
                       }
                     >
                       {IconComponent && (
@@ -1074,7 +1135,9 @@ export default function Onboarding() {
                   >
                     <button
                       type="button"
-                      className={`unit-toggle-btn ${heightUnit === "cm" ? "active" : ""}`}
+                      className={`unit-toggle-btn ${
+                        heightUnit === "cm" ? "active" : ""
+                      }`}
                       onClick={() => switchHeightUnit("cm")}
                       disabled={submitting}
                     >
@@ -1082,7 +1145,9 @@ export default function Onboarding() {
                     </button>
                     <button
                       type="button"
-                      className={`unit-toggle-btn ${heightUnit === "ftin" ? "active" : ""}`}
+                      className={`unit-toggle-btn ${
+                        heightUnit === "ftin" ? "active" : ""
+                      }`}
                       onClick={() => switchHeightUnit("ftin")}
                       disabled={submitting}
                     >
@@ -1098,7 +1163,9 @@ export default function Onboarding() {
                         value={formData.height}
                         min={HEIGHT_MIN}
                         max={HEIGHT_MAX}
-                        onChange={(e) => handleInputChange("height", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("height", e.target.value)
+                        }
                         onKeyPress={handleKeyPress}
                         autoFocus
                         className="input-field has-unit"
@@ -1136,7 +1203,9 @@ export default function Onboarding() {
                           value={formData.heightInches}
                           min={0}
                           max={11}
-                          onChange={(e) => handleHeightInchesChange(e.target.value)}
+                          onChange={(e) =>
+                            handleHeightInchesChange(e.target.value)
+                          }
                           onKeyPress={handleKeyPress}
                           className="input-field has-unit"
                           disabled={submitting}
@@ -1158,7 +1227,9 @@ export default function Onboarding() {
                   >
                     <button
                       type="button"
-                      className={`unit-toggle-btn ${weightUnit === "kg" ? "active" : ""}`}
+                      className={`unit-toggle-btn ${
+                        weightUnit === "kg" ? "active" : ""
+                      }`}
                       onClick={() => switchWeightUnit("kg")}
                       disabled={submitting}
                     >
@@ -1166,7 +1237,9 @@ export default function Onboarding() {
                     </button>
                     <button
                       type="button"
-                      className={`unit-toggle-btn ${weightUnit === "lb" ? "active" : ""}`}
+                      className={`unit-toggle-btn ${
+                        weightUnit === "lb" ? "active" : ""
+                      }`}
                       onClick={() => switchWeightUnit("lb")}
                       disabled={submitting}
                     >
@@ -1178,7 +1251,11 @@ export default function Onboarding() {
                     <input
                       type="number"
                       placeholder={weightUnit === "kg" ? "70" : "154.3"}
-                      value={weightUnit === "kg" ? formData.weight : formData.weightDisplay}
+                      value={
+                        weightUnit === "kg"
+                          ? formData.weight
+                          : formData.weightDisplay
+                      }
                       onChange={(e) =>
                         weightUnit === "kg"
                           ? handleInputChange("weight", e.target.value)
@@ -1200,7 +1277,9 @@ export default function Onboarding() {
                     value={formData[currentQ.id]}
                     min={currentQ.min}
                     max={currentQ.max}
-                    onChange={(e) => handleInputChange(currentQ.id, e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(currentQ.id, e.target.value)
+                    }
                     onKeyPress={handleKeyPress}
                     autoFocus
                     className={`input-field ${currentQ.unit ? "has-unit" : ""}`}
@@ -1288,10 +1367,16 @@ export default function Onboarding() {
                 </button>
               </div>
 
-              {!!formData.latitude && !!formData.longitude && (
+              {formData.latitude != null && formData.longitude != null && (
                 <div style={{ marginTop: 10, fontSize: 13, opacity: 0.9 }}>
                   Pin: {formData.latitude.toFixed(6)},{" "}
                   {formData.longitude.toFixed(6)}
+                </div>
+              )}
+
+              {locationError && (
+                <div style={{ marginTop: 10, fontSize: 13, opacity: 0.9 }}>
+                  {locationError}
                 </div>
               )}
 

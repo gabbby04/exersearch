@@ -58,6 +58,11 @@ function formatTimeForInput(value) {
   return "";
 }
 
+function isOwnerRole(role) {
+  const r = String(role || "").trim().toLowerCase();
+  return r === "owner" || r === "gym_owner";
+}
+
 export default function AdminGyms() {
   const { theme } = useOutletContext();
   const t = adminThemes[theme]?.app || adminThemes.light.app;
@@ -129,7 +134,9 @@ export default function AdminGyms() {
     try {
       const res = await searchOwners({ q: searchText, per_page: 50 });
       const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-      setOwnerResults(list);
+
+      const ownersOnly = list.filter((u) => isOwnerRole(u?.role));
+      setOwnerResults(ownersOnly);
     } catch (e) {
       console.error(e);
       setOwnerResults([]);
@@ -1449,4 +1456,4 @@ function GalleryList({ urls, onRemove, disabled, onPreview }) {
       </div>
     </div>
   );
-} 
+}

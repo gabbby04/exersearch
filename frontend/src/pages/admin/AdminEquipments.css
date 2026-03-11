@@ -1021,4 +1021,54 @@ select.ae-fieldInput {
 [data-theme="dark"] select.ae-fieldInput optgroup {
   background: #1b1d22 !important;
   color: #f6f8fa !important;
+}/* ================================
+   Assign Owner modal dark fix
+   Put at the very bottom
+================================ */
+
+[data-theme="dark"] .ae-confirmModalFancy {
+  background: #141414 !important;
+  background-color: #141414 !important;
+  color: #f3f3f3 !important;
+  border: 1px solid #2a2d35 !important;
+}
+
+[data-theme="dark"] .ae-confirmHeader,
+[data-theme="dark"] .ae-confirmHeaderText,
+[data-theme="dark"] .ae-confirmTitle {
+  color: #f3f3f3 !important;
+}
+
+[data-theme="dark"] .ae-confirmIconWrap {
+  background: #1b1d22 !important;
+  border: 1px solid #2f3540 !important;
+  color: #f3f3f3 !important;
+}
+
+[data-theme="dark"] .ae-confirmModalFancy .ae-fieldLabel,
+[data-theme="dark"] .ae-confirmModalFancy .ae-mutedTiny {
+  color: #b9c0cc !important;
+}
+
+[data-theme="dark"] .ae-confirmModalFancy .ae-fieldInput {
+  background: #1b1d22 !important;
+  background-color: #1b1d22 !important;
+  color: #f6f8fa !important;
+  border: 1px solid #2f3540 !important;
+}
+
+[data-theme="dark"] .ae-confirmModalFancy .ae-fieldInput::placeholder {
+  color: #98a2b3 !important;
+}
+
+[data-theme="dark"] .ae-confirmModalFancy .ae-alert {
+  background: #1b1d22 !important;
+  color: #f6f8fa !important;
+  border: 1px solid #2f3540 !important;
+}
+
+[data-theme="dark"] .ae-confirmModalFancy .ae-btnSecondary {
+  background: #1b1d22 !important;
+  color: #f6f8fa !important;
+  border: 1px solid #2f3540 !important;
 }
