@@ -1,39 +1,235 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,900&display=swap');
+
+// ══════════════════════════════════════
+//   VARIABLES — orange only, stable both themes
+//   All bg/text/border → CSS var(--lnd-*)
+// ══════════════════════════════════════
+$or:       #fc4a00;
+$or-dk:    #ab3200;
+$or-lt:    #ff5a16;
+$or-dim:   rgba(252, 74, 0, 0.09);
+$or-ring:  rgba(252, 74, 0, 0.22);
+$or-glow:  rgba(252, 74, 0, 0.16);
+
+$font: 'Montserrat', sans-serif;
+
+$panel-depth-lg: 108px;
+$panel-depth-sm: 52px;
+
+$ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+$ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+
+// ══════════════════════════════════════
+//   MIXINS
+// ══════════════════════════════════════
+
+@mixin themed-bg($level: primary) {
+  background: var(--lnd-bg-#{$level});
+  transition: background 0.3s ease;
 }
 
+@mixin themed-text($level: primary) {
+  color: var(--lnd-text-#{$level});
+  transition: color 0.3s ease;
+}
+
+@mixin card-lift($y: -6px) {
+  transition: transform 0.28s $ease-out, box-shadow 0.28s $ease-out,
+              border-color 0.28s ease, background 0.3s ease;
+  &:hover {
+    transform: translateY(#{$y});
+    box-shadow: 0 20px 48px var(--lnd-shadow);
+    border-color: $or-ring;
+  }
+}
+
+@mixin icon-box($size: 48px, $radius: 14px) {
+  width: $size;
+  height: $size;
+  border-radius: $radius;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease,
+              border-color 0.25s ease, transform 0.28s $ease-out,
+              box-shadow 0.25s ease;
+}
+
+@mixin section-head($max: 720px) {
+  text-align: center;
+  max-width: $max;
+  margin: 0 auto 4rem;
+}
+
+@mixin eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  margin-bottom: 1.125rem;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: $or;
+  background: $or-dim;
+  border: 1px solid $or-ring;
+  border-radius: 999px;
+}
+
+// ══════════════════════════════════════
+//   KEYFRAMES
+// ══════════════════════════════════════
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 $or-ring; }
+  100% { box-shadow: 0 0 0 8px transparent; }
+}
+
+// ══════════════════════════════════════
+//   RESET + BASE
+// ══════════════════════════════════════
+*, *::before, *::after { box-sizing: border-box; }
+
+.ph-page {
+  font-family: $font;
+  @include themed-bg(secondary);
+  @include themed-text(primary);
+  -webkit-font-smoothing: antialiased;
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+}
+
+.fq-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+}
+
+.ph-eyebrow { @include eyebrow-pill; }
+
+// ══════════════════════════════════════
+//   HERO — fully themed
+//   bg → --lnd-bg-primary (white in light, #0d141b in dark)
+//   overlay inverts per [data-theme] for readability
+//   h1 → --lnd-text-primary (dark text in light, white in dark)
+// ══════════════════════════════════════
 .philoHero {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   perspective: 1800px;
   background:
-    radial-gradient(circle at top, rgba(255, 140, 0, 0.08), transparent 30%),
-    linear-gradient(180deg, #050505 0%, #0a0a0a 45%, #000 100%);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(252,74,0,0.10), transparent 55%),
+    var(--lnd-bg-primary);
+  transition: background 0.3s ease;
+
+  &__hero {
+    position: relative;
+    width: min(1080px, 95vw);
+    height: min(640px, 75vh);
+    transform-style: preserve-3d;
+    cursor: pointer;
+    isolation: isolate;
+    overflow: visible;
+  }
+
+  &__panels {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    z-index: 1;
+    transform-style: preserve-3d;
+    overflow: visible;
+  }
+
+  // Overlay is declared empty here — strength set per theme below
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    transition: background 0.3s ease;
+  }
+
+  &__content {
+    position: absolute;
+    left: 50%;
+    bottom: 36px;
+    transform: translateX(-50%);
+    width: min(820px, 90%);
+    text-align: center;
+    z-index: 3;
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4.5vw, 4.75rem);
+      line-height: 1.0;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-wrap: balance;
+      // Themed: white in dark mode, near-black in light mode
+      color: var(--lnd-text-primary);
+      text-shadow: 0 8px 32px var(--lnd-shadow);
+      transition: color 0.3s ease;
+    }
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: $or;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $or;
+      animation: pulse-ring 1.8s ease-out infinite;
+      flex-shrink: 0;
+    }
+  }
 }
 
-.philoHero__hero {
-  position: relative;
-  width: min(1080px, calc(100vw - 32px));
-  aspect-ratio: 1080 / 777;
-  transform-style: preserve-3d;
-  cursor: pointer;
-  isolation: isolate;
+// Dark mode: heavy bottom fade so white text reads over photos
+[data-theme="dark"] .philoHero__overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.00)  0%,
+    rgba(0,0,0,0.10) 35%,
+    rgba(0,0,0,0.55) 72%,
+    rgba(0,0,0,0.82) 100%
+  );
 }
 
-.philoHero__panels {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  z-index: 1;
-  transform-style: preserve-3d;
+// Light mode: soft white fade so dark text reads cleanly
+[data-theme="light"] .philoHero__overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.00)  0%,
+    rgba(255,255,255,0.05)  35%,
+    rgba(255,255,255,0.40)  72%,
+    rgba(255,255,255,0.75)  100%
+  );
 }
 
+// ── 3D Panels ──
 .philoPanel {
   position: relative;
   width: 20%;
@@ -42,296 +238,591 @@
   overflow: visible;
   will-change: transform;
   z-index: 1;
+
+  @for $i from 1 through 5 {
+    &--#{$i} { z-index: if($i == 3, 5, if($i == 2 or $i == 4, 4, 3)); }
+  }
+
+  &__cuboid {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  &__face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    overflow: hidden;
+    background: #111;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+      transition: transform 1.2s $ease-out;
+    }
+
+    &--front { transform: rotateY(0deg)   translateZ($panel-depth-lg); }
+    &--right  { transform: rotateY(90deg)  translateZ($panel-depth-lg); }
+    &--back   { transform: rotateY(180deg) translateZ($panel-depth-lg); }
+    &--left   { transform: rotateY(-90deg) translateZ($panel-depth-lg); }
+  }
 }
 
-.philoPanel__cuboid {
+// ══════════════════════════════════════
+//   PRINCIPLES
+// ══════════════════════════════════════
+.ph-principles {
+  @include themed-bg(primary);
+  padding: 8rem 0;
+  border-bottom: 1px solid var(--lnd-border);
+
+  &__hdr {
+    @include section-head(760px);
+    .ph-eyebrow { display: flex; justify-content: center; }
+  }
+
+  &__title {
+    font-size: clamp(2.2rem, 3.8vw, 3.25rem);
+    font-weight: 900;
+    @include themed-text(primary);
+    letter-spacing: -0.045em;
+    line-height: 1.06;
+    margin-bottom: 1.125rem;
+
+    em { font-style: italic; color: $or; }
+  }
+
+  &__sub {
+    font-size: 0.92rem;
+    @include themed-text(tertiary);
+    line-height: 1.85;
+    font-weight: 400;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.ph-card {
+  @include card-lift;
+  display: flex;
+  flex-direction: column;
+  padding: 2.25rem 2rem;
+  background: var(--lnd-bg-secondary);
+  border: 1.5px solid var(--lnd-border);
+  border-radius: 22px;
+  gap: 1rem;
   position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-/* strip depth */
-.philoPanel__face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
   overflow: hidden;
-  background: #000;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, $or, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before { opacity: 1; }
+
+  &__num {
+    position: absolute;
+    top: 1.25rem; right: 1.75rem;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--lnd-border);
+    letter-spacing: -0.06em;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+
+  &:hover &__num { color: $or-dim; }
+
+  &__ico {
+    @include icon-box(50px, 14px);
+    background: var(--lnd-bg-accent);
+    color: $or;
+    border: 1.5px solid var(--lnd-border);
+
+    .ph-card:hover & {
+      background: $or;
+      color: #fff;
+      border-color: $or;
+      transform: scale(1.1) rotate(-4deg);
+      box-shadow: 0 8px 24px $or-glow;
+    }
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 800;
+    @include themed-text(primary);
+    letter-spacing: -0.02em;
+  }
+
+  &__desc {
+    font-size: 0.84rem;
+    @include themed-text(tertiary);
+    line-height: 1.85;
+    font-weight: 400;
+  }
 }
 
-.philoPanel__face img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  user-select: none;
-  pointer-events: none;
+// ══════════════════════════════════════
+//   CTA BANDS — fully themed
+//   Light: bg-tertiary = #edf1f7 (soft off-white band)
+//   Dark:  bg-tertiary = #181718 (deep dark band)
+//   Grid texture uses --lnd-border so it adapts too
+// ══════════════════════════════════════
+.ph-cta {
+  @include themed-bg(tertiary);
+  padding: 5.5rem 0;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--lnd-border);
+  border-bottom: 1px solid var(--lnd-border);
+
+  // orange glow — readable on both themes
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(252,74,0,0.09) 0%, transparent 68%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // grid texture — uses border token, adapts to theme automatically
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--lnd-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--lnd-border) 1px, transparent 1px);
+    background-size: 56px 56px;
+    pointer-events: none;
+    opacity: 0.4;
+    z-index: 0;
+  }
+
+  &__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+
+  &__left { max-width: 560px; }
+
+  &__label {
+    display: block;
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: $or;
+    margin-bottom: 0.875rem;
+  }
+
+  &__title {
+    font-size: clamp(1.75rem, 3vw, 2.875rem);
+    font-weight: 900;
+    @include themed-text(primary);
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+    margin-bottom: 0.875rem;
+
+    em { font-style: italic; color: $or; }
+  }
+
+  &__sub {
+    font-size: 0.875rem;
+    @include themed-text(tertiary);
+    line-height: 1.85;
+    font-weight: 400;
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 2rem 2.5rem;
+    // Card sits on bg-primary so it pops off the tertiary band
+    background: var(--lnd-bg-primary);
+    border: 1.5px solid var(--lnd-border);
+    border-radius: 20px;
+    flex-shrink: 0;
+    min-width: 180px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s ease, border-color 0.3s ease;
+
+    // orange left-edge accent stripe
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, $or, $or-dk);
+    }
+
+    &-val {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      line-height: 1;
+      background: linear-gradient(90deg, $or 30%, $or-lt 50%, $or 70%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+
+    &-label {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      @include themed-text(muted);
+      text-align: center;
+      max-width: 130px;
+      line-height: 1.5;
+    }
+  }
 }
 
-/*
-  Each panel is 20% of 1080 = 216px wide
-  Half depth = 108px
-*/
-.philoPanel__face--front {
-  transform: rotateY(0deg) translateZ(108px);
+// ══════════════════════════════════════
+//   FOR USERS
+// ══════════════════════════════════════
+.philoUsersAlt {
+  @include themed-bg(secondary);
+  padding: 8rem 0;
+
+  &__head { @include section-head(720px); }
+
+  &__eyebrow { @include eyebrow-pill; }
+
+  &__title {
+    font-size: clamp(2.2rem, 3.8vw, 3.25rem);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    @include themed-text(primary);
+    margin-bottom: 1rem;
+    line-height: 1.06;
+  }
+
+  &__sub {
+    font-size: 0.92rem;
+    line-height: 1.85;
+    @include themed-text(tertiary);
+    font-weight: 400;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  &__card {
+    @include card-lift;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 2.25rem 2rem;
+    background: var(--lnd-bg-primary);
+    border: 1.5px solid var(--lnd-border);
+    border-radius: 22px;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, $or, $or-lt);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s $ease-inout;
+    }
+
+    &:hover::after { transform: scaleX(1); }
+  }
+
+  &__icon {
+    @include icon-box(56px, 15px);
+    color: #fff;
+    background: linear-gradient(145deg, $or-lt 0%, $or-dk 100%);
+    box-shadow: 0 8px 22px rgba(252,74,0,0.28);
+
+    .philoUsersAlt__card:hover & {
+      transform: scale(1.1) rotate(-4deg);
+      box-shadow: 0 12px 32px rgba(252,74,0,0.42);
+    }
+  }
+
+  &__body {
+    padding-top: 2px;
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      @include themed-text(primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 0.84rem;
+      line-height: 1.85;
+      @include themed-text(tertiary);
+      font-weight: 400;
+    }
+  }
 }
 
-.philoPanel__face--right {
-  transform: rotateY(90deg) translateZ(108px);
+// ══════════════════════════════════════
+//   FOR OWNERS — fully themed
+// ══════════════════════════════════════
+.ph-owners {
+  @include themed-bg(primary);
+  padding: 8rem 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -150px; right: -150px;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(252,74,0,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(252,74,0,0.04) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  &__hdr {
+    @include section-head(720px);
+    position: relative;
+    z-index: 1;
+  }
+
+  &__eyebrow { @include eyebrow-pill; }
+
+  &__title {
+    font-size: clamp(2.2rem, 3.8vw, 3.25rem);
+    font-weight: 900;
+    @include themed-text(primary);
+    letter-spacing: -0.045em;
+    line-height: 1.06;
+    margin-bottom: 1rem;
+
+    em { font-style: italic; color: $or; }
+  }
+
+  &__sub {
+    font-size: 0.92rem;
+    @include themed-text(tertiary);
+    line-height: 1.85;
+    font-weight: 400;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
 }
 
-.philoPanel__face--back {
-  transform: rotateY(180deg) translateZ(108px);
+.ph-ocard {
+  display: flex;
+  flex-direction: column;
+  padding: 2.25rem 2rem;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--lnd-bg-tertiary);
+  border: 1.5px solid var(--lnd-border);
+  border-radius: 22px;
+  transition: background 0.28s ease, border-color 0.28s ease,
+              transform 0.28s $ease-out, box-shadow 0.28s ease;
+
+  &:hover {
+    background: var(--lnd-bg-accent);
+    border-color: $or-ring;
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px var(--lnd-shadow);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: $or-glow;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    z-index: 0;
+  }
+
+  &:hover::before { opacity: 1; }
+
+  &__num {
+    position: absolute;
+    top: 1.5rem; right: 1.75rem;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--lnd-border);
+    letter-spacing: -0.06em;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    transition: color 0.3s ease;
+    z-index: 0;
+  }
+
+  &:hover .ph-ocard__num { color: $or-dim; }
+
+  &__ico {
+    @include icon-box(50px, 14px);
+    background: $or-dim;
+    border: 1px solid $or-ring;
+    color: $or;
+    position: relative;
+    z-index: 1;
+
+    .ph-ocard:hover & {
+      background: $or;
+      color: #fff;
+      border-color: $or;
+      transform: scale(1.1) rotate(-4deg);
+      box-shadow: 0 8px 24px $or-glow;
+    }
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 800;
+    @include themed-text(primary);
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__desc {
+    font-size: 0.84rem;
+    @include themed-text(tertiary);
+    line-height: 1.85;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+  }
 }
 
-.philoPanel__face--left {
-  transform: rotateY(-90deg) translateZ(108px);
-}
+// ══════════════════════════════════════
+//   RESPONSIVE
+// ══════════════════════════════════════
+@media (max-width: 960px) {
+  .ph-principles__grid,
+  .ph-owners__grid {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    margin: 0 auto;
+  }
 
-.philoHero__overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.04) 0%,
-      rgba(0, 0, 0, 0.18) 42%,
-      rgba(0, 0, 0, 0.56) 78%,
-      rgba(0, 0, 0, 0.86) 100%
-    ),
-    radial-gradient(circle at center, transparent 46%, rgba(0, 0, 0, 0.18) 100%);
+  .ph-cta__inner  { flex-direction: column; gap: 2rem; }
+  .ph-cta__stat   { width: 100%; flex-direction: row; justify-content: center; gap: 3rem; padding: 1.5rem 2rem; }
 }
-
-.philoHero__content {
-  position: absolute;
-  left: 50%;
-  bottom: 48px;
-  transform: translateX(-50%);
-  width: min(760px, 90%);
-  text-align: center;
-  z-index: 3;
-  color: #fff;
-}
-
-.philoHero__eyebrow {
-  margin: 0 0 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.philoHero__content h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 4.25rem);
-  line-height: 1.02;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
-  text-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-}
-
-/* helps the rotated side overlap cleanly */
-.philoPanel--1 { z-index: 5; }
-.philoPanel--2 { z-index: 4; }
-.philoPanel--3 { z-index: 3; }
-.philoPanel--4 { z-index: 4; }
-.philoPanel--5 { z-index: 5; }
 
 @media (max-width: 768px) {
-  .philoHero__hero {
-    width: calc(100vw - 20px);
+  .fq-wrap { padding: 0 1.5rem; }
+
+  .ph-principles,
+  .philoUsersAlt,
+  .ph-owners  { padding: 5.5rem 0; }
+  .ph-cta     { padding: 4rem 0; }
+
+  .philoUsersAlt__grid { grid-template-columns: 1fr; }
+
+  .philoHero {
+    &__hero    { height: min(480px, 65vh); }
+    &__content {
+      bottom: 32px;
+      h1 { font-size: clamp(1.75rem, 7vw, 2.8rem); }
+    }
   }
 
-  .philoHero__content {
-    bottom: 28px;
-  }
-
-  .philoHero__content h1 {
-    font-size: clamp(1.6rem, 7vw, 2.6rem);
-  }
-
-  /*
-    On smaller screens, use smaller depth so faces don't over-stretch
-  */
-  .philoPanel__face--front {
-    transform: rotateY(0deg) translateZ(52px);
-  }
-
-  .philoPanel__face--right {
-    transform: rotateY(90deg) translateZ(52px);
-  }
-
-  .philoPanel__face--back {
-    transform: rotateY(180deg) translateZ(52px);
-  }
-
-  .philoPanel__face--left {
-    transform: rotateY(-90deg) translateZ(52px);
-  }
-} /* ===============================
-   FOR USERS – CORE VALUES STYLE
-================================ */
-
-.philoUsersAlt {
-  padding: 120px 0;
-  background: #f6f4f2;
-}
-
-.philoUsersAlt__head {
-  text-align: center;
-  max-width: 760px;
-  margin: 0 auto 64px;
-}
-
-.philoUsersAlt__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 22px;
-  margin-bottom: 18px;
-
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-
-  color: #d65a1f;
-  background: rgba(214, 90, 31, 0.12);
-  border-radius: 999px;
-}
-
-.philoUsersAlt__title {
-  font-size: clamp(2.2rem, 4vw, 3.6rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  margin: 0 0 12px;
-  color: #0b0b0d;
-}
-
-.philoUsersAlt__sub {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: #6b7280;
-  margin: 0 auto;
-  max-width: 620px;
-}
-
-/* GRID */
-
-.philoUsersAlt__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
-}
-
-/* CARD */
-
-.philoUsersAlt__card {
-  display: flex;
-  align-items: flex-start;
-  gap: 22px;
-
-  padding: 34px;
-  min-height: 170px;
-
-  border-radius: 26px;
-
-  background: #f1efee;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.philoUsersAlt__card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-}
-
-/* ICON */
-
-.philoUsersAlt__icon {
-  width: 58px;
-  height: 58px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 16px;
-
-  color: #fff;
-
-  background: linear-gradient(
-    180deg,
-    #f06a22 0%,
-    #d94d0f 100%
-  );
-
-  box-shadow: 0 8px 22px rgba(217, 77, 15, 0.28);
-
-  flex-shrink: 0;
-}
-
-/* TEXT */
-
-.philoUsersAlt__body h3 {
-  margin: 2px 0 8px;
-
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-
-  color: #0b0b0d;
-}
-
-.philoUsersAlt__body p {
-  margin: 0;
-
-  font-size: 0.98rem;
-  line-height: 1.6;
-
-  color: #6b7280;
-}
-
-/* ===============================
-   RESPONSIVE
-================================ */
-
-@media (max-width: 900px) {
-  .philoUsersAlt__grid {
-    grid-template-columns: 1fr;
+  .philoPanel__face {
+    &--front { transform: rotateY(0deg)   translateZ($panel-depth-sm); }
+    &--right  { transform: rotateY(90deg)  translateZ($panel-depth-sm); }
+    &--back   { transform: rotateY(180deg) translateZ($panel-depth-sm); }
+    &--left   { transform: rotateY(-90deg) translateZ($panel-depth-sm); }
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
+  .fq-wrap { padding: 0 1.25rem; }
+
+  .ph-principles__title,
+  .philoUsersAlt__title,
+  .ph-owners__title { font-size: clamp(1.85rem, 7vw, 2.4rem); }
+
+  .ph-cta__title { font-size: clamp(1.6rem, 6vw, 2.1rem); }
+
+  .ph-card,
+  .philoUsersAlt__card,
+  .ph-ocard { padding: 1.625rem 1.375rem; border-radius: 18px; }
 
   .philoUsersAlt {
-    padding: 90px 0;
+    &__card { gap: 1.125rem; }
+    &__icon { width: 46px; height: 46px; border-radius: 12px; }
   }
 
-  .philoUsersAlt__card {
-    padding: 26px;
-    gap: 18px;
-    border-radius: 22px;
-  }
+  .ph-card__ico,
+  .ph-ocard__ico { width: 44px; height: 44px; border-radius: 12px; }
 
-  .philoUsersAlt__icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 14px;
-  }
-
-  .philoUsersAlt__title {
-    font-size: clamp(1.9rem, 7vw, 2.6rem);
-  }
-
-  .philoUsersAlt__sub {
-    font-size: 0.95rem;
-  }
-}
+  .ph-cta__stat { flex-direction: column; gap: 1.5rem; }
+}   

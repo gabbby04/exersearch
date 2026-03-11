@@ -13,7 +13,7 @@ const TEAM = [
     name: 'Dheniel Pontiga',
     role: 'Lead Developer',
     quote: 'Great systems aren’t built overnight — they’re engineered one problem at a time.',
-    image: 'philo1.png',
+    image: '5.png',
     socials: { github: 'https://github.com/Phayce04', linkedin: 'https://www.linkedin.com/in/dheniel-pontiga-280024343/', email: 'dhenielpontiga@gmail.com' },
   },
   {
@@ -21,7 +21,7 @@ const TEAM = [
     name: 'Ahron Javier',
     role: 'Frontend Developer',
     quote: 'Good design isn’t just what you see — it’s how smoothly everything works.',
-    image: 'philo3.png',
+    image: '4.png',
     socials: { github: 'https://github.com/gabbby04', linkedin: 'https://www.linkedin.com/in/ahron-javier-638082345/', email: 'ahronjavier16@gmail.com' },
   },
   {
@@ -29,7 +29,7 @@ const TEAM = [
     name: 'Jedelyn Alayahay',
     role: 'UI Design & Media Editor',
     quote: 'Creativity turns ideas into experiences people remember.',
-    image: 'philo4.png',
+    image: '1.png',
     socials: { facebook: '#', instagram: '#', email: '#' },
   },
   {
@@ -37,7 +37,7 @@ const TEAM = [
     name: 'Janmarco Candido',
     role: 'Project Manager & Documentation Lead',
     quote: 'A strong vision and teamwork turn projects into reality.',
-    image: 'philo5.png',
+    image: '3.png',
     socials: { facebook: '#', instagram: '#', email: '#' },
   },
   {
@@ -45,7 +45,7 @@ const TEAM = [
     name: 'Mark Lawrence Hael',
     role: 'Technical Support & Data Assistant',
     quote: 'The small details behind the scenes are what keep everything running.',
-    image: 'philo2.png',
+    image: '2.png',
     socials: { facebook: 'https://www.facebook.com/share/1DUoLHHDHw/', instagram: 'https://www.instagram.com/_koyskie?igsh=NzNtYndmeXA0MWs3&fbclid=IwY2xjawQc7wZleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAEwAAEe4xgzM0VorLtt2AVVLBgLc7299E7ot4wKi1xjfF60g7j5DYe-78m2JVKtnPw_aem_t5pyfTcEquTsykBdszOPww', email: 'hael.marklawrence@gmail.com' },
   },
 ];

@@ -939,7 +939,6 @@
   gap: 12px;
   align-self: center;
 }
-
 .hw-builder__day {
   border-radius: 14px;
   padding: 18px 14px;
@@ -947,13 +946,15 @@
   flex-direction: column;
   gap: 10px;
   min-height: 150px;
+  height: auto;
   border: 1.5px solid var(--lnd-border, var(--border));
   background: var(--lnd-bg-tertiary, var(--warm-50));
   opacity: 1;
   transform: translateY(0);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: border-color 0.2s, background 0.2s;
+
 }
 
 /* SKELETON LOADER - Show BEFORE content is built */
@@ -1021,6 +1022,9 @@
   font-weight: 600;
   color: var(--lnd-text-secondary, var(--ink));
   line-height: 1.5;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
   transition: color 0.3s ease;
 }
 .hw-builder__day-rest {
@@ -1351,6 +1355,9 @@
   .hw-builder__week { grid-template-columns: repeat(4,1fr); }
   .hw-tl__line { left: 72px; }
   .hw-preview__phone { width: 200px; height: 380px; }
+  .hw-builder__day { padding: 12px 10px; gap: 6px; min-height: 120px; }
+  .hw-builder__day-session { font-size: 0.65rem; line-height: 1.4; }
+  .hw-builder__day-label   { font-size: 0.58rem; }
 }
 
 @media (max-width: 560px) {
@@ -1371,6 +1378,9 @@
   .hw-cta-btn { width: 100%; justify-content: center; }
   .hw-stepdot { padding: 8px 6px; }
   .hw-stepdot__num { width: 28px; height: 28px; font-size: 0.55rem; }
+  .hw-builder__day { padding: 10px 8px; gap: 5px; min-height: 100px; }
+  .hw-builder__day-session { font-size: 0.6rem; }
+  .hw-builder__day-label   { font-size: 0.55rem; }
 }
 
 @media (max-width: 400px) {
