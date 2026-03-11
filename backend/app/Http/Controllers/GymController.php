@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Gym;
 use App\Models\GymMembership;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; 
 use App\Http\Resources\GymResource;
 use App\Http\Resources\EquipmentResource;
 use App\Http\Resources\AmenityResource;

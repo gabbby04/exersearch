@@ -71,24 +71,45 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ChatController;
 
 Route::prefix('v1')->group(function () {
-Route::get('/mail-test', function () {
-    try {
-        Mail::raw('SMTP test email from ExerSearch.', function ($message) {
-            $message->to('exersearch5@gmail.com')
-                    ->subject('SMTP Test - ExerSearch');
-        });
+ Route::get('/mail-test', function () {
+        set_time_limit(120);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Mail sent successfully'
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ], 500);
-    }
-});    Route::get('/mail-config-check', function () {
+        try {
+            Log::info('mail-test route hit', [
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'username' => config('mail.mailers.smtp.username'),
+                'from' => config('mail.from.address'),
+            ]);
+
+            Mail::raw('SMTP test email from ExerSearch via Resend.', function ($message) {
+                $message->to('exersearch5@gmail.com')
+                    ->subject('SMTP Test - ExerSearch');
+            });
+
+            Log::info('mail-test sent successfully');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mail sent successfully',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('mail-test failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    });
+ Route::get('/mail-config-check', function () {
         return response()->json([
             'default' => config('mail.default'),
             'host' => config('mail.mailers.smtp.host'),

@@ -41,8 +41,8 @@ type Me = {
   user_profile?: {
     user_profile_id?: number;
     profile_photo_url?: string | null;
-    created_at?: string;
-    updated_at?: string;
+    created_at?: string | null;
+    updated_at?: string | null;
   } | null;
 
   adminProfile?: { avatar_url?: string | null } | null;
@@ -59,12 +59,9 @@ type Props = {
   title: string;
   theme: Theme;
   setTheme: React.Dispatch<React.SetStateAction<Theme>>;
-
   collapsed: boolean;
   onBurgerClick: () => void;
-
   me?: Me | null;
-
   onLogout?: () => void;
 };
 
@@ -137,6 +134,21 @@ export default function AdminHeader({
   const [notifErr, setNotifErr] = React.useState("");
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
+
+  const [screenWidth, setScreenWidth] = React.useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
+
+  React.useEffect(() => {
+    const onResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isMobile = screenWidth < 640;
+  const isTablet = screenWidth >= 640 && screenWidth < 1024;
+  const isCompact = screenWidth < 900;
+  const isVerySmall = screenWidth < 420;
 
   const currentUi = React.useMemo<"user" | "owner" | "superadmin">(() => {
     const p = String(location.pathname || "");
@@ -255,6 +267,7 @@ export default function AdminHeader({
   const roleLabel = "ADMIN";
   const displayName = me?.name || "Admin";
   const displayEmail = me?.email || "";
+  const hasUnread = unreadCount > 0;
 
   const itemStyle: React.CSSProperties = {
     width: "100%",
@@ -288,7 +301,7 @@ export default function AdminHeader({
       const c = await getUnreadNotificationsCount({ role: "admin" });
       setUnreadCount(Number(c) || 0);
     } catch {
-      // ignore
+      //
     }
   }, []);
 
@@ -320,7 +333,15 @@ export default function AdminHeader({
     return () => window.removeEventListener("focus", onFocus);
   }, [refreshUnread]);
 
-  const hasUnread = unreadCount > 0;
+  const notifPanelWidth = isMobile
+    ? Math.min(screenWidth - 16, 360)
+    : isTablet
+    ? 320
+    : 340;
+
+  const menuPanelWidth = isMobile
+    ? Math.min(screenWidth - 16, 260)
+    : 260;
 
   return (
     <div
@@ -331,10 +352,11 @@ export default function AdminHeader({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: 12,
-        padding: 12,
+        gap: isMobile ? 8 : 12,
+        padding: isMobile ? 10 : 12,
         background: t.bg,
         borderBottom: `1px solid ${t.border}`,
+        flexWrap: "nowrap",
       }}
     >
       <div
@@ -342,7 +364,9 @@ export default function AdminHeader({
           display: "flex",
           alignItems: "center",
           gap: 10,
-          minWidth: 220,
+          minWidth: 0,
+          flex: 1,
+          overflow: "hidden",
         }}
       >
         <button
@@ -358,6 +382,7 @@ export default function AdminHeader({
             cursor: "pointer",
             display: "grid",
             placeItems: "center",
+            flex: "0 0 auto",
           }}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -387,54 +412,82 @@ export default function AdminHeader({
             display: "flex",
             flexDirection: "column",
             lineHeight: 1.1,
+            minWidth: 0,
+            overflow: "hidden",
           }}
         >
           <div
             style={{
               fontWeight: 950,
               letterSpacing: 0.2,
-              fontSize: 16,
+              fontSize: isMobile ? 14 : 16,
               color: t.text,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: isMobile ? 140 : "none",
             }}
           >
             {title}
           </div>
-          <div
-            style={{
-              marginTop: 3,
-              fontSize: 12,
-              fontWeight: 800,
-              color: t.mutedText,
-            }}
-          >
-            Admin Panel
-          </div>
+
+          {!isMobile && (
+            <div
+              style={{
+                marginTop: 3,
+                fontSize: 12,
+                fontWeight: 800,
+                color: t.mutedText,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              Admin Panel
+            </div>
+          )}
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          gap: isMobile ? 8 : 10,
+          width: "auto",
+          marginLeft: "auto",
+          flexWrap: "nowrap",
+          minWidth: 0,
+          flex: "0 0 auto",
+        }}
+      >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            padding: "8px 10px",
+            gap: 6,
+            padding: isMobile ? "4px 6px" : "8px 10px",
             borderRadius: 12,
             border: `1px solid ${t.border}`,
             background: t.soft2,
+            minWidth: 0,
+            flex: "0 0 auto",
           }}
           title="Theme"
         >
-          <span
-            style={{
-              fontSize: 12,
-              fontWeight: 800,
-              color: t.mutedText,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {isDark ? "Dark" : "Light"}
-          </span>
+          {!isCompact && (
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: t.mutedText,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {isDark ? "Dark" : "Light"}
+            </span>
+          )}
 
           <Switch
             id="admin-theme-header"
@@ -446,7 +499,7 @@ export default function AdminHeader({
           />
         </div>
 
-        <div ref={notifRef} style={{ position: "relative" }}>
+        <div ref={notifRef} style={{ position: "relative", flex: "0 0 auto" }}>
           <button
             onClick={() => {
               setNotifOpen((o) => {
@@ -465,6 +518,9 @@ export default function AdminHeader({
               color: t.text,
               cursor: "pointer",
               position: "relative",
+              display: "grid",
+              placeItems: "center",
+              flex: "0 0 auto",
             }}
             title="Notifications"
             type="button"
@@ -504,16 +560,17 @@ export default function AdminHeader({
             <div
               style={{
                 position: "absolute",
-                right: 0,
+                right: isMobile ? -44 : 0,
                 top: 50,
-                width: 340,
+                width: notifPanelWidth,
+                maxWidth: "calc(100vw - 12px)",
                 borderRadius: 14,
                 border: `1px solid ${t.border}`,
                 background: t.bg,
                 boxShadow: t.shadow,
                 padding: 10,
                 zIndex: 999,
-                maxHeight: 460,
+                maxHeight: isMobile ? 420 : 460,
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
@@ -522,10 +579,11 @@ export default function AdminHeader({
               <div
                 style={{
                   display: "flex",
-                  alignItems: "center",
+                  alignItems: isVerySmall ? "flex-start" : "center",
                   justifyContent: "space-between",
                   gap: 10,
                   paddingBottom: 8,
+                  flexWrap: isVerySmall ? "wrap" : "nowrap",
                 }}
               >
                 <div
@@ -538,7 +596,15 @@ export default function AdminHeader({
                   Notifications
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "nowrap",
+                    marginLeft: "auto",
+                  }}
+                >
                   <button
                     type="button"
                     onClick={async () => {
@@ -549,7 +615,7 @@ export default function AdminHeader({
                         );
                         setUnreadCount(0);
                       } catch {
-                        // ignore
+                        //
                       }
                     }}
                     style={{
@@ -557,10 +623,11 @@ export default function AdminHeader({
                       background: t.soft,
                       color: t.text,
                       borderRadius: 10,
-                      padding: "6px 10px",
+                      padding: isMobile ? "6px 8px" : "6px 10px",
                       cursor: "pointer",
                       fontWeight: 900,
                       fontSize: 12,
+                      whiteSpace: "nowrap",
                     }}
                   >
                     Mark all read
@@ -580,6 +647,7 @@ export default function AdminHeader({
                       display: "grid",
                       placeItems: "center",
                       fontWeight: 900,
+                      flex: "0 0 auto",
                     }}
                     title="Close"
                   >
@@ -714,7 +782,7 @@ export default function AdminHeader({
                           {iconForNotifType(n.type)}
                         </div>
 
-                        <div style={{ minWidth: 0 }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
                           <div
                             style={{
                               fontWeight: 950,
@@ -767,7 +835,7 @@ export default function AdminHeader({
           )}
         </div>
 
-        <div ref={menuRef} style={{ position: "relative" }}>
+        <div ref={menuRef} style={{ position: "relative", flex: "0 0 auto" }}>
           <button
             onClick={() => {
               setMenuOpen((v) => !v);
@@ -775,6 +843,7 @@ export default function AdminHeader({
             }}
             style={{
               height: 42,
+              maxWidth: isMobile ? 64 : isTablet ? 200 : 260,
               borderRadius: 14,
               border: `1px solid ${t.border}`,
               background: t.soft,
@@ -783,7 +852,8 @@ export default function AdminHeader({
               display: "flex",
               alignItems: "center",
               gap: 10,
-              padding: "0 12px 0 6px",
+              padding: isMobile ? "0 8px 0 6px" : "0 12px 0 6px",
+              minWidth: 0,
             }}
             title="Profile menu"
             type="button"
@@ -809,32 +879,47 @@ export default function AdminHeader({
               }}
             />
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                lineHeight: 1.05,
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 950 }}>{displayName}</div>
+            {!isCompact && (
               <div
                 style={{
-                  fontSize: 11,
-                  fontWeight: 850,
-                  color: t.mutedText,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  lineHeight: 1.05,
+                  minWidth: 0,
+                  overflow: "hidden",
                 }}
               >
-                {roleLabel}
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 950,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: 120,
+                  }}
+                >
+                  {displayName}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 850,
+                    color: t.mutedText,
+                  }}
+                >
+                  {roleLabel}
+                </div>
               </div>
-            </div>
+            )}
 
             <svg
               width="16"
               height="16"
               viewBox="0 0 20 20"
               fill="none"
-              style={{ opacity: 0.9 }}
+              style={{ opacity: 0.9, flex: "0 0 auto" }}
             >
               <path
                 d="M6 8l4 4 4-4"
@@ -852,7 +937,8 @@ export default function AdminHeader({
                 position: "absolute",
                 right: 0,
                 top: 50,
-                width: 260,
+                width: menuPanelWidth,
+                maxWidth: "calc(100vw - 16px)",
                 borderRadius: 14,
                 border: `1px solid ${t.border}`,
                 background: t.bg,
@@ -867,6 +953,7 @@ export default function AdminHeader({
                     fontWeight: 950,
                     fontSize: 13,
                     color: t.text,
+                    wordBreak: "break-word",
                   }}
                 >
                   {displayName}
@@ -879,6 +966,7 @@ export default function AdminHeader({
                       fontSize: 12,
                       color: t.mutedText,
                       marginTop: 2,
+                      wordBreak: "break-word",
                     }}
                   >
                     {displayEmail}

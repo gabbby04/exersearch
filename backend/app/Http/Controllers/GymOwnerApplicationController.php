@@ -22,6 +22,9 @@ class GymOwnerApplicationController extends Controller
             'address'   => 'required|string',
             'latitude'  => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
+
+            'existing_gym_id' => 'nullable|integer|exists:gyms,gym_id',
+
             'document_path' => 'nullable|string|max:2048',
             'main_image_url' => 'nullable|string|max:2048',
             'gallery_urls' => 'nullable|array',
@@ -37,8 +40,25 @@ class GymOwnerApplicationController extends Controller
         ]);
 
         $user = $request->user();
-        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
-        if ($user->role !== 'user') return response()->json(['message' => 'Not allowed'], 403);
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        if ($user->role !== 'user') {
+            return response()->json(['message' => 'Not allowed'], 403);
+        }
+
+        if (!empty($data['existing_gym_id'])) {
+            $existingGym = Gym::find($data['existing_gym_id']);
+
+            if (!$existingGym) {
+                return response()->json(['message' => 'Selected gym not found.'], 422);
+            }
+
+            if (!empty($existingGym->owner_id) && (int) $existingGym->owner_id !== (int) $user->user_id) {
+                return response()->json(['message' => 'This gym already has an owner.'], 422);
+            }
+        }
 
         $application = GymOwnerApplication::where('user_id', $user->user_id)->first();
 
@@ -48,19 +68,46 @@ class GymOwnerApplicationController extends Controller
             'latitude'  => $data['latitude'],
             'longitude' => $data['longitude'],
             'status'    => 'pending',
+            'existing_gym_id' => $data['existing_gym_id'] ?? null,
+
             'document_path' => $data['document_path'] ?? ($application?->document_path),
-            'main_image_url' => array_key_exists('main_image_url', $data) ? $data['main_image_url'] : ($application?->main_image_url),
-            'gallery_urls' => array_key_exists('gallery_urls', $data) ? array_values(array_filter($data['gallery_urls'] ?? [])) : ($application?->gallery_urls),
-            'description' => array_key_exists('description', $data) ? $data['description'] : ($application?->description),
-            'contact_number' => array_key_exists('contact_number', $data) ? $data['contact_number'] : ($application?->contact_number),
-            'company_name' => array_key_exists('company_name', $data) ? $data['company_name'] : ($application?->company_name),
-            'daily_price' => array_key_exists('daily_price', $data) ? $data['daily_price'] : ($application?->daily_price),
-            'monthly_price' => array_key_exists('monthly_price', $data) ? $data['monthly_price'] : ($application?->monthly_price),
-            'quarterly_price' => array_key_exists('quarterly_price', $data) ? $data['quarterly_price'] : ($application?->quarterly_price),
+            'main_image_url' => array_key_exists('main_image_url', $data)
+                ? $data['main_image_url']
+                : ($application?->main_image_url),
+
+            'gallery_urls' => array_key_exists('gallery_urls', $data)
+                ? array_values(array_filter($data['gallery_urls'] ?? []))
+                : ($application?->gallery_urls),
+
+            'description' => array_key_exists('description', $data)
+                ? $data['description']
+                : ($application?->description),
+
+            'contact_number' => array_key_exists('contact_number', $data)
+                ? $data['contact_number']
+                : ($application?->contact_number),
+
+            'company_name' => array_key_exists('company_name', $data)
+                ? $data['company_name']
+                : ($application?->company_name),
+
+            'daily_price' => array_key_exists('daily_price', $data)
+                ? $data['daily_price']
+                : ($application?->daily_price),
+
+            'monthly_price' => array_key_exists('monthly_price', $data)
+                ? $data['monthly_price']
+                : ($application?->monthly_price),
+
+            'quarterly_price' => array_key_exists('quarterly_price', $data)
+                ? $data['quarterly_price']
+                : ($application?->quarterly_price),
         ];
 
         if (array_key_exists('amenity_ids', $data)) {
-            $payload['amenity_ids'] = array_values(array_unique(array_map('intval', $data['amenity_ids'] ?? [])));
+            $payload['amenity_ids'] = array_values(
+                array_unique(array_map('intval', $data['amenity_ids'] ?? []))
+            );
         } else {
             $payload['amenity_ids'] = $application?->amenity_ids;
         }
@@ -71,15 +118,21 @@ class GymOwnerApplicationController extends Controller
             NotificationService::notifyAdmins(
                 'OWNER_REQUEST_SUBMITTED',
                 'Owner application updated',
-                ($user->name ?? 'A user') . ' updated an owner application for "' . ($application->gym_name ?? 'a gym') . '".',
+                ($user->name ?? 'A user') . ' updated an owner application for "' . ($payload['gym_name'] ?? 'a gym') . '".',
                 [
                     'actor_id' => (int) $user->user_id,
                     'url' => '/admin/applications',
-                    'meta' => ['application_id' => (int) $application->id],
+                    'meta' => [
+                        'application_id' => (int) $application->id,
+                        'existing_gym_id' => $payload['existing_gym_id'] ?? null,
+                    ],
                 ]
             );
 
-            return response()->json(['message' => 'Application updated.', 'data' => $application->fresh()]);
+            return response()->json([
+                'message' => 'Application updated.',
+                'data' => $application->fresh(),
+            ]);
         }
 
         $payload['user_id'] = $user->user_id;
@@ -92,19 +145,28 @@ class GymOwnerApplicationController extends Controller
             [
                 'actor_id' => (int) $user->user_id,
                 'url' => '/admin/applications',
-                'meta' => ['application_id' => (int) $application->id],
+                'meta' => [
+                    'application_id' => (int) $application->id,
+                    'existing_gym_id' => $application->existing_gym_id ?? null,
+                ],
             ]
         );
 
-        return response()->json(['message' => 'Application submitted.', 'data' => $application], 201);
+        return response()->json([
+            'message' => 'Application submitted.',
+            'data' => $application,
+        ], 201);
     }
 
     public function myApplication(Request $request)
     {
         $user = $request->user();
-        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
 
         $application = GymOwnerApplication::where('user_id', $user->user_id)->first();
+
         return response()->json(['data' => $application]);
     }
 
@@ -113,7 +175,7 @@ class GymOwnerApplicationController extends Controller
         $status = $request->query('status');
         $q = $request->query('q');
 
-        $apps = GymOwnerApplication::with('user')
+        $apps = GymOwnerApplication::with(['user', 'existingGym'])
             ->when($status, fn ($query) => $query->where('status', $status))
             ->when($q, function ($query) use ($q) {
                 $query->where(function ($qq) use ($q) {
@@ -129,7 +191,7 @@ class GymOwnerApplicationController extends Controller
 
     public function show($id)
     {
-        $application = GymOwnerApplication::with('user')->findOrFail($id);
+        $application = GymOwnerApplication::with(['user', 'existingGym'])->findOrFail($id);
         return response()->json(['data' => $application]);
     }
 
@@ -144,7 +206,17 @@ class GymOwnerApplicationController extends Controller
         ]);
 
         $apps = GymOwnerApplication::query()
-            ->select(['id', 'user_id', 'gym_name', 'address', 'status', 'latitude', 'longitude', 'created_at'])
+            ->select([
+                'id',
+                'user_id',
+                'existing_gym_id',
+                'gym_name',
+                'address',
+                'status',
+                'latitude',
+                'longitude',
+                'created_at'
+            ])
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->whereBetween('latitude', [$validated['south'], $validated['north']])
@@ -167,13 +239,30 @@ class GymOwnerApplicationController extends Controller
         $applicationId = (int) $id;
 
         DB::transaction(function () use ($id, &$mailTo, &$mailName, &$mailGym, $approverId, &$recipientUserId) {
-            $application = GymOwnerApplication::with('user')
+            $application = GymOwnerApplication::with(['user', 'existingGym'])
                 ->where('id', $id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($application->status === 'approved') abort(409, 'Already approved');
-            if ($application->status === 'rejected') abort(409, 'Cannot approve a rejected application');
+            if ($application->status === 'approved') {
+                abort(409, 'Already approved');
+            }
+
+            if ($application->status === 'rejected') {
+                abort(409, 'Cannot approve a rejected application');
+            }
+
+            $gym = null;
+
+            if (!empty($application->existing_gym_id)) {
+                $gym = Gym::where('gym_id', $application->existing_gym_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if (!empty($gym->owner_id) && (int) $gym->owner_id !== (int) $application->user_id) {
+                    abort(409, 'This gym already has an owner.');
+                }
+            }
 
             $application->update(['status' => 'approved']);
             $application->user->update(['role' => 'owner']);
@@ -188,8 +277,6 @@ class GymOwnerApplicationController extends Controller
                 ]
             );
 
-            $gym = Gym::where('owner_id', $application->user_id)->lockForUpdate()->first();
-
             $gymPayload = [
                 'name' => $application->gym_name,
                 'description' => $application->description ?? null,
@@ -199,41 +286,58 @@ class GymOwnerApplicationController extends Controller
                 'longitude' => $application->longitude,
                 'daily_price' => $application->daily_price ?? null,
                 'monthly_price' => $application->monthly_price ?? 0.00,
-                'annual_price' => $application->quarterly_price ?? null, // map quarterly → annual
-
+                'annual_price' => $application->quarterly_price ?? null,
                 'main_image_url' => $application->main_image_url ?? null,
                 'gallery_urls' => $application->gallery_urls ?? [],
-                'gym_type' => $gym?->gym_type ?? 'General',
-                'has_personal_trainers' => $gym?->has_personal_trainers ?? false,
-                'has_classes' => $gym?->has_classes ?? false,
-                'is_24_hours' => $gym?->is_24_hours ?? false,
-                'is_airconditioned' => $gym?->is_airconditioned ?? true,
                 'status' => 'approved',
                 'approved_at' => now(),
                 'approved_by' => $approverId,
             ];
 
             if ($gym) {
-                $gym->update($gymPayload);
+                $gym->update(array_merge($gymPayload, [
+                    'gym_type' => $gym->gym_type ?? 'General',
+                    'has_personal_trainers' => $gym->has_personal_trainers ?? false,
+                    'has_classes' => $gym->has_classes ?? false,
+                    'is_24_hours' => $gym->is_24_hours ?? false,
+                    'is_airconditioned' => $gym->is_airconditioned ?? true,
+                    'contact_number' => $gym->contact_number ?? $application->contact_number ?? null,
+                ]));
             } else {
                 $gym = Gym::create(array_merge($gymPayload, [
                     'opening_time' => null,
                     'closing_time' => null,
-                    'contact_number' => null,
+                    'gym_type' => 'General',
+                    'contact_number' => $application->contact_number ?? null,
                     'email' => null,
                     'website' => null,
                     'facebook_page' => null,
                     'instagram_page' => null,
+                    'has_personal_trainers' => false,
+                    'has_classes' => false,
+                    'is_24_hours' => false,
+                    'is_airconditioned' => true,
                 ]));
             }
 
             $amenityIds = $application->amenity_ids ?? [];
-            $amenityIds = array_values(array_unique(array_filter(array_map('intval', (array) $amenityIds))));
+            $amenityIds = array_values(
+                array_unique(
+                    array_filter(
+                        array_map('intval', (array) $amenityIds)
+                    )
+                )
+            );
 
             $syncPayload = [];
             foreach ($amenityIds as $aid) {
-                $syncPayload[$aid] = ['availability_status' => 'available', 'notes' => null, 'image_url' => null];
+                $syncPayload[$aid] = [
+                    'availability_status' => 'available',
+                    'notes' => null,
+                    'image_url' => null,
+                ];
             }
+
             $gym->amenities()->sync($syncPayload);
 
             $mailTo = $application->user?->email;
@@ -242,13 +346,11 @@ class GymOwnerApplicationController extends Controller
             $recipientUserId = (int) $application->user_id;
         });
 
-        // Two notifications for the same recipient, different UI buckets (user + owner)
         if ($recipientUserId) {
-            // 1) USER bucket: approval confirmation
             NotificationService::create([
                 'recipient_id' => (int) $recipientUserId,
                 'recipient_role' => 'user',
-                'type' => 'OWNER_REQUEST_APPROVED', // keep/rename freely as long as FE matches
+                'type' => 'OWNER_REQUEST_APPROVED',
                 'title' => 'Owner application approved',
                 'message' => 'Your request to become an owner for "' . ($mailGym ?? 'your gym') . '" was approved.',
                 'actor_id' => (int) ($approverId ?? 0),
@@ -259,7 +361,6 @@ class GymOwnerApplicationController extends Controller
                 ],
             ]);
 
-            // 2) OWNER bucket: welcome / onboarding
             NotificationService::create([
                 'recipient_id' => (int) $recipientUserId,
                 'recipient_role' => 'owner',
@@ -278,31 +379,43 @@ class GymOwnerApplicationController extends Controller
         if ($mailTo) {
             DB::afterCommit(function () use ($mailTo, $mailName, $mailGym) {
                 try {
-                    Mail::to($mailTo)->send(new OwnerApplicationApproved(name: $mailName, gymName: $mailGym));
+                    Mail::to($mailTo)->send(new OwnerApplicationApproved(
+                        name: $mailName,
+                        gymName: $mailGym
+                    ));
                 } catch (\Throwable $e) {
                     Log::warning('Approval email failed: ' . $e->getMessage());
                 }
             });
         }
 
-        return response()->json(['message' => 'Approved. Owner upgraded and gym populated.']);
+        return response()->json([
+            'message' => 'Approved. Owner upgraded and gym assigned/populated successfully.'
+        ]);
     }
 
     public function reject(Request $request, $id)
     {
-        $request->validate(['reason' => 'nullable|string|max:500']);
+        $request->validate([
+            'reason' => 'nullable|string|max:500'
+        ]);
 
         $application = GymOwnerApplication::with('user')->findOrFail($id);
 
-        if ($application->status === 'rejected') return response()->json(['message' => 'Already rejected'], 409);
-        if ($application->status === 'approved') return response()->json(['message' => 'Cannot reject an approved application'], 409);
+        if ($application->status === 'rejected') {
+            return response()->json(['message' => 'Already rejected'], 409);
+        }
+
+        if ($application->status === 'approved') {
+            return response()->json(['message' => 'Cannot reject an approved application'], 409);
+        }
 
         $application->update(['status' => 'rejected']);
 
         NotificationService::create([
             'recipient_id' => (int) $application->user_id,
             'recipient_role' => 'user',
-            'type' => 'OWNER_REQUEST_REJECTED', // keep/rename freely as long as FE matches
+            'type' => 'OWNER_REQUEST_REJECTED',
             'title' => 'Owner application rejected',
             'message' => 'Your request to become an owner for "' . ($application->gym_name ?? 'your gym') . '" was rejected.',
             'actor_id' => (int) (auth()->user()?->user_id ?? 0),
@@ -320,7 +433,10 @@ class GymOwnerApplicationController extends Controller
 
         if ($mailTo) {
             try {
-                Mail::to($mailTo)->send(new OwnerApplicationRejected(name: $mailName, reason: $reason));
+                Mail::to($mailTo)->send(new OwnerApplicationRejected(
+                    name: $mailName,
+                    reason: $reason
+                ));
             } catch (\Throwable $e) {
                 Log::warning('Rejection email failed: ' . $e->getMessage());
             }
