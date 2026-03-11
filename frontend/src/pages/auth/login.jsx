@@ -22,43 +22,6 @@ import { api } from "../../utils/apiClient";
 
 const LOGO_LEFT_SRC = "/src/assets/exersearchlogo.png";
 
-/*
-===============================================================================
-TEMPORARY EMAIL VERIFICATION BYPASS
-===============================================================================
-
-WHY THIS EXISTS:
-- The production mail/domain setup is still being finalized.
-- We temporarily want users to continue into the app even if
-  email_verified_at is still null.
-
-WHAT WAS THE ORIGINAL BEHAVIOR:
-- If /me returned email_verified_at = null,
-  the user was forced into the "verify" screen.
-
-WHAT THIS TEMPORARY VERSION DOES:
-- If the user is NOT verified yet, we DO NOT block them.
-- We allow them to continue to role selection or directly into the app.
-
-IMPORTANT:
-- This is FRONTEND-ONLY bypass logic.
-- For the cleanest full bypass, the backend should also temporarily set:
-    email_verified_at => now()
-  during registration, or remove verified middleware where needed.
-
-HOW TO RESTORE LATER:
-1. Search for: TEMP_VERIFICATION_BYPASS
-2. In finalizeAuth(), restore the original block:
-      if (!me?.email_verified_at) {
-        setError("");
-        setView("verify");
-        return;
-      }
-3. Keep the VerifyView if you want email confirmation flow again.
-
-===============================================================================
-*/
-
 function prettyModeLabel(m) {
   if (m === "user") return "User";
   if (m === "owner") return "Owner";
@@ -711,45 +674,11 @@ export default function Auth() {
     const me = await fetchMe(token);
     setUser(me);
 
-    /*
-    ===========================================================================
-    TEMP_VERIFICATION_BYPASS START
-    ---------------------------------------------------------------------------
-    ORIGINAL CODE BEFORE TEMPORARY BYPASS:
-
-      if (!me?.email_verified_at) {
-        setError("");
-        setView("verify");
-        return;
-      }
-
-    TEMPORARY CURRENT BEHAVIOR:
-    - Even if email_verified_at is null, allow the user to continue.
-    - This is only while email/domain/verification is still being finalized.
-
-    TO RESTORE LATER:
-    - Replace the whole block below with the original code above.
-    ===========================================================================
-    */
     if (!me?.email_verified_at) {
-      const modes = allowedUiModes(me.role) || [];
-
-      if (hasUiChoice(me.role)) {
-        setError("");
-        setView("role");
-        return;
-      }
-
-      const onlyMode = modes[0] || "user";
-      setUiMode(onlyMode);
-      redirectAfterAuth(me, navigate);
+      setError("");
+      setView("verify");
       return;
     }
-    /*
-    ===========================================================================
-    TEMP_VERIFICATION_BYPASS END
-    ===========================================================================
-    */
 
     if (hasUiChoice(me.role)) {
       setError("");

@@ -957,123 +957,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-/* =========================================
-   FORCE NATIVE SELECT DROPDOWN COLORS
-========================================= */
 
-.ae-select,
-.ae-fieldInput[type="select"],
-select.ae-select {
-  color-scheme: dark;
-}
-
-.ae-select option,
-select.ae-select option {
-  background: #1b1d22;
-  color: #f6f8fa;
-}
-
-.ae-select optgroup,
-select.ae-select optgroup {
-  background: #1b1d22;
-  color: #f6f8fa;
-}
-
-/* light mode override */
-[data-theme="light"] .ae-select,
-[data-theme="light"] select.ae-select {
-  color-scheme: light;
-}
-
-[data-theme="light"] .ae-select option,
-[data-theme="light"] select.ae-select option,
-[data-theme="light"] .ae-select optgroup,
-[data-theme="light"] select.ae-select optgroup {
-  background: #ffffff;
-  color: #101820;
-}
-
-/* dark mode explicit override */
-[data-theme="dark"] .ae-select,
-[data-theme="dark"] select.ae-select {
-  background: var(--soft2);
-  color: #f6f8fa;
-  border-color: var(--border);
-  color-scheme: dark;
-}
-
-[data-theme="dark"] .ae-select option,
-[data-theme="dark"] select.ae-select option,
-[data-theme="dark"] .ae-select optgroup,
-[data-theme="dark"] select.ae-select optgroup {
-  background: #1b1d22;
-  color: #f6f8fa;
-} /* =========================================
-   FORCE NATIVE SELECT DROPDOWN COLORS
-========================================= */
-
-/* Top filters + modal selects */
-.ae-select,
-select.ae-select, 
-select.ae-fieldInput {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-/* LIGHT MODE */
-[data-theme="light"] .ae-select,
-[data-theme="light"] select.ae-select,
-[data-theme="light"] select.ae-fieldInput {
-  background: #ffffff;
-  color: #141414;
-  border-color: var(--border);
-  color-scheme: light;
-}
-
-[data-theme="light"] .ae-select option,
-[data-theme="light"] select.ae-select option,
-[data-theme="light"] select.ae-fieldInput option,
-[data-theme="light"] .ae-select optgroup,
-[data-theme="light"] select.ae-select optgroup,
-[data-theme="light"] select.ae-fieldInput optgroup {
-  background: #ffffff;
-  color: #141414;
-}
-
-/* DARK MODE */
-[data-theme="dark"] .ae-select,
-[data-theme="dark"] select.ae-select,
-[data-theme="dark"] select.ae-fieldInput {
-  background: #1b1d22;
-  color: #f6f8fa;
-  border-color: var(--border);
-  color-scheme: dark;
-}
-
-[data-theme="dark"] .ae-select option,
-[data-theme="dark"] select.ae-select option,
-[data-theme="dark"] select.ae-fieldInput option,
-[data-theme="dark"] .ae-select optgroup,
-[data-theme="dark"] select.ae-select optgroup,
-[data-theme="dark"] select.ae-fieldInput optgroup {
-  background: #1b1d22;
-  color: #f6f8fa;
-}
-
-/* Extra safety for the modal specifically */
-[data-theme="dark"] .ae-formModal select.ae-fieldInput {
-  background: #1b1d22;
-  color: #f6f8fa;
-}
-
-[data-theme="dark"] .ae-formModal select.ae-fieldInput option {
-  background: #1b1d22;
-  color: #f6f8fa;
-}
 /* =========================================
    FORCE SELECT COLORS TO MATCH THEME
-   Put this at the VERY BOTTOM
+   Keep ONLY this block at the very bottom
 ========================================= */
 
 .ae-select,
@@ -1082,7 +969,14 @@ select.ae-fieldInput {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  height: 42px;
+  padding: 0 12px;
   border-radius: 12px;
+  font-weight: 900;
+  outline: none;
+  cursor: pointer;
+  min-width: 160px;
+  box-sizing: border-box;
 }
 
 /* LIGHT MODE — force white */
