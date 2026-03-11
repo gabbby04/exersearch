@@ -141,48 +141,6 @@ function useCounter(target, visible, dec = 0, dur = 1600) {
   return val;
 }
 
-/* ════════════════════════════════════════
-   CURSOR
-════════════════════════════════════════ */
-
-function Cursor() {
-  const dot = useRef(null), ring = useRef(null);
-  const pos = useRef({ x:0,y:0 }), rp = useRef({ x:0,y:0 }), raf = useRef(null);
-  useEffect(() => {
-    const root = document.querySelector(".es");
-    if (!root) return;
-    const mv = e => {
-      pos.current = { x:e.clientX, y:e.clientY };
-      if (dot.current) { dot.current.style.left=`${e.clientX}px`; dot.current.style.top=`${e.clientY}px`; }
-      root.style.setProperty("--cx",`${e.clientX}px`);
-      root.style.setProperty("--cy",`${e.clientY}px`);
-    };
-    const lerp = () => {
-      rp.current.x += (pos.current.x - rp.current.x) * 0.11;
-      rp.current.y += (pos.current.y - rp.current.y) * 0.11;
-      if (ring.current) { ring.current.style.left=`${rp.current.x}px`; ring.current.style.top=`${rp.current.y}px`; }
-      raf.current = requestAnimationFrame(lerp);
-    };
-    const ov = e => { const h=!!e.target.closest("button,a,[data-h]"); dot.current?.classList.toggle("h",h); ring.current?.classList.toggle("h",h); };
-    const dn = () => { dot.current?.classList.add("p"); ring.current?.classList.add("p"); };
-    const up = () => { dot.current?.classList.remove("p"); ring.current?.classList.remove("p"); };
-    window.addEventListener("mousemove",mv); window.addEventListener("mouseover",ov);
-    window.addEventListener("mousedown",dn); window.addEventListener("mouseup",up);
-    raf.current = requestAnimationFrame(lerp);
-    return () => {
-      window.removeEventListener("mousemove",mv); window.removeEventListener("mouseover",ov);
-      window.removeEventListener("mousedown",dn); window.removeEventListener("mouseup",up);
-      cancelAnimationFrame(raf.current);
-    };
-  }, []);
-  return (
-    <>
-      <div ref={dot} className="cd" style={{position:"fixed",pointerEvents:"none",zIndex:99999}}><div className="cd-i"/></div>
-      <div ref={ring} className="cr" style={{position:"fixed",pointerEvents:"none",zIndex:99998}}><div className="cr-i"/></div>
-    </>
-  );
-}
-
 
 function PlanCard({ goal }) {
   const [shown, setShown] = useState(0);
@@ -718,7 +676,6 @@ export default function Index() {
 
   return (
     <div className="es">
-      <Cursor/>
       <div className="es-spot"/>
       <Header/>
       <main>

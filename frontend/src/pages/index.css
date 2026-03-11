@@ -91,7 +91,7 @@
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   position: relative;
-  cursor: none;
+  cursor: auto;
 }
 .es::after {
   content: '';
