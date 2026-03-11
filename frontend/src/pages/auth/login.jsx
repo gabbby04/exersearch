@@ -19,8 +19,7 @@ import { redirectAfterAuth } from "../../utils/redirects";
 import { allowedUiModes } from "../../utils/roles";
 import { setUiMode } from "../../utils/appMode";
 import { api } from "../../utils/apiClient";
-
-const LOGO_LEFT_SRC = "/src/assets/exersearchlogo.png";
+import logoWordmark from "../../assets/exersearchlogo.png";
 
 function prettyModeLabel(m) {
   if (m === "user") return "User";
@@ -110,7 +109,7 @@ function LeftPanel({ view }) {
         <div className="auth-logo">
           <img
             className="auth-logo__wordmark"
-            src={LOGO_LEFT_SRC}
+src={logoWordmark}
             alt="ExerSearch"
           />
         </div>
