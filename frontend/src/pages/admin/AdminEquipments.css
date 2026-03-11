@@ -1072,427 +1072,59 @@ select.ae-fieldInput {
   color: #f6f8fa;
 }
 /* =========================================
-   GLOBAL RESPONSIVE HELPERS
-   Add at the VERY BOTTOM
+   FORCE SELECT COLORS TO MATCH THEME
+   Put this at the VERY BOTTOM
 ========================================= */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+.ae-select,
+select.ae-select,
+select.ae-fieldInput {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border-radius: 12px;
 }
 
-img,
-video,
-canvas,
-svg {
-  max-width: 100%;
+/* LIGHT MODE — force white */
+[data-theme="light"] .ae-select,
+[data-theme="light"] select.ae-select,
+[data-theme="light"] select.ae-fieldInput {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #141414 !important;
+  border: 1px solid #d9d9d9 !important;
+  color-scheme: light !important;
 }
 
-.ae-page {
-  overflow-x: hidden;
+/* LIGHT MODE dropdown items */
+[data-theme="light"] .ae-select option,
+[data-theme="light"] select.ae-select option,
+[data-theme="light"] select.ae-fieldInput option,
+[data-theme="light"] .ae-select optgroup,
+[data-theme="light"] select.ae-select optgroup,
+[data-theme="light"] select.ae-fieldInput optgroup {
+  background: #ffffff !important;
+  color: #141414 !important;
 }
 
-.ae-panelOuter,
-.ae-topRow,
-.ae-panelTop,
-.ae-pagerRow,
-.ae-modalFooter,
-.ae-inlineTools,
-.ae-headerPills,
-.ae-topActions,
-.ae-leftActions,
-.ae-rightActions {
-  min-width: 0;
+/* DARK MODE — force dark */
+[data-theme="dark"] .ae-select,
+[data-theme="dark"] select.ae-select,
+[data-theme="dark"] select.ae-fieldInput {
+  background: #1b1d22 !important;
+  background-color: #1b1d22 !important;
+  color: #f6f8fa !important;
+  border: 1px solid var(--border) !important;
+  color-scheme: dark !important;
 }
 
-.ae-titleWrap,
-.ae-topActions,
-.ae-leftActions,
-.ae-rightActions,
-.ae-inlineTools,
-.ae-pagerRow,
-.ae-modalFooter,
-.ae-headerPills {
-  row-gap: 10px;
-}
-
-/* Make long text behave */
-.ae-pageTitle,
-.ae-equipName,
-.ae-mutedCell,
-.ae-strongText,
-.ae-confirmTitle,
-.ae-modalTitle,
-.ao-cardTitle {
-  min-width: 0;
-  word-break: break-word;
-}
-
-/* =========================================
-   LARGE TABLET
-========================================= */
-@media (max-width: 1024px) {
-  .ae-pageTitle {
-    font-size: 22px;
-  }
-
-  .ae-topRow {
-    padding: 14px 14px 0;
-    gap: 14px;
-  }
-
-  .ae-panelOuter {
-    padding: 0 14px;
-  }
-
-  .ae-panelTop {
-    padding: 12px;
-  }
-
-  .ae-searchBox {
-    min-width: 220px;
-    max-width: 100%;
-  }
-
-  .ae-select {
-    min-width: 140px;
-  }
-
-  .ae-table {
-    min-width: 900px;
-  }
-
-  .ao-map {
-    height: 300px;
-  }
-
-  .ao-docFrame {
-    height: 360px;
-  }
-}
-
-/* =========================================
-   TABLET / SMALL TABLET
-========================================= */
-@media (max-width: 820px) {
-  .ae-topRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ae-titleWrap,
-  .ae-headerPills,
-  .ae-topActions {
-    width: 100%;
-  }
-
-  .ae-topActions {
-    justify-content: flex-start;
-  }
-
-  .ae-panelTop {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ae-leftActions,
-  .ae-rightActions {
-    width: 100%;
-  }
-
-  .ae-rightActions {
-    justify-content: flex-start;
-  }
-
-  .ae-searchBox {
-    min-width: 0;
-    max-width: 100%;
-    width: 100%;
-    flex: 1 1 100%;
-  }
-
-  .ae-searchInput {
-    width: 100%;
-  }
-
-  .ae-select {
-    flex: 1 1 180px;
-    min-width: 0;
-    width: 100%;
-  }
-
-  .ae-btn,
-  .ae-btnPrimary,
-  .ae-btnSecondary,
-  .ae-btnDanger {
-    min-width: 0;
-  }
-
-  .ae-formGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .ae-modalFooter,
-  .ae-confirmActions,
-  .ae-modalActions {
-    justify-content: stretch;
-  }
-
-  .ae-modalFooter > *,
-  .ae-confirmActions > *,
-  .ae-modalActions > * {
-    flex: 1 1 180px;
-  }
-
-  .ao-gallery {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  }
-
-  .ao-photo {
-    height: 120px;
-  }
-}
-
-/* =========================================
-   MOBILE
-========================================= */
-@media (max-width: 640px) {
-  .ae-topRow {
-    padding: 12px 12px 0;
-    gap: 12px;
-  }
-
-  .ae-panelOuter {
-    padding: 0 12px;
-    margin-top: 8px;
-  }
-
-  .ae-pageTitle {
-    font-size: 20px;
-    line-height: 1.15;
-  }
-
-  .ae-titleWrap {
-    gap: 8px;
-  }
-
-  .ae-headerPills,
-  .ae-topActions,
-  .ae-leftActions,
-  .ae-rightActions,
-  .ae-inlineTools,
-  .ae-pagerRow,
-  .ae-modalFooter,
-  .ae-confirmActions,
-  .ae-modalActions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ae-headerPills > *,
-  .ae-topActions > *,
-  .ae-leftActions > *,
-  .ae-rightActions > *,
-  .ae-inlineTools > *,
-  .ae-modalFooter > *,
-  .ae-confirmActions > *,
-  .ae-modalActions > * {
-    width: 100%;
-  }
-
-  .ae-pill,
-  .ae-pillMuted {
-    text-align: center;
-  }
-
-  .ae-btn,
-  .ae-btnPrimary,
-  .ae-btnSecondary,
-  .ae-btnDanger {
-    width: 100%;
-    height: 42px;
-  }
-
-  .ae-searchBox {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  .ae-searchInput,
-  .ae-select,
-  .ae-fieldInput {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .ae-panel {
-    border-radius: 12px;
-  }
-
-  .ae-panelTop,
-  .ae-pagerRow {
-    padding: 12px;
-  }
-
-  .ae-th,
-  .ae-td {
-    padding: 12px 10px;
-  }
-
-  .ae-td {
-    font-size: 13px;
-  }
-
-  .ae-equipCell {
-    gap: 10px;
-  }
-
-  .ae-imgBox {
-    width: 42px;
-    height: 42px;
-  }
-
-  .ae-actionsInline {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .ae-iconBtn,
-  .ae-iconBtnDanger {
-    width: 38px;
-    height: 38px;
-  }
-
-  .ae-modalContent,
-  .ae-importModal,
-  .ae-formModal,
-  .ae-confirmModalFancy {
-    width: min(100%, 100vw - 16px);
-    max-width: calc(100vw - 16px);
-    padding: 14px;
-    border-radius: 14px;
-  }
-
-  .ae-backdrop {
-    padding: 8px;
-  }
-
-  .ae-modalImg {
-    max-width: 100%;
-    max-height: 60vh;
-  }
-
-  .ae-modalTopRow,
-  .ae-confirmHeader,
-  .ao-cardTop {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .ae-confirmIconWrap {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-  }
-
-  .ae-formGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .ae-ingTop,
-  .ae-ingGrid3,
-  .ae-ingGrid5 {
-    grid-template-columns: 1fr;
-  }
-
-  .ae-bulkTextarea {
-    height: 96px;
-  }
-
-  .ao-map {
-    height: 240px;
-  }
-
-  .ao-docFrame {
-    height: 280px;
-  }
-
-  .ao-docImg {
-    max-height: 320px;
-  }
-
-  .ao-gallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ao-photo {
-    height: 110px;
-  }
-
-  .ae-locCell {
-    max-width: 220px;
-  }
-}
-
-/* =========================================
-   VERY SMALL MOBILE
-========================================= */
-@media (max-width: 420px) {
-  .ae-topRow {
-    padding: 10px 10px 0;
-  }
-
-  .ae-panelOuter {
-    padding: 0 10px;
-  }
-
-  .ae-pageTitle {
-    font-size: 18px;
-  }
-
-  .ae-panelTop,
-  .ae-pagerRow,
-  .ae-errorBox {
-    padding: 10px;
-  }
-
-  .ae-modalContent,
-  .ae-importModal,
-  .ae-formModal,
-  .ae-confirmModalFancy {
-    padding: 12px;
-    border-radius: 12px;
-  }
-
-  .ae-th,
-  .ae-td {
-    padding: 10px 8px;
-  }
-
-  .ae-mutedSmall,
-  .ae-mutedTiny,
-  .ae-mutedCell {
-    font-size: 12px;
-  }
-
-  .ao-gallery {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .ao-photo {
-    height: 96px;
-  }
-
-  .ao-map {
-    height: 210px;
-  }
-
-  .ao-docFrame {
-    height: 240px;
-  }
+/* DARK MODE dropdown items */
+[data-theme="dark"] .ae-select option,
+[data-theme="dark"] select.ae-select option,
+[data-theme="dark"] select.ae-fieldInput option,
+[data-theme="dark"] .ae-select optgroup,
+[data-theme="dark"] select.ae-select optgroup,
+[data-theme="dark"] select.ae-fieldInput optgroup {
+  background: #1b1d22 !important;
+  color: #f6f8fa !important;
 }

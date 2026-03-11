@@ -162,6 +162,20 @@ export default function AdminSettings() {
   const [letterLogoUploading, setLetterLogoUploading] = useState(false);
   const [letterLogoPreview, setLetterLogoPreview] = useState("");
 
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
+
+  useEffect(() => {
+    const onResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isMobile = screenWidth < 640;
+  const isTablet = screenWidth >= 640 && screenWidth < 1024;
+  const isCompact = screenWidth < 820;
+
   const canEdit = isAdmin && me?.role === "superadmin";
 
   const currentHeaderLogo = useMemo(() => {
@@ -175,6 +189,9 @@ export default function AdminSettings() {
   const currentLetterLogo = useMemo(() => {
     return letterLogoPreview || toAbsUrl(settings.letter_logo) || "";
   }, [letterLogoPreview, settings.letter_logo]);
+
+  const twoCol = isMobile ? "1fr" : "1fr 1fr";
+  const threeCol = isCompact ? "1fr" : "1fr 1fr 1fr";
 
   const load = async () => {
     setErr("");
@@ -493,24 +510,55 @@ export default function AdminSettings() {
   if (!isAdmin) return <div style={{ padding: 18, color: t.text }}>Forbidden.</div>;
 
   return (
-    <div style={{ padding: 18 }}>
+    <div
+      style={{
+        padding: isMobile ? 12 : 18,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: isMobile ? "stretch" : "flex-start",
           justifyContent: "space-between",
           gap: 12,
           marginBottom: 14,
+          flexDirection: isCompact ? "column" : "row",
         }}
       >
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: t.text }}>App Settings</div>
-          <div style={{ fontSize: 12, color: t.mutedText, marginTop: 2 }}>
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: isMobile ? 16 : 18,
+              fontWeight: 800,
+              color: t.text,
+              lineHeight: 1.15,
+            }}
+          >
+            App Settings
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: t.mutedText,
+              marginTop: 2,
+              lineHeight: 1.35,
+              maxWidth: 320,
+            }}
+          >
             Branding + contact info (Superadmin only).
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            width: isCompact ? "100%" : "auto",
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
           <button
             onClick={load}
             disabled={
@@ -520,7 +568,10 @@ export default function AdminSettings() {
               userLogoUploading ||
               letterLogoUploading
             }
-            style={btnStyle(t, { subtle: true })}
+            style={{
+              ...btnStyle(t, { subtle: true }),
+              width: isMobile ? "100%" : "auto",
+            }}
           >
             Refresh
           </button>
@@ -535,7 +586,10 @@ export default function AdminSettings() {
               userLogoUploading ||
               letterLogoUploading
             }
-            style={btnStyle(t, { primary: true, disabled: !canEdit })}
+            style={{
+              ...btnStyle(t, { primary: true, disabled: !canEdit }),
+              width: isMobile ? "100%" : "auto",
+            }}
             title={!canEdit ? "Superadmin only" : "Save"}
           >
             {saving ? "Saving…" : "Save"}
@@ -554,6 +608,8 @@ export default function AdminSettings() {
             color: t.text,
             fontSize: 12,
             fontWeight: 700,
+            lineHeight: 1.35,
+            wordBreak: "break-word",
           }}
         >
           {err}
@@ -564,124 +620,79 @@ export default function AdminSettings() {
         <div style={{ padding: 14, color: t.text }}>Loading settings…</div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
-          <section style={cardStyle(t)}>
+          <section style={cardStyle(t, isMobile)}>
             <div style={sectionTitle(t)}>Branding</div>
 
-            <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-              <LogoBox t={t} url={currentHeaderLogo} emptyText="No Header Logo" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 900, color: t.text }}>Header Logo</div>
-                <div style={{ fontSize: 12, color: t.mutedText, marginTop: 2 }}>
+            <LogoUploadRow
+              t={t}
+              isMobile={isMobile}
+              title="Header Logo"
+              subtitle={
+                <>
                   Upload an image. It will set <b>logo_url</b>. Then click <b>Save</b>.
-                </div>
+                </>
+              }
+              url={currentHeaderLogo}
+              emptyText="No Header Logo"
+              onPick={onPickHeaderLogo}
+              uploading={headerLogoUploading}
+              canEdit={canEdit}
+              preview={headerLogoPreview}
+              onRemovePreview={() => setHeaderLogoPreview("")}
+              uploadLabel="Upload Header Logo"
+              inputRef={headerFileRef}
+              onChange={onHeaderLogoChange}
+            />
 
-                <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                  <button
-                    onClick={onPickHeaderLogo}
-                    disabled={!canEdit || headerLogoUploading}
-                    style={btnStyle(t, { brand: true, disabled: !canEdit })}
-                  >
-                    {headerLogoUploading ? "Uploading…" : "Upload Header Logo"}
-                  </button>
-
-                  {headerLogoPreview && (
-                    <button
-                      onClick={() => setHeaderLogoPreview("")}
-                      disabled={headerLogoUploading}
-                      style={btnStyle(t, { subtle: true })}
-                    >
-                      Remove Preview
-                    </button>
-                  )}
-                </div>
-
-                <input
-                  ref={headerFileRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={onHeaderLogoChange}
-                  style={{ display: "none" }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-              <LogoBox t={t} url={currentUserLogo} emptyText="No User Logo" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 900, color: t.text }}>User-Side Logo</div>
-                <div style={{ fontSize: 12, color: t.mutedText, marginTop: 2 }}>
+            <LogoUploadRow
+              t={t}
+              isMobile={isMobile}
+              title="User-Side Logo"
+              subtitle={
+                <>
                   Upload an image. It will set <b>user_logo_url</b>. Then click <b>Save</b>.
-                </div>
+                </>
+              }
+              url={currentUserLogo}
+              emptyText="No User Logo"
+              onPick={onPickUserLogo}
+              uploading={userLogoUploading}
+              canEdit={canEdit}
+              preview={userLogoPreview}
+              onRemovePreview={() => setUserLogoPreview("")}
+              uploadLabel="Upload User Logo"
+              inputRef={userFileRef}
+              onChange={onUserLogoChange}
+            />
 
-                <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                  <button
-                    onClick={onPickUserLogo}
-                    disabled={!canEdit || userLogoUploading}
-                    style={btnStyle(t, { brand: true, disabled: !canEdit })}
-                  >
-                    {userLogoUploading ? "Uploading…" : "Upload User Logo"}
-                  </button>
-
-                  {userLogoPreview && (
-                    <button
-                      onClick={() => setUserLogoPreview("")}
-                      disabled={userLogoUploading}
-                      style={btnStyle(t, { subtle: true })}
-                    >
-                      Remove Preview
-                    </button>
-                  )}
-                </div>
-
-                <input
-                  ref={userFileRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={onUserLogoChange}
-                  style={{ display: "none" }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-              <LogoBox t={t} url={currentLetterLogo} emptyText="No Letter Logo" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 900, color: t.text }}>Letter Logo</div>
-                <div style={{ fontSize: 12, color: t.mutedText, marginTop: 2 }}>
+            <LogoUploadRow
+              t={t}
+              isMobile={isMobile}
+              title="Letter Logo"
+              subtitle={
+                <>
                   Upload an image. It will set <b>letter_logo</b>. Then click <b>Save</b>.
-                </div>
+                </>
+              }
+              url={currentLetterLogo}
+              emptyText="No Letter Logo"
+              onPick={onPickLetterLogo}
+              uploading={letterLogoUploading}
+              canEdit={canEdit}
+              preview={letterLogoPreview}
+              onRemovePreview={() => setLetterLogoPreview("")}
+              uploadLabel="Upload Letter Logo"
+              inputRef={letterFileRef}
+              onChange={onLetterLogoChange}
+            />
 
-                <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                  <button
-                    onClick={onPickLetterLogo}
-                    disabled={!canEdit || letterLogoUploading}
-                    style={btnStyle(t, { brand: true, disabled: !canEdit })}
-                  >
-                    {letterLogoUploading ? "Uploading…" : "Upload Letter Logo"}
-                  </button>
-
-                  {letterLogoPreview && (
-                    <button
-                      onClick={() => setLetterLogoPreview("")}
-                      disabled={letterLogoUploading}
-                      style={btnStyle(t, { subtle: true })}
-                    >
-                      Remove Preview
-                    </button>
-                  )}
-                </div>
-
-                <input
-                  ref={letterFileRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={onLetterLogoChange}
-                  style={{ display: "none" }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: twoCol,
+                gap: 12,
+              }}
+            >
               <Field label="App Name">
                 <input
                   value={settings.app_name}
@@ -734,10 +745,16 @@ export default function AdminSettings() {
             </div>
           </section>
 
-          <section style={cardStyle(t)}>
+          <section style={cardStyle(t, isMobile)}>
             <div style={sectionTitle(t)}>Contact Info</div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: twoCol,
+                gap: 12,
+              }}
+            >
               <Field label="Contact Phone">
                 <input
                   value={settings.contact_phone || ""}
@@ -780,10 +797,16 @@ export default function AdminSettings() {
             </div>
           </section>
 
-          <section style={cardStyle(t)}>
+          <section style={cardStyle(t, isMobile)}>
             <div style={sectionTitle(t)}>System Toggles</div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: threeCol,
+                gap: 12,
+              }}
+            >
               <Toggle
                 t={t}
                 label="Maintenance Mode"
@@ -810,10 +833,16 @@ export default function AdminSettings() {
             </div>
           </section>
 
-          <section style={cardStyle(t)}>
+          <section style={cardStyle(t, isMobile)}>
             <div style={sectionTitle(t)}>Social Links</div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: twoCol,
+                gap: 12,
+              }}
+            >
               <Field label="Facebook URL">
                 <input
                   value={settings.facebook_url || ""}
@@ -873,10 +902,113 @@ export default function AdminSettings() {
       )}
 
       {!canEdit && (
-        <div style={{ marginTop: 12, fontSize: 12, color: t.mutedText }}>
+        <div
+          style={{
+            marginTop: 12,
+            fontSize: 12,
+            color: t.mutedText,
+            lineHeight: 1.4,
+          }}
+        >
           You are logged in as <b>{me?.role}</b>. Only <b>superadmin</b> can edit these settings.
         </div>
       )}
+    </div>
+  );
+}
+
+function LogoUploadRow({
+  t,
+  isMobile,
+  title,
+  subtitle,
+  url,
+  emptyText,
+  onPick,
+  uploading,
+  canEdit,
+  preview,
+  onRemovePreview,
+  uploadLabel,
+  inputRef,
+  onChange,
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 12,
+        alignItems: isMobile ? "flex-start" : "center",
+        marginBottom: 14,
+        flexDirection: isMobile ? "column" : "row",
+      }}
+    >
+      <LogoBox t={t} url={url} emptyText={emptyText} />
+
+      <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 900,
+            color: t.text,
+            lineHeight: 1.2,
+          }}
+        >
+          {title}
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: t.mutedText,
+            marginTop: 4,
+            lineHeight: 1.4,
+          }}
+        >
+          {subtitle}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 10,
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
+          <button
+            onClick={onPick}
+            disabled={!canEdit || uploading}
+            style={{
+              ...btnStyle(t, { brand: true, disabled: !canEdit }),
+              width: isMobile ? "100%" : "auto",
+            }}
+          >
+            {uploading ? "Uploading…" : uploadLabel}
+          </button>
+
+          {preview && (
+            <button
+              onClick={onRemovePreview}
+              disabled={uploading}
+              style={{
+                ...btnStyle(t, { subtle: true }),
+                width: isMobile ? "100%" : "auto",
+              }}
+            >
+              Remove Preview
+            </button>
+          )}
+        </div>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={onChange}
+          style={{ display: "none" }}
+        />
+      </div>
     </div>
   );
 }
@@ -891,14 +1023,15 @@ function LogoBox({ t, url, emptyText }) {
   return (
     <div
       style={{
-        width: 64,
-        height: 64,
+        width: 72,
+        height: 72,
         borderRadius: 14,
         border: `1px solid ${t.border}`,
         background: t.soft,
         overflow: "hidden",
         display: "grid",
         placeItems: "center",
+        flex: "0 0 auto",
       }}
       title="Logo preview"
     >
@@ -910,7 +1043,18 @@ function LogoBox({ t, url, emptyText }) {
           onError={() => setImgFailed(true)}
         />
       ) : (
-        <div style={{ fontSize: 11, color: t.mutedText, fontWeight: 800 }}>{emptyText}</div>
+        <div
+          style={{
+            fontSize: 11,
+            color: t.mutedText,
+            fontWeight: 800,
+            textAlign: "center",
+            padding: 6,
+            lineHeight: 1.2,
+          }}
+        >
+          {emptyText}
+        </div>
       )}
     </div>
   );
@@ -918,8 +1062,17 @@ function LogoBox({ t, url, emptyText }) {
 
 function Field({ label, children }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.85 }}>{label}</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 800,
+          opacity: 0.85,
+          lineHeight: 1.2,
+        }}
+      >
+        {label}
+      </div>
       {children}
     </div>
   );
@@ -932,7 +1085,7 @@ function Toggle({ t, label, value, onChange, disabled }) {
         display: "flex",
         alignItems: "center",
         gap: 10,
-        padding: "10px 12px",
+        padding: "12px 12px",
         borderRadius: 12,
         border: `1px solid ${t.border}`,
         background: t.soft,
@@ -940,6 +1093,7 @@ function Toggle({ t, label, value, onChange, disabled }) {
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         userSelect: "none",
+        minWidth: 0,
       }}
     >
       <input
@@ -951,9 +1105,19 @@ function Toggle({ t, label, value, onChange, disabled }) {
           width: 16,
           height: 16,
           accentColor: BRAND,
+          flex: "0 0 auto",
         }}
       />
-      <span style={{ fontSize: 12, fontWeight: 800 }}>{label}</span>
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 800,
+          lineHeight: 1.35,
+          wordBreak: "break-word",
+        }}
+      >
+        {label}
+      </span>
     </label>
   );
 }
@@ -969,27 +1133,37 @@ function inputStyle(t) {
     outline: "none",
     fontSize: 13,
     fontWeight: 600,
+    minWidth: 0,
+    boxSizing: "border-box",
   };
 }
 
-function cardStyle(t) {
+function cardStyle(t, isMobile = false) {
   return {
     border: `1px solid ${t.border}`,
     background: t.bg,
     borderRadius: 14,
-    padding: 14,
+    padding: isMobile ? 12 : 14,
   };
 }
 
 function sectionTitle(t) {
-  return { fontWeight: 900, color: t.text, marginBottom: 10 };
+  return {
+    fontWeight: 900,
+    color: t.text,
+    marginBottom: 12,
+    fontSize: 15,
+  };
 }
 
-function btnStyle(t, { primary = false, subtle = false, brand = false, disabled = false } = {}) {
+function btnStyle(
+  t,
+  { primary = false, subtle = false, brand = false, disabled = false } = {}
+) {
   if (primary || brand) {
     return {
-      borderRadius: 10,
-      padding: "10px 12px",
+      borderRadius: 12,
+      padding: "10px 14px",
       border: `1px solid ${BRAND}`,
       background: BRAND,
       color: "#fff",
@@ -997,13 +1171,14 @@ function btnStyle(t, { primary = false, subtle = false, brand = false, disabled 
       fontWeight: 900,
       fontSize: 12,
       opacity: disabled ? 0.6 : 1,
+      minHeight: 42,
     };
   }
 
   const bg = subtle ? t.soft : t.soft;
   return {
-    borderRadius: 10,
-    padding: "10px 12px",
+    borderRadius: 12,
+    padding: "10px 14px",
     border: `1px solid ${t.border}`,
     background: bg,
     color: t.text,
@@ -1011,5 +1186,6 @@ function btnStyle(t, { primary = false, subtle = false, brand = false, disabled 
     fontWeight: 800,
     fontSize: 12,
     opacity: disabled ? 0.55 : 1,
+    minHeight: 42,
   };
 }

@@ -22,6 +22,11 @@ import {
   normalizeLatLng,
 } from "../../utils/gymApi";
 
+import {
+  searchOwners,
+  assignGymOwner,
+} from "../../utils/adminGymOwnershipApi";
+
 import MapPickerModal from "../../components/MapPickerModal";
 
 import "./AdminEquipments.css";
@@ -63,7 +68,7 @@ export default function AdminGyms() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { rows, loading: loadingRows, error, reload } = useApiList("/gyms", {
+  const { rows, loading: loadingRows, error, reload } = useApiList("/admin/gyms", {
     authed: true,
     allPages: true,
     perPage: 10,
@@ -98,6 +103,13 @@ export default function AdminGyms() {
 
   const [mapOpen, setMapOpen] = useState(false);
 
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignBusy, setAssignBusy] = useState(false);
+  const [assignErr, setAssignErr] = useState("");
+  const [ownerSearch, setOwnerSearch] = useState("");
+  const [ownerResults, setOwnerResults] = useState([]);
+  const [selectedOwner, setSelectedOwner] = useState(null);
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") {
@@ -106,11 +118,33 @@ export default function AdminGyms() {
         setDelOpen(false);
         setSaveOpen(false);
         setMapOpen(false);
+        setAssignOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  const loadOwners = async (searchText = "") => {
+    try {
+      const res = await searchOwners({ q: searchText, per_page: 50 });
+      const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      setOwnerResults(list);
+    } catch (e) {
+      console.error(e);
+      setOwnerResults([]);
+    }
+  };
+
+  useEffect(() => {
+    if (!assignOpen) return;
+
+    const timer = setTimeout(() => {
+      loadOwners(ownerSearch.trim());
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [ownerSearch, assignOpen]);
 
   const gymTypes = useMemo(() => {
     const set = new Set(rows.map((r) => r.gym_type).filter(Boolean));
@@ -125,6 +159,8 @@ export default function AdminGyms() {
       (r) => r.gym_type,
       (r) => r.contact_number,
       (r) => r.email,
+      (r) => r.owner?.name,
+      (r) => r.owner?.email,
     ]);
   }, [rows, q]);
 
@@ -155,6 +191,8 @@ export default function AdminGyms() {
         return tableValue.num(r.monthly_price);
       case "updated":
         return tableValue.dateMs(r.updated_at);
+      case "owner":
+        return tableValue.str(r.owner?.name || "");
       case "id":
         return tableValue.num(r.gym_id);
       default:
@@ -290,6 +328,36 @@ export default function AdminGyms() {
     }
   };
 
+  const openAssignOwner = async (gym) => {
+    setAssignErr("");
+    setActiveGym(gym);
+    setSelectedOwner(null);
+    setOwnerSearch("");
+    setOwnerResults([]);
+    setAssignOpen(true);
+    await loadOwners("");
+  };
+
+  const confirmAssignOwner = async () => {
+    if (!activeGym || !selectedOwner) return;
+
+    setAssignBusy(true);
+    setAssignErr("");
+
+    try {
+      await assignGymOwner(activeGym.gym_id, selectedOwner.user_id);
+      setAssignOpen(false);
+      setSelectedOwner(null);
+      setOwnerSearch("");
+      setOwnerResults([]);
+      reload();
+    } catch (e) {
+      setAssignErr(e.message || "Assignment failed.");
+    } finally {
+      setAssignBusy(false);
+    }
+  };
+
   const uploadMainIfNeeded = async () => {
     let main_image_url = String(gymForm.main_image_url || "").trim();
     if (gymForm.mainImageFile) {
@@ -338,10 +406,12 @@ export default function AdminGyms() {
       longitude = norm?.longitude ?? longitude;
     }
 
-    if (latitude !== null && (latitude < -90 || latitude > 90))
+    if (latitude !== null && (latitude < -90 || latitude > 90)) {
       return setGymErr("Latitude must be between -90 and 90.");
-    if (longitude !== null && (longitude < -180 || longitude > 180))
+    }
+    if (longitude !== null && (longitude < -180 || longitude > 180)) {
       return setGymErr("Longitude must be between -180 and 180.");
+    }
 
     setGymBusy(true);
     setGymErr("");
@@ -477,7 +547,11 @@ export default function AdminGyms() {
                 <option value="false">Classes: No</option>
               </select>
 
-              <select value={isAir} onChange={(e) => setIsAir(e.target.value)} className="ae-select">
+              <select
+                value={isAir}
+                onChange={(e) => setIsAir(e.target.value)}
+                className="ae-select"
+              >
                 <option value="All">Aircon: All</option>
                 <option value="true">Aircon: Yes</option>
                 <option value="false">Aircon: No</option>
@@ -507,6 +581,12 @@ export default function AdminGyms() {
                     <th className="ae-th">Location</th>
                     <th
                       className="ae-th ae-thClickable"
+                      onClick={() => setSort((p) => toggleSort(p, "owner"))}
+                    >
+                      Owner{sortIndicator(sort, "owner")}
+                    </th>
+                    <th
+                      className="ae-th ae-thClickable"
                       onClick={() => setSort((p) => toggleSort(p, "monthly"))}
                     >
                       Monthly{sortIndicator(sort, "monthly")}
@@ -524,13 +604,13 @@ export default function AdminGyms() {
                 <tbody>
                   {loadingRows ? (
                     <tr>
-                      <td className="ae-td" colSpan={6}>
+                      <td className="ae-td" colSpan={7}>
                         Loading…
                       </td>
                     </tr>
                   ) : pageRows.length === 0 ? (
                     <tr>
-                      <td className="ae-td" colSpan={6}>
+                      <td className="ae-td" colSpan={7}>
                         No results.
                       </td>
                     </tr>
@@ -546,7 +626,10 @@ export default function AdminGyms() {
                                   alt={r.name}
                                   className="ae-img"
                                   onClick={() =>
-                                    setPreviewImg({ src: absoluteUrl(r.main_image_url), name: r.name || "gym" })
+                                    setPreviewImg({
+                                      src: absoluteUrl(r.main_image_url),
+                                      name: r.name || "gym",
+                                    })
                                   }
                                   onError={(e) => {
                                     e.currentTarget.style.display = "none";
@@ -565,6 +648,7 @@ export default function AdminGyms() {
                         </td>
 
                         <td className="ae-td">{r.gym_type || "-"}</td>
+
                         <td className="ae-td">
                           <div className="ae-locCell">
                             <div
@@ -582,8 +666,21 @@ export default function AdminGyms() {
                           </div>
                         </td>
 
+                        <td className="ae-td">
+                          {r.owner ? (
+                            <>
+                              <div className="ae-equipName">{r.owner.name || "-"}</div>
+                              <div className="ae-mutedTiny">{r.owner.email || "-"}</div>
+                            </>
+                          ) : (
+                            <span className="ae-pillMuted">Unassigned</span>
+                          )}
+                        </td>
+
                         <td className="ae-td">{r.monthly_price ?? "-"}</td>
-                        <td className="ae-td ae-mutedCell">{formatDateTimeFallback(r.updated_at)}</td>
+                        <td className="ae-td ae-mutedCell">
+                          {formatDateTimeFallback(r.updated_at)}
+                        </td>
 
                         <td className="ae-td ae-tdRight">
                           <div className="ae-actionsInline">
@@ -601,10 +698,27 @@ export default function AdminGyms() {
 
                             {isAdmin ? (
                               <>
-                                <IconBtn title="Edit" className="ae-iconBtn" onClick={() => openEdit(r)}>
+                                <IconBtn
+                                  title="Assign Owner"
+                                  className="ae-iconBtn"
+                                  onClick={() => openAssignOwner(r)}
+                                >
+                                  👤
+                                </IconBtn>
+
+                                <IconBtn
+                                  title="Edit"
+                                  className="ae-iconBtn"
+                                  onClick={() => openEdit(r)}
+                                >
                                   ✎
                                 </IconBtn>
-                                <IconBtn title="Delete" className="ae-iconBtnDanger" onClick={() => askDelete(r)}>
+
+                                <IconBtn
+                                  title="Delete"
+                                  className="ae-iconBtnDanger"
+                                  onClick={() => askDelete(r)}
+                                >
                                   🗑
                                 </IconBtn>
                               </>
@@ -736,7 +850,9 @@ export default function AdminGyms() {
                   <div className="ae-mutedTiny">
                     Current:{" "}
                     <b className="ae-strongText">
-                      {gymForm.latitude && gymForm.longitude ? `${gymForm.latitude}, ${gymForm.longitude}` : "—"}
+                      {gymForm.latitude && gymForm.longitude
+                        ? `${gymForm.latitude}, ${gymForm.longitude}`
+                        : "—"}
                     </b>
                   </div>
                 </div>
@@ -872,16 +988,26 @@ export default function AdminGyms() {
                     gallery_urls: (p.gallery_urls || []).filter((_, i) => i !== idx),
                   }))
                 }
-                onPreview={(url) => setPreviewImg({ src: absoluteUrl(url), name: gymForm.name || "gym" })}
+                onPreview={(url) =>
+                  setPreviewImg({ src: absoluteUrl(url), name: gymForm.name || "gym" })
+                }
               />
 
               <SwitchRow
                 disabled={!canEdit}
                 items={[
-                  { key: "has_personal_trainers", label: "Has personal trainers", value: gymForm.has_personal_trainers },
+                  {
+                    key: "has_personal_trainers",
+                    label: "Has personal trainers",
+                    value: gymForm.has_personal_trainers,
+                  },
                   { key: "has_classes", label: "Has classes", value: gymForm.has_classes },
                   { key: "is_24_hours", label: "24 hours", value: gymForm.is_24_hours },
-                  { key: "is_airconditioned", label: "Airconditioned", value: gymForm.is_airconditioned },
+                  {
+                    key: "is_airconditioned",
+                    label: "Airconditioned",
+                    value: gymForm.is_airconditioned,
+                  },
                 ]}
                 onToggle={(key) => setGymForm((p) => ({ ...p, [key]: !p[key] }))}
               />
@@ -891,7 +1017,9 @@ export default function AdminGyms() {
               <div className="ae-inlineTools">
                 <button
                   className="ae-btn ae-btnSecondary"
-                  onClick={() => setPreviewImg({ src: currentMainPreviewUrl, name: gymForm.name || "gym" })}
+                  onClick={() =>
+                    setPreviewImg({ src: currentMainPreviewUrl, name: gymForm.name || "gym" })
+                  }
                 >
                   Preview main image
                 </button>
@@ -982,7 +1110,9 @@ export default function AdminGyms() {
               </div>
 
               <div className="ae-confirmHeaderText">
-                <div className="ae-confirmTitle">{gymMode === "add" ? "Create gym?" : "Confirm changes?"}</div>
+                <div className="ae-confirmTitle">
+                  {gymMode === "add" ? "Create gym?" : "Confirm changes?"}
+                </div>
               </div>
 
               <button className="ae-modalClose" onClick={() => setSaveOpen(false)}>
@@ -993,11 +1123,19 @@ export default function AdminGyms() {
             {gymErr ? <div className="ae-alert ae-alertError">{gymErr}</div> : null}
 
             <div className="ae-confirmActions">
-              <button className="ae-btn ae-btnSecondary" onClick={() => setSaveOpen(false)} disabled={gymBusy}>
+              <button
+                className="ae-btn ae-btnSecondary"
+                onClick={() => setSaveOpen(false)}
+                disabled={gymBusy}
+              >
                 Cancel
               </button>
 
-              <button className="ae-btn ae-btnPrimary" onClick={saveGym} disabled={gymBusy || galleryUploading}>
+              <button
+                className="ae-btn ae-btnPrimary"
+                onClick={saveGym}
+                disabled={gymBusy || galleryUploading}
+              >
                 {gymBusy
                   ? "Saving…"
                   : galleryUploading
@@ -1022,7 +1160,8 @@ export default function AdminGyms() {
               <div className="ae-confirmHeaderText">
                 <div className="ae-confirmTitle">Delete gym?</div>
                 <div className="ae-mutedTiny">
-                  This will permanently remove <b className="ae-strongText">{activeGym.name}</b>. This can’t be undone.
+                  This will permanently remove <b className="ae-strongText">{activeGym.name}</b>.
+                  This can’t be undone.
                 </div>
               </div>
 
@@ -1034,7 +1173,11 @@ export default function AdminGyms() {
             {gymErr ? <div className="ae-alert ae-alertError">{gymErr}</div> : null}
 
             <div className="ae-confirmActions">
-              <button className="ae-btn ae-btnSecondary" onClick={() => setDelOpen(false)} disabled={delBusy}>
+              <button
+                className="ae-btn ae-btnSecondary"
+                onClick={() => setDelOpen(false)}
+                disabled={delBusy}
+              >
                 Keep it
               </button>
 
@@ -1043,6 +1186,110 @@ export default function AdminGyms() {
                   🗑
                 </span>
                 {delBusy ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {assignOpen && activeGym && (
+        <div className="ae-backdrop ae-backdropTop" onClick={() => setAssignOpen(false)}>
+          <div className="ae-confirmModalFancy" onClick={(e) => e.stopPropagation()}>
+            <div className="ae-confirmHeader">
+              <div className="ae-confirmIconWrap" aria-hidden="true">
+                👤
+              </div>
+
+              <div className="ae-confirmHeaderText">
+                <div className="ae-confirmTitle">Assign Owner</div>
+                <div className="ae-mutedTiny">
+                  Gym: <b className="ae-strongText">{activeGym.name}</b>
+                </div>
+              </div>
+
+              <button className="ae-modalClose" onClick={() => setAssignOpen(false)}>
+                ✕
+              </button>
+            </div>
+
+            {assignErr ? <div className="ae-alert ae-alertError">{assignErr}</div> : null}
+
+            <div className="ae-field" style={{ marginTop: 12 }}>
+              <div className="ae-fieldLabel">Search / Filter owners</div>
+              <input
+                className="ae-fieldInput"
+                value={ownerSearch}
+                onChange={(e) => setOwnerSearch(e.target.value)}
+                placeholder="Filter by name or email"
+              />
+            </div>
+
+            <div style={{ marginTop: 10 }}>
+              <div className="ae-fieldLabel" style={{ marginBottom: 8 }}>
+                Available owners
+              </div>
+
+              <div
+                style={{
+                  maxHeight: 260,
+                  overflow: "auto",
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  padding: 8,
+                  background: "var(--soft2)",
+                }}
+              >
+                {ownerResults.length === 0 ? (
+                  <div className="ae-mutedTiny">No owners found.</div>
+                ) : (
+                  ownerResults.map((u) => {
+                    const picked = selectedOwner?.user_id === u.user_id;
+
+                    return (
+                      <button
+                        key={u.user_id}
+                        type="button"
+                        className={picked ? "ae-btn ae-btnPrimary" : "ae-btn ae-btnSecondary"}
+                        style={{
+                          width: "100%",
+                          marginBottom: 8,
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                        }}
+                        onClick={() => setSelectedOwner(u)}
+                      >
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {u.name || "-"} — {u.email || "-"}
+                        </span>
+                        <span>{u.role || "-"}</span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {selectedOwner ? (
+              <div className="ae-alert" style={{ marginTop: 10 }}>
+                Assigning to: <b>{selectedOwner.name}</b> ({selectedOwner.email})
+              </div>
+            ) : null}
+
+            <div className="ae-confirmActions">
+              <button
+                className="ae-btn ae-btnSecondary"
+                onClick={() => setAssignOpen(false)}
+                disabled={assignBusy}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="ae-btn ae-btnPrimary"
+                onClick={confirmAssignOwner}
+                disabled={!selectedOwner || assignBusy}
+              >
+                {assignBusy ? "Assigning…" : "Assign Owner"}
               </button>
             </div>
           </div>
@@ -1202,4 +1449,4 @@ function GalleryList({ urls, onRemove, disabled, onPreview }) {
       </div>
     </div>
   );
-}
+} 

@@ -3,6 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;
+
+use App\Models\User;
+use App\Models\Meal;
+
 use App\Http\Controllers\Auth\UserAuthController;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\EquipmentController;
@@ -42,10 +48,6 @@ use App\Http\Controllers\UserWorkoutPlanDayExerciseController;
 
 use App\Http\Controllers\OwnerProfileController;
 use App\Http\Controllers\DatabaseBackupController;
-
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\GymAnalyticsController;
 
 use App\Http\Controllers\GymMembershipController;
@@ -54,7 +56,6 @@ use App\Http\Controllers\GymInquiryController;
 use App\Http\Controllers\GymRatingController;
 use App\Http\Controllers\OwnerManualMemberController;
 
-use App\Models\Meal;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MacroPresetController;
@@ -71,7 +72,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ChatController;
 
 Route::prefix('v1')->group(function () {
- Route::get('/mail-test', function () {
+    Route::get('/mail-test', function () {
         set_time_limit(120);
 
         try {
@@ -109,7 +110,8 @@ Route::prefix('v1')->group(function () {
             ], 500);
         }
     });
- Route::get('/mail-config-check', function () {
+
+    Route::get('/mail-config-check', function () {
         return response()->json([
             'default' => config('mail.default'),
             'host' => config('mail.mailers.smtp.host'),
@@ -119,6 +121,7 @@ Route::prefix('v1')->group(function () {
             'from_name' => config('mail.from.name'),
         ]);
     });
+
     Route::get('/settings/public', [AppSettingsPublicController::class, 'show']);
 
     Route::get('/faqs', [FaqController::class, 'index']);
@@ -144,6 +147,8 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/gyms/{gymId}/announcements', [GymAnnouncementController::class, 'publicList'])
         ->whereNumber('gymId');
+
+    Route::get('/gyms/free-first-visits', [GymFreeVisitController::class, 'listEnabledGyms']);
 
     Route::get('/equipments', [EquipmentController::class, 'index']);
     Route::get('/equipments/{id}', [EquipmentController::class, 'show'])->whereNumber('id');
@@ -211,10 +216,7 @@ Route::prefix('v1')->group(function () {
         ], 200);
     })->middleware('signed')->name('verification.verify');
 
-    Route::get('/gyms/free-first-visits', [GymFreeVisitController::class, 'listEnabledGyms']);
-
     Route::middleware('auth:sanctum')->group(function () {
-
         Route::get('/chat/history', [ChatController::class, 'getUserHistory']);
         Route::delete('/chat/clear', [ChatController::class, 'clearHistory']);
 
@@ -222,14 +224,15 @@ Route::prefix('v1')->group(function () {
             if ($request->user()->hasVerifiedEmail()) {
                 return response()->json(['message' => 'Email already verified.'], 200);
             }
+
             $request->user()->sendEmailVerificationNotification();
+
             return response()->json(['message' => 'Verification link sent.'], 200);
         })->middleware('throttle:6,1')->name('verification.send');
 
         Route::get('/me', MeController::class);
 
         Route::middleware('verified')->group(function () {
-
             Route::get('/notifications', [NotificationController::class, 'index']);
             Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
             Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->whereNumber('id');
@@ -373,12 +376,9 @@ Route::prefix('v1')->group(function () {
             Route::post('/owner/inquiries/{inquiryId}/close', [GymInquiryController::class, 'ownerClose'])->whereNumber('inquiryId');
             Route::post('/owner/inquiries/{inquiryId}/read', [GymInquiryController::class, 'ownerMarkRead'])->whereNumber('inquiryId');
 
-            Route::get('/owner/gyms/{gymId}/announcements', [GymAnnouncementController::class, 'ownerList'])
-                ->whereNumber('gymId');
-            Route::post('/owner/gyms/{gymId}/announcements', [GymAnnouncementController::class, 'ownerCreate'])
-                ->whereNumber('gymId');
-            Route::delete('/owner/announcements/{announcementId}', [GymAnnouncementController::class, 'ownerDelete'])
-                ->whereNumber('announcementId');
+            Route::get('/owner/gyms/{gymId}/announcements', [GymAnnouncementController::class, 'ownerList'])->whereNumber('gymId');
+            Route::post('/owner/gyms/{gymId}/announcements', [GymAnnouncementController::class, 'ownerCreate'])->whereNumber('gymId');
+            Route::delete('/owner/announcements/{announcementId}', [GymAnnouncementController::class, 'ownerDelete'])->whereNumber('announcementId');
 
             Route::middleware('admin')->group(function () {
                 Route::post('/faqs', [FaqController::class, 'store']);
@@ -439,9 +439,13 @@ Route::prefix('v1')->group(function () {
                 Route::patch('/admin/owner-applications/{id}/reject', [GymOwnerApplicationController::class, 'reject'])->whereNumber('id');
 
                 Route::get('/admin/gyms', [GymController::class, 'adminIndex']);
+                Route::get('/admin/gyms/unowned', [GymController::class, 'adminUnownedGyms']);
                 Route::get('/admin/gyms/{gym}', [GymController::class, 'adminShow'])->whereNumber('gym');
                 Route::patch('/admin/gyms/{gym}/approve', [GymController::class, 'adminApprove'])->whereNumber('gym');
                 Route::patch('/admin/gyms/{gym}/reject', [GymController::class, 'adminReject'])->whereNumber('gym');
+                Route::patch('/admin/gyms/{gym}/assign-owner', [GymController::class, 'assignOwner'])->whereNumber('gym');
+
+                Route::get('/admin/owners/search', [GymController::class, 'searchableOwners']);
 
                 Route::patch('/admin/owner-profiles/{user_id}/verify', [OwnerProfileController::class, 'verify'])->whereNumber('user_id');
 

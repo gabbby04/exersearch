@@ -71,12 +71,10 @@ class Gym extends Model
         'closing_time' => 'string',
     ];
 
-    public function owner()
-    {
-        return $this->belongsTo(User::class, 'owner_id')
-            ->where('role', 'owner');
-    }
-
+public function owner()
+{
+    return $this->belongsTo(User::class, 'owner_id', 'user_id');
+}
     public function approvedBy()
     {
         return $this->belongsTo(User::class, 'approved_by', 'user_id');
