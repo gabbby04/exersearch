@@ -22,9 +22,9 @@ const STEPS = [
   },
   {
     num: "02", icon: Brain, color: "#f06a22",
-    title: "AI builds your plan",
+    title: "It builds your plan",
     sub: "Personalized in seconds",
-    body: "Our AI analyzes your profile and generates a fully custom workout and meal plan. Not a template — an actual plan built for you.",
+    body: "Our program analyzes your profile and generates a fully custom workout and meal plan. Not a template — an actual plan built for you.",
     bullets: ["Custom workout schedule", "Tailored meal suggestions", "Adjusts as you progress"],
     demo: "ai",
   },
@@ -40,8 +40,8 @@ const STEPS = [
     num: "04", icon: Dumbbell, color: "#e8521a",
     title: "Follow your routine",
     sub: "Execute with confidence",
-    body: "Every session is guided. Log workouts, track sets, and get AI feedback after each session. Know exactly what to do and why.",
-    bullets: ["Step-by-step guidance", "Real-time logging", "Post-session AI feedback"],
+    body: "Every session is guided. Log workouts, track sets, and get feedback after each session. Know exactly what to do and why.",
+    bullets: ["Step-by-step guidance", "Real-time logging", "Post-session feedback"],
     demo: "workout",
   },
   {
@@ -74,7 +74,7 @@ const DEMO_CONTENT = {
     ],
   },
   ai: {
-    label: "AI Generating Plan",
+    label: " Generating Plan",
     lines: [
       "Analyzing your goals...",
       "Matching to 847 workout templates...",
@@ -267,7 +267,7 @@ const FLIP_CARDS = [
   {
     tag: "The ghost member",
     front: "You've paid for gym memberships before and stopped showing up after week two.",
-    back:  "Your AI plan tells you exactly what to do each session. Showing up becomes the easy part when you're never guessing.",
+    back:  "Your plan tells you exactly what to do each session. Showing up becomes the easy part when you're never guessing.",
     accent: "#f06a22",
   },
   {
@@ -653,7 +653,7 @@ export default function HowItWorks() {
                   <Star size={11} fill="currentColor" /> 4.9 rated
                 </div>
                 <div className="hw-preview__badge hw-preview__badge--b">
-                  <Zap size={11} /> AI-powered
+                  <Zap size={11} /> Smart - Adapts
                 </div>
               </div>
             </div>
@@ -711,10 +711,10 @@ export default function HowItWorks() {
             <div className="hw-tl">
               {[
                 { day: "Day 1",  event: "Profile created",    detail: "You answer 8 quick questions. Done." },
-                { day: "Day 1",  event: "AI plan generated",  detail: "Your 12-week program is ready instantly." },
+                { day: "Day 1",  event: "Your own plan generated",  detail: "Your 12-week program is ready instantly." },
                 { day: "Day 2",  event: "Gym matched",        detail: "Top 3 gyms near you, ranked by fit." },
                 { day: "Day 3",  event: "First workout",      detail: "Guided session with step-by-step instructions." },
-                { day: "Day 5",  event: "First check-in",     detail: "AI reviews your session logs and adjusts." },
+                { day: "Day 5",  event: "First check-in",     detail: "You can review your sessions and make adjustments" },
                 { day: "Day 7",  event: "7-day streak ",    detail: "Your first milestone. Many more coming." },
               ].map((item, i) => (
                 <div

@@ -1,4 +1,6 @@
 import React from "react";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // ─── THEME CONTEXT ───
@@ -35,6 +37,7 @@ import HowItWorks from "./pages/user/HowItWorks";
 import Contact from "./pages/user/Contact";
 
 import Chatbot from "./pages/user/ChatBot";
+import NotFound from "./pages/user/NotFound";
 
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerHome from "./pages/owner/OwnerHome";
@@ -89,13 +92,21 @@ function RoleLanding() {
 }
 
 function App() {
+
+    const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  
   return (
     <ThemeProvider>
       <Routes>
         {/* ─── PUBLIC ROUTES (with theme support) ─── */}
         <Route path="/about-us" element={<AboutUs />} />
-        <Route path="faqs" element={<UserFaq />} />
-        <Route path="reviews" element={<Reviews />} />
+        <Route path="/faqs" element={<UserFaq />} />
+        <Route path="/reviews" element={<Reviews />} />
         <Route path="/why-exersearch" element={<WhyExerSearch />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/contact" element={<Contact />} />
@@ -111,6 +122,7 @@ function App() {
 
         <Route path="meal-plan" element={<MealPlanGenerator />} />
         <Route path="/chatbot" element={<Chatbot />} />
+        <Route path="/404" element={<NotFound />} />
 
         {/* ─── USER ROUTES (UserLayout handles widget) ─── */}
         <Route path="/home/*" element={<UserLayout />}>

@@ -29,8 +29,8 @@ const PILLARS = [
   {
     num: "01",
     icon: Brain,
-    title: "AI That Actually Knows Fitness",
-    body: "Our AI doesn't just spit out generic plans. It understands your body, your goals, and your lifestyle — then builds something real.",
+    title: "Program that Actually Knows Fitness",
+    body: "Our machine doesn't just spit out generic plans. It understands your body, your goals, and your lifestyle — then builds something real.",
     tag: "Intelligence",
   },
   {
@@ -71,7 +71,7 @@ const PILLARS = [
 ];
 
 const COMPARISONS = [
-  { label: "Personalized AI plans",       us: true,  them: false },
+  { label: "Personalized plans",       us: true,  them: false },
   { label: "Verified gym listings",       us: true,  them: false },
   { label: "Integrated meal planning",    us: true,  them: false },
   { label: "Progress tracking",           us: true,  them: true  },
@@ -262,7 +262,7 @@ export default function WhyExerSearch() {
               <div className="wy-split__card wy-split__card--b">
                 <span className="wy-split__card-label">ExerSearch</span>
                 <p>Help you reach your goal faster</p>
-                <p>AI-matched to your needs</p>
+                <p>Plans match to your needs</p>
                 <p>Zero paid promotions</p>
               </div>
             </div>
@@ -348,7 +348,7 @@ export default function WhyExerSearch() {
               {activeTab === 0 ? (
                 <div className="wy-tab-panel">
                   {[
-                    { icon: Brain,           title: "Smart AI plans",         body: "Personalized workout and meal plans built around your goals." },
+                    { icon: Brain,           title: "Smart plans",         body: "Personalized workout and meal plans built around your goals." },
                     { icon: Map,             title: "Gym matching",           body: "Find gyms that fit your preferences, budget, and schedule." },
                     { icon: TrendingUp,      title: "Progress visibility",    body: "Track every session and watch your improvement over time." },
                     { icon: ShieldCheck,     title: "Verified content",       body: "Every gym listed meets our quality and accuracy standards." },

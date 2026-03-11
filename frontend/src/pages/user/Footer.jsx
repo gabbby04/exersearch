@@ -17,37 +17,38 @@ const COLS = [
   {
     heading: "Product",
     links: [
-      { to: "/gyms", label: "Find Gyms" },
-      { to: "/workouts", label: "Workout Plans" },
-      { to: "/nutrition", label: "Meal Planner" },
-      { to: "/tracker", label: "Progress Tracker" },
-      { to: "/ai-bot", label: "AI Assistant" },
+      { to: "/home/find-gyms", label: "Find Gyms" },
+      { to: "/home/workout", label: "Workout Plans" },
+      { to: "/home/meal-plan", label: "Meal Planner" },
+      { to: "/home/memberships", label: "Membership" },
+      { to: "/home/applyowner", label: "Gym Owner" },
     ],
   },
-  {
-    heading: "Resources",
-    links: [
-      { to: "/blog", label: "Blog" },
-      { to: "/guides", label: "Fitness Guides" },
-      { to: "/exercises", label: "Exercise Library" },
-      { to: "/faqs", label: "FAQs" },
-      { to: "/api", label: "API Docs" },
-    ],
-  },
+    {
+      heading: "Resources",
+      links: [
+        { to: "/404", label: "Blog" },
+        { to: "/404", label: "Fitness Guides" },
+        { to: "https://www.youtube.com/@Exersearch", label: "Exercise Library" }, 
+        { to: "/faqs", label: "FAQs" },
+        { to: "/404", label: "API Docs" },
+      ],
+    },
   {
     heading: "Company",
     links: [
-      { to: "/about", label: "About Us" },
-      { to: "/careers", label: "Careers" },
-      { to: "/press", label: "Press Kit" },
-      { to: "/partners", label: "Partner Gyms" },
+      { to: "/about-us", label: "About Us" },
+      { to: "/philosophy", label: "Our Philosophy" },
+      { to: "/how-it-works", label: "How it Works" },
+      { to: "/why-exersearch", label: "Why ExerSearch" },
       { to: "/contact", label: "Contact" },
     ],
   },
   {
     heading: "Legal",
     links: [
-      { to: "/terms", label: "Terms of Service" },
+      { to: "https://www.termsfeed.com/live/a3cfb6d1-dcf3-46ce-8b98-5f0820525d76", label: "Terms" }, 
+        { to: "/faqs", label: "FAQs" },
       { to: "/privacy", label: "Privacy Policy" },
       { to: "/cookies", label: "Cookie Policy" },
       { to: "/disclaimer", label: "Disclaimer" },
@@ -108,21 +109,19 @@ export default function Footer() {
 
   const appName = safeStr(settings?.app_name) || "ExerSearch";
   const logoSrc = toAbsUrl(settings?.user_logo_url) || logo;
-  const contactPhone = safeStr(settings?.contact_phone) || "+63 123 456 7890";
-  const contactEmail = safeStr(settings?.contact_email) || "hello@exersearch.com";
-  const contactAddress = safeStr(settings?.address) || "Metro Manila, Philippines";
+  const contactPhone = safeStr(settings?.contact_phone) || "+63 993 196 9111";
+  const contactEmail = safeStr(settings?.contact_email) || "exersearch5@gmail.com";
+  const contactAddress = safeStr(settings?.address) || "Pasig, Philippines";
 
-  const socials = useMemo(() => {
-    const items = [
-      { name: "Facebook", href: safeHref(settings?.facebook_url), icon: Facebook, color: "#1877F2" },
-      { name: "Instagram", href: safeHref(settings?.instagram_url), icon: Instagram, color: "#E4405F" },
-      { name: "Website", href: safeHref(settings?.website_url), icon: XIcon, color: "#000000" },
-      { name: "YouTube", href: safeHref(settings?.youtube_url), icon: Youtube, color: "#FF0000" },
-      { name: "Email", href: contactEmail ? `mailto:${contactEmail}` : "", icon: Mail, color: "#EA4335" },
-    ];
+const socials = [
+  { name: "Facebook", href: "https://www.facebook.com/exersearch", icon: Facebook, color: "#1877F2" },
+  { name: "Instagram", href: "https://www.instagram.com/exersearch?igsh=Z2ZqYXdyejVvY3lp", icon: Instagram, color: "#E4405F" },
+  { name: "X (Twitter)", href: "https://x.com/exer_online5", icon: XIcon, color: "#000000" },
+  { name: "YouTube", href: "https://www.youtube.com/@ExerSearch", icon: Youtube, color: "#FF0000" },
+  { name: "Email", href: "https://mail.google.com/mail/?view=cm&fs=1&to=exersearch5@gmail.com", icon: Mail, color: "#EA4335" }
+];
 
-    return items.filter((item) => safeStr(item.href));
-  }, [settings, contactEmail]);
+
 
   return (
     <footer className="lnd-foot">
@@ -190,8 +189,7 @@ export default function Footer() {
                   className="lnd-foot__soc"
                   aria-label={name}
                   style={{ "--social-color": color }}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...(name !== "Email" && { target: "_blank", rel: "noopener noreferrer" })} // ← Only add target="_blank" if NOT email
                 >
                   <Icon size={16} strokeWidth={2} />
                 </a>

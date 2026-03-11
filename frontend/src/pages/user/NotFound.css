@@ -1,0 +1,371 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,800;0,900;1,900&family=DM+Sans:wght@400;500&display=swap');
+
+/* ══════════════════════════════════════
+   404 PAGE — ExerSearch
+   Theme: Industrial gym chalk-board energy
+   Fully themed via --lnd-* vars
+══════════════════════════════════════ */
+
+.nf-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--lnd-bg-primary);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  position: relative;
+  padding: 7rem 2rem 4rem;
+  transition: background 0.3s ease;
+}
+
+/* ── Noise grain overlay ── */
+.nf-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+/* ── Orange ambient glow ── */
+.nf-glow {
+  position: absolute;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="dark"] .nf-glow {
+  background: radial-gradient(ellipse, rgba(255,90,22,0.12) 0%, transparent 65%);
+}
+
+[data-theme="light"] .nf-glow {
+  background: radial-gradient(ellipse, rgba(255,90,22,0.07) 0%, transparent 55%);
+}
+
+/* ── Grid lines background ── */
+.nf-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--lnd-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lnd-border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Light mode: border is too faint — boost with a stronger explicit color */
+[data-theme="light"] .nf-grid {
+  background-image:
+    linear-gradient(rgba(11,16,23,0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11,16,23,0.18) 1px, transparent 1px);
+}
+
+[data-theme="dark"] .nf-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+}
+
+/* ══════════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════════ */
+.nf-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 700px;
+  width: 100%;
+}
+
+/* ── Giant 404 ── */
+.nf-giant {
+  position: relative;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.nf-giant-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(9rem, 22vw, 18rem);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 3px var(--lnd-text-secondary);
+  position: relative;
+  display: block;
+  animation: nf-flicker 6s ease-in-out infinite;
+}
+
+[data-theme="light"] .nf-giant-text {
+  -webkit-text-stroke: 2px rgba(11,16,23,0.18);
+}
+
+[data-theme="dark"] .nf-giant-text {
+  -webkit-text-stroke: 2px rgba(255,255,255,0.15);
+}
+
+/* Orange fill layer via clip */
+.nf-giant-fill {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(9rem, 22vw, 18rem);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  color: transparent;
+  background: linear-gradient(135deg, #ff5a16 0%, #fc4a00 40%, #ab3200 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Clip to only show bottom half */
+  clip-path: inset(55% 0 0 0);
+  display: block;
+}
+
+@keyframes nf-flicker {
+  0%, 90%, 100% { opacity: 1; }
+  92%           { opacity: 0.85; }
+  94%           { opacity: 1; }
+  96%           { opacity: 0.9; }
+  98%           { opacity: 1; }
+}
+
+/* ── Divider bar with icon ── */
+.nf-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin: 1.5rem 0 2rem;
+}
+
+.nf-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--lnd-border);
+}
+
+.nf-divider-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ff5a16, #ab3200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(255,90,22,0.35);
+  animation: nf-spin-slow 8s linear infinite;
+}
+
+@keyframes nf-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Headline ── */
+.nf-headline {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--lnd-text-primary);
+  margin: 0 0 0.875rem;
+  line-height: 1.1;
+  transition: color 0.3s ease;
+}
+
+.nf-headline em {
+  font-style: italic;
+  color: #ff5a16;
+}
+
+/* ── Subtext ── */
+.nf-sub {
+  font-size: 0.95rem;
+  color: var(--lnd-text-tertiary);
+  line-height: 1.75;
+  max-width: 480px;
+  margin: 0 auto 2.5rem;
+  transition: color 0.3s ease;
+}
+
+
+
+/* ══════════════════════════════════════
+   ACTIONS
+══════════════════════════════════════ */
+.nf-actions {
+  display: flex;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Primary button */
+.nf-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.875rem 1.75rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff5a16, #fc4a00);
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 4px 20px rgba(255,90,22,0.30);
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nf-btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.nf-btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(255,90,22,0.42);
+}
+
+.nf-btn-primary:hover::before { opacity: 1; }
+.nf-btn-primary:active { transform: translateY(0); }
+
+/* Ghost button */
+.nf-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.875rem 1.75rem;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--lnd-text-secondary);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1.5px solid var(--lnd-border);
+  transition: border-color 0.25s ease, color 0.25s ease,
+              transform 0.25s cubic-bezier(0.22,1,0.36,1),
+              background 0.25s ease;
+}
+
+.nf-btn-ghost:hover {
+  border-color: rgba(255,90,22,0.4);
+  color: #ff5a16;
+  background: rgba(255,90,22,0.06);
+  transform: translateY(-2px);
+}
+
+/* ══════════════════════════════════════
+   FLOATING DUMBBELL ORNAMENTS
+══════════════════════════════════════ */
+.nf-ornaments {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.nf-orn {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.06;
+  animation: nf-float linear infinite;
+  user-select: none;
+  color: var(--lnd-text-primary);
+}
+
+.nf-orn:nth-child(1)  { left:  5%; top: 15%; font-size: 2rem;   animation-duration: 18s; animation-delay: 0s; }
+.nf-orn:nth-child(2)  { left: 88%; top: 22%; font-size: 1.2rem; animation-duration: 14s; animation-delay: -4s; }
+.nf-orn:nth-child(3)  { left: 12%; top: 70%; font-size: 2.5rem; animation-duration: 22s; animation-delay: -8s; }
+.nf-orn:nth-child(4)  { left: 78%; top: 65%; font-size: 1rem;   animation-duration: 16s; animation-delay: -2s; }
+.nf-orn:nth-child(5)  { left: 50%; top: 88%; font-size: 1.8rem; animation-duration: 20s; animation-delay: -6s; }
+.nf-orn:nth-child(6)  { left: 92%; top: 48%; font-size: 1.3rem; animation-duration: 25s; animation-delay: -10s; }
+.nf-orn:nth-child(7)  { left:  3%; top: 45%; font-size: 1.1rem; animation-duration: 19s; animation-delay: -3s; }
+.nf-orn:nth-child(8)  { left: 65%; top:  8%; font-size: 2.2rem; animation-duration: 23s; animation-delay: -7s; }
+
+@keyframes nf-float {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  33%  { transform: translateY(-18px) rotate(6deg); }
+  66%  { transform: translateY(8px) rotate(-4deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* ══════════════════════════════════════
+   PROGRESS BAR TOP — loading feel
+══════════════════════════════════════ */
+.nf-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff5a16, #fc4a00, #ff5a16);
+  background-size: 200% 100%;
+  animation: nf-progress-slide 2s linear infinite;
+  z-index: 100;
+  width: 100%;
+  opacity: 0.7;
+}
+
+@keyframes nf-progress-slide {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════════════
+   ENTRANCE ANIMATION
+══════════════════════════════════════ */
+.nf-giant       { animation: nf-enter 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+.nf-divider     { animation: nf-enter 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both; }
+.nf-headline    { animation: nf-enter 0.7s cubic-bezier(0.22,1,0.36,1) 0.22s both; }
+.nf-sub         { animation: nf-enter 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both; }
+.nf-stats       { animation: nf-enter 0.7s cubic-bezier(0.22,1,0.36,1) 0.38s both; }
+.nf-actions     { animation: nf-enter 0.7s cubic-bezier(0.22,1,0.36,1) 0.46s both; }
+
+@keyframes nf-enter {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 600px) {
+  .nf-page     { padding: 6rem 1.5rem 3rem; }
+  .nf-stats    { max-width: 100%; }
+  .nf-actions  { flex-direction: column; width: 100%; max-width: 320px; }
+  .nf-btn-primary,
+  .nf-btn-ghost { justify-content: center; }
+  .nf-giant-text,
+  .nf-giant-fill { letter-spacing: -0.04em; }
+}

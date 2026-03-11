@@ -675,23 +675,6 @@ function CTA() {
 ════════════════════════════════════════ */
 
 export default function Index() {
-  // ✅ HOOKS MUST BE INSIDE THE COMPONENT
-  const [theme, setTheme] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("es-theme") || "dark" : "dark"
-  );
-
-  const toggle = () => setTheme(prev => {
-    const next = prev === "dark" ? "light" : "dark";
-    localStorage.setItem("es-theme", next);
-    document.documentElement.setAttribute('data-theme', next);
-    return next;
-  });
-
-  // Set theme on mount AND when theme changes
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
   return (
     <div className="es">
       <div className="es-spot"/>

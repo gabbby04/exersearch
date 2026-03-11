@@ -7,7 +7,7 @@ export const ThemeProvider = ({ children }) => {
   // Check localStorage for saved theme, default to 'light'
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('exersearch-theme');
-    return saved === 'dark';
+    return saved ? saved === 'dark' : false;  // false = light by default
   });
 
   // Light mode colors
