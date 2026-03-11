@@ -1,4 +1,6 @@
 import React from "react";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // ─── THEME CONTEXT ───
@@ -90,6 +92,14 @@ function RoleLanding() {
 }
 
 function App() {
+
+    const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  
   return (
     <ThemeProvider>
       <Routes>
