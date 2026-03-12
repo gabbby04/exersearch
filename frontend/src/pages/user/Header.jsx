@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useTheme } from "./ThemeContext";
 import "./HeaderFooter.css";
-
+import HeaderUser from "./Header-user";
 import logoFull from "../../assets/exersearchlogo1.png";
-import logoMobile from "../../assets/exersearchlogo.png"; // ← change this filename later
+import logoMobile from "../../assets/exersearchlogo.png";
 
 const LEFT_LINKS = [
   { to: "/about-us", label: "About Us" },
@@ -19,9 +19,11 @@ const RIGHT_LINKS = [
   { to: "/philosophy", label: "Our Philosophy" },
 ];
 
-export default function LandingHeader() {
+export default function Header() {
   const { isDark } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -30,6 +32,9 @@ export default function LandingHeader() {
     };
   }, [menuOpen]);
 
+  if (token) {
+    return <HeaderUser />;
+  }
   return (
     <>
       <header className={`lnd-bar ${isDark ? "lnd-bar--dark" : "lnd-bar--light"}`}>
