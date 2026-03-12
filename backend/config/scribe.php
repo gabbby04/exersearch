@@ -139,8 +139,7 @@ INTRO,
         ],
     ],
 
-    'database_connections_to_transact' => [config('database.default')],
-
+'database_connections_to_transact' => [],
     'fractal' => [
         'serializer' => null,
     ],
