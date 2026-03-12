@@ -1,69 +1,60 @@
 /* src/utils/Widget.css */
+
 .stw-widget {
   position: fixed;
   bottom: 2rem;
-  right: 2rem;
+  left: 2rem;
   z-index: 9999;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  /* REMOVED: opacity: 0 and transform */
-}
-
-.stw-widget--show {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
 }
 
 .stw-trigger,
 .stw-theme {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: none;
-  background: var(--lnd-or, #ff5a16);
-  color: #fff;
+  border: 1.5px solid var(--lnd-border);
+  background: var(--lnd-bg-primary);
+  color: var(--lnd-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 16px var(--lnd-or-glow, rgba(255, 90, 22, 0.3));
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 14px var(--lnd-shadow);
 }
 
 .stw-trigger:hover {
-  background: var(--lnd-or-md, #fc4a00);
+  background: var(--lnd-bg-accent);
+  border-color: rgba(11, 16, 23, 0.2);
+  color: var(--lnd-text-primary);
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px var(--lnd-or-glow, rgba(255, 90, 22, 0.3));
+  box-shadow: 0 8px 20px var(--lnd-shadow);
 }
 
-.stw-trigger:active {
-  background: var(--lnd-or-dk, #ab3200);
-  transform: translateY(-1px);
-}
-
-.stw-theme {
-  background: var(--lnd-bg-tertiary, #f1f4f8);
-  color: var(--lnd-text-primary, #0d141b);
-  border: 1.5px solid var(--lnd-border, #e6ddd6);
-  box-shadow: 0 4px 12px var(--lnd-shadow, rgba(0, 0, 0, 0.1));
-}
-
-/* Theme button always visible (no expansion needed) */
-.stw-theme--always {
-  opacity: 1 !important;
-  transform: scale(1) translateY(0) !important;
+[data-theme="dark"] .stw-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .stw-theme:hover {
-  background: var(--lnd-or-dim, rgba(255, 90, 22, 0.12));
-  border-color: var(--lnd-or, #ff5a16);
-  color: var(--lnd-or, #ff5a16);
-  transform: scale(1.05);
+  background: var(--lnd-bg-accent);
+  border-color: rgba(11, 16, 23, 0.2);
+  color: var(--lnd-text-primary);
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px var(--lnd-shadow);
 }
 
-/* Mobile adjustments */
+[data-theme="dark"] .stw-theme:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stw-trigger:active,
+.stw-theme:active {
+  transform: scale(0.95);
+}
+
 @media (max-width: 768px) {
   .stw-widget {
     bottom: 1.5rem;
@@ -72,7 +63,7 @@
 
   .stw-trigger,
   .stw-theme {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
   }
 }

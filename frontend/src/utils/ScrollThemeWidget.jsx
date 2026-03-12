@@ -7,46 +7,29 @@ import './Widget.css';
 export default function ScrollThemeWidget() {
   const { isDark, toggleTheme } = useTheme();
   const [showScroll, setShowScroll] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
-  // Show scroll button when scrolled down 300px
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScroll(window.scrollY > 300);
-    };
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setShowScroll(window.scrollY > 300);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Scroll to top
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <div 
-      className={`stw-widget stw-widget--show ${expanded ? 'stw-widget--expanded' : ''}`} // ← REMOVED CONDITIONAL
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-    >
-      {/* Scroll to top button - only show when scrolled */}
+    <div className="stw-widget" data-theme={isDark ? 'dark' : 'light'}>
       {showScroll && (
-        <button 
+        <button
           className="stw-trigger"
           onClick={scrollToTop}
           aria-label="Scroll to top"
         >
-          <ArrowUp size={20} />
+          <ArrowUp size={18} />
         </button>
       )}
-
-      {/* Theme toggle - ALWAYS visible */}
       <button
-        className="stw-theme stw-theme--always"
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleTheme();
-        }}
+        className="stw-theme"
+        onClick={toggleTheme}
         aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       >
         {isDark ? <Sun size={18} /> : <Moon size={18} />}

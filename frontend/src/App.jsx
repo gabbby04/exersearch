@@ -100,9 +100,16 @@ function App() {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  
+   const showChatbot = 
+  !pathname.startsWith("/owner") && 
+  !pathname.startsWith("/admin") && 
+  !pathname.startsWith("/login") &&
+  !pathname.startsWith("/verify-email") &&
+  !pathname.startsWith("/onboarding") &&
+  !pathname.startsWith("/maintenance");
   return (
     <ThemeProvider>
+      {showChatbot && <Chatbot />}
       <Routes>
                 <Route path="/trial" element={<Trial />} />
 

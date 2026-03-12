@@ -181,7 +181,7 @@
   display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--fb); font-size: .82rem; font-weight: 600;
   text-decoration: none; border-radius: var(--r-sm);
-  cursor: none; white-space: nowrap;
+  cursor: pointer; white-space: nowrap;
   transition: all .2s var(--ease);
 }
 .btn-primary {
@@ -298,7 +298,7 @@
 .hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .hchip {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: .5rem 1.1rem; border-radius: 99px; cursor: none;
+  padding: .5rem 1.1rem; border-radius: 99px; cursor: pointer;
   font-family: var(--fb); font-size: .78rem; font-weight: 600;
   background: transparent; border: 1.5px solid var(--bd-2); color: var(--fg-3);
   transition: all .22s var(--ease);
@@ -512,7 +512,7 @@
   transition:
     opacity .55s var(--ease), transform .55s var(--ease),
     border-color .2s, box-shadow .25s;
-  cursor: none;
+    cursor: pointer;
 }
 .bc--in { opacity: 1; transform: none; }
 .bc:hover { border-color: var(--bd-3); box-shadow: 0 16px 40px var(--lnd-shadow); }
@@ -688,7 +688,7 @@
 .gmap-grid-h { left: 0; right: 0; height: 1px; }
 .gmap-grid-v { top: 0; bottom: 0; width: 1px; }
 
-.gmap-pin { position: absolute; cursor: none; z-index: 2; width: 14px; height: 14px; }
+.gmap-pin { position: absolute; cursor: pointer; z-index: 2; width: 14px; height: 14px; }
 .gmap-pin-dot {
   width: 12px; height: 12px; border-radius: 50%;
   background: var(--fg-3); border: 2px solid var(--bg-2);
@@ -789,7 +789,7 @@
 .mock-kl   { font-size: .46rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: #999; }
 .mock-line { height: 1px; background: #ebebeb; }
 .mock-sec  { font-family: var(--fm); font-size: .5rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: #bbb; }
-.mock-row  { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--r-xs); cursor: none; transition: background .15s; }
+.mock-row  { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--r-xs); cursor: pointer; transition: background .15s; }
 .mock-row:hover { background: #f5f5f5; }
 .mock-av   { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .52rem; font-weight: 700; color: #fff; flex-shrink: 0; }
 .mock-nm   { font-size: .68rem; font-weight: 600; color: #222; flex: 1; }
@@ -810,7 +810,7 @@
 .faq-h  { font-family: var(--fh); font-size: clamp(2.2rem,3.8vw,3.5rem); font-weight: 900; letter-spacing: -.035em; line-height: 1.04; color: var(--fg); margin-bottom: 1.25rem; }
 .faq-h em { color: var(--or); font-style: italic; }
 .faq-sub  { font-size: .86rem; line-height: 1.78; color: var(--fg-2); }
-.faq-link { color: var(--or); text-decoration: none; font-weight: 600; cursor: none; }
+.faq-link { color: var(--or); text-decoration: none; font-weight: 600; cursor: pointer; }
 .faq-link:hover { text-decoration: underline; }
 .faq-orb  { width: 80px; height: 80px; border-radius: 50%; background: var(--or); opacity: .12; margin-top: 2.5rem; }
 
@@ -818,7 +818,7 @@
 .faq-list.in { opacity: 1; transform: none; }
 .faq-item { border-bottom: 1px solid var(--bd); }
 .faq-item:first-child { border-top: 1px solid var(--bd); }
-.faq-btn  { width: 100%; background: none; border: none; padding: 1.5rem 0; display: flex; align-items: center; gap: 1.25rem; cursor: none; }
+.faq-btn  { width: 100%; background: none; border: none; padding: 1.5rem 0; display: flex; align-items: center; gap: 1.25rem; cursor: pointer; }
 .faq-num  { font-family: var(--fm); font-size: .56rem; font-weight: 500; color: var(--or); letter-spacing: .1em; width: 26px; flex-shrink: 0; }
 .faq-q    { font-size: .92rem; font-weight: 600; color: var(--fg-2); text-align: left; line-height: 1.4; flex: 1; transition: color .18s; }
 .faq-btn:hover .faq-q,
