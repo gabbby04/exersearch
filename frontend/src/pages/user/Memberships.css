@@ -1610,20 +1610,21 @@ body[data-theme="light"] .um-app .um-panel--sidebar:not(.is-collapsed) .um-sideC
   .um-dashboard.is-sidebar-collapsed {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "left"
       "center"
+      "left"
       "meters"
       "side";
-    min-height: auto;
   }
 
   .um-panel--left .um-panelFrame,
   .um-panel--center .um-centerShell,
   .um-panel--meters .um-metersShell,
   .um-panel--sidebar .um-sideShell {
-    min-height: auto;
+  min-height: unset !important;
     max-height: none;
     height: auto;
+      overflow: visible !important;
+
   }
 
   .um-centerShell {
@@ -2135,4 +2136,101 @@ body[data-theme="light"] .um-app .um-panel--sidebar:not(.is-collapsed) .um-sideC
   width: auto;
   object-fit: contain;
   display: block;
+}/* =========================================================
+   MOBILE CUT-OFF FIX
+========================================================= */
+@media (max-width: 860px) {
+  .um-dashboard,
+  .um-dashboard.is-sidebar-collapsed {
+    align-items: stretch;
+  }
+
+  .um-panel,
+  .um-panel--left,
+  .um-panel--center,
+  .um-panel--meters,
+  .um-panel--sidebar {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .um-panel--left .um-panelFrame,
+  .um-panel--center .um-centerShell,
+  .um-panel--meters .um-metersShell,
+  .um-panel--sidebar .um-sideShell {
+    min-height: unset !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .um-panelFrame,
+  .um-centerShell,
+  .um-metersShell,
+  .um-sideShell {
+    overflow: visible;
+  }
+
+  .um-panel--left .um-panelFrame {
+    padding: 0.9rem;
+  }
+
+  .um-statMatrix {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .um-statCard {
+    min-height: 84px;
+  }
+
+  .um-coreBox,
+  .um-coreRows,
+  .um-coreRow,
+  .um-coreBox__head {
+    min-width: 0;
+  }
+
+  .um-coreRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.22rem;
+  }
+
+  .um-coreValue,
+  .um-coreSub,
+  .um-panelSub,
+  .um-panelTitle {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 620px) {
+  .um-container {
+    padding: 0 0.75rem;
+  }
+
+  .um-panel--left .um-panelFrame,
+  .um-panel--center .um-centerShell,
+  .um-panel--meters .um-metersShell,
+  .um-panel--sidebar .um-sideShell {
+    min-height: unset !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .um-panel--left .um-panelFrame {
+    padding: 0.8rem;
+  }
+
+  .um-panelTitle {
+    font-size: 1.05rem;
+    line-height: 1.15;
+  }
+
+  .um-panelSub {
+    font-size: 0.76rem;
+  }
 }
