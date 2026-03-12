@@ -568,7 +568,36 @@ export default function OwnerApplication() {
   const regRef = useRef(null);
   const photoRef = useRef(null);
 
+  const cardTopRef = useRef(null);
+
+  const ownerInfoRef = useRef(null);
+  const contactRef = useRef(null);
+  const emailRef = useRef(null);
+  const businessNameRef = useRef(null);
+
+  const gymNameRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const pricingRef = useRef(null);
+
+  const addressRef = useRef(null);
+  const cityRef = useRef(null);
+  const mapSectionRef = useRef(null);
+
+  const businessRegRef = useRef(null);
+  const gymPhotosRef = useRef(null);
+
   const token = getTokenMaybe();
+
+  const scrollToRef = useCallback((ref) => {
+    const el = ref?.current;
+    if (!el) return;
+
+    const y = el.getBoundingClientRect().top + window.scrollY - 110;
+    window.scrollTo({
+      top: Math.max(0, y),
+      behavior: "smooth",
+    });
+  }, []);
 
   const set = (field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
@@ -696,6 +725,10 @@ export default function OwnerApplication() {
     };
   }, [token]);
 
+  useEffect(() => {
+    scrollToRef(cardTopRef);
+  }, [step, scrollToRef]);
+
   const maybeGeocodeAddressBeforeSubmit = async () => {
     const addressText = `${form.address || ""}${form.landmark ? `, ${form.landmark}` : ""}${
       form.city ? `, ${form.city}` : ""
@@ -739,74 +772,145 @@ export default function OwnerApplication() {
     }
   };
 
-  const validate = () => {
+  const validate = (shouldScroll = true) => {
     const e = {};
+    let firstErrorRef = null;
 
     if (step === 0) {
-      if (!String(form.fullName || "").trim()) e.fullName = "Full name is required.";
-      if (!String(form.email || "").trim()) e.email = "Email is required.";
-      else if (!isValidEmail(form.email)) e.email = "Please enter a valid email address.";
+      if (!String(form.fullName || "").trim()) {
+        e.fullName = "Full name is required.";
+        firstErrorRef ||= ownerInfoRef;
+      }
 
-      if (!String(form.contactNumber || "").trim()) e.contactNumber = "Contact number is required.";
-      else if (!isValidPHMobile(form.contactNumber))
+      if (!String(form.email || "").trim()) {
+        e.email = "Email is required.";
+        firstErrorRef ||= emailRef;
+      } else if (!isValidEmail(form.email)) {
+        e.email = "Please enter a valid email address.";
+        firstErrorRef ||= emailRef;
+      }
+
+      if (!String(form.contactNumber || "").trim()) {
+        e.contactNumber = "Contact number is required.";
+        firstErrorRef ||= contactRef;
+      } else if (!isValidPHMobile(form.contactNumber)) {
         e.contactNumber = "Use PH format (09XXXXXXXXX or +639XXXXXXXXX).";
+        firstErrorRef ||= contactRef;
+      }
 
-      if (!String(form.businessName || "").trim()) e.businessName = "Business name is required.";
-      else if (String(form.businessName).trim().length < 2) e.businessName = "Business name is too short.";
+      if (!String(form.businessName || "").trim()) {
+        e.businessName = "Business name is required.";
+        firstErrorRef ||= businessNameRef;
+      } else if (String(form.businessName).trim().length < 2) {
+        e.businessName = "Business name is too short.";
+        firstErrorRef ||= businessNameRef;
+      }
     }
 
     if (step === 1) {
-      if (!String(form.gymName || "").trim()) e.gymName = "Gym name is required.";
-      else if (String(form.gymName).trim().length < 2) e.gymName = "Gym name is too short.";
+      if (!String(form.gymName || "").trim()) {
+        e.gymName = "Gym name is required.";
+        firstErrorRef ||= gymNameRef;
+      } else if (String(form.gymName).trim().length < 2) {
+        e.gymName = "Gym name is too short.";
+        firstErrorRef ||= gymNameRef;
+      }
 
-      if (!String(form.description || "").trim()) e.description = "Description is required.";
-      else if (String(form.description).trim().length < 20)
+      if (!String(form.description || "").trim()) {
+        e.description = "Description is required.";
+        firstErrorRef ||= descriptionRef;
+      } else if (String(form.description).trim().length < 20) {
         e.description = "Add a bit more detail (at least 20 characters).";
+        firstErrorRef ||= descriptionRef;
+      }
 
-      if (!isNonNegNumberOrEmpty(form.dayPass)) e.dayPass = "Must be a non-negative number.";
-      if (!isNonNegNumberOrEmpty(form.monthly)) e.monthly = "Must be a non-negative number.";
-      if (!isNonNegNumberOrEmpty(form.quarterly)) e.quarterly = "Must be a non-negative number.";
+      if (!isNonNegNumberOrEmpty(form.dayPass)) {
+        e.dayPass = "Must be a non-negative number.";
+        firstErrorRef ||= pricingRef;
+      }
+      if (!isNonNegNumberOrEmpty(form.monthly)) {
+        e.monthly = "Must be a non-negative number.";
+        firstErrorRef ||= pricingRef;
+      }
+      if (!isNonNegNumberOrEmpty(form.quarterly)) {
+        e.quarterly = "Must be a non-negative number.";
+        firstErrorRef ||= pricingRef;
+      }
     }
 
     if (step === 2) {
-      if (!String(form.address || "").trim()) e.address = "Street address is required.";
-      if (!String(form.city || "").trim()) e.city = "City is required.";
+      if (!String(form.address || "").trim()) {
+        e.address = "Street address is required.";
+        firstErrorRef ||= addressRef;
+      }
+
+      if (!String(form.city || "").trim()) {
+        e.city = "City is required.";
+        firstErrorRef ||= cityRef;
+      }
+
       const la = Number(form.lat);
       const ln = Number(form.lng);
-      if (!Number.isFinite(la) || !Number.isFinite(ln)) e.map = "Please drop a pin on the map.";
-      else if (!pointInPolygon(la, ln, PASIG_POLYGON_LATLNG)) e.map = "Pin must be inside Pasig City.";
+      if (!Number.isFinite(la) || !Number.isFinite(ln)) {
+        e.map = "Please drop a pin on the map.";
+        firstErrorRef ||= mapSectionRef;
+      } else if (!pointInPolygon(la, ln, PASIG_POLYGON_LATLNG)) {
+        e.map = "Pin must be inside Pasig City.";
+        firstErrorRef ||= mapSectionRef;
+      }
     }
 
     if (step === 3) {
-      if (!form.businessReg && !serverApp?.document_path) e.businessReg = "Business registration upload is required.";
+      if (!form.businessReg && !serverApp?.document_path) {
+        e.businessReg = "Business registration upload is required.";
+        firstErrorRef ||= businessRegRef;
+      }
 
       if (form.businessReg) {
         const okTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
         if (!okTypes.includes(form.businessReg.type)) {
           e.businessReg = "Invalid file type. Upload PDF/JPG/PNG/WebP.";
+          firstErrorRef ||= businessRegRef;
         }
         const max = 10 * 1024 * 1024;
-        if (form.businessReg.size > max) e.businessReg = "File too large (max 10MB).";
+        if (form.businessReg.size > max) {
+          e.businessReg = "File too large (max 10MB).";
+          firstErrorRef ||= businessRegRef;
+        }
       }
 
       const totalPhotos = (form.gymPhotos?.length || 0) + (form.galleryUrls?.length || 0);
-      if (totalPhotos < 2) e.gymPhotos = "Minimum 2 photos required.";
+      if (totalPhotos < 2) {
+        e.gymPhotos = "Minimum 2 photos required.";
+        firstErrorRef ||= gymPhotosRef;
+      }
 
       for (const f of form.gymPhotos || []) {
         if (!String(f.type || "").startsWith("image/")) {
           e.gymPhotos = "Gym photos must be images only.";
+          firstErrorRef ||= gymPhotosRef;
           break;
         }
         const maxImg = 8 * 1024 * 1024;
         if (f.size > maxImg) {
           e.gymPhotos = "One of the images is too large (max 8MB each).";
+          firstErrorRef ||= gymPhotosRef;
           break;
         }
       }
     }
 
     setErrors(e);
-    return Object.keys(e).length === 0;
+
+    const ok = Object.keys(e).length === 0;
+
+    if (!ok && shouldScroll) {
+      setTimeout(() => {
+        scrollToRef(firstErrorRef);
+      }, 50);
+    }
+
+    return ok;
   };
 
   const next = () => {
@@ -1028,10 +1132,12 @@ export default function OwnerApplication() {
 
         <main className="oa-main">
           <div className="oa-card" key={step}>
+            <div ref={cardTopRef} />
+
             {step === 0 && (
               <div className="oa-fields">
                 <div className="oa-grid-2">
-                  <div className={`oa-field ${errors.fullName ? "has-error" : ""}`}>
+                  <div ref={ownerInfoRef} className={`oa-field ${errors.fullName ? "has-error" : ""}`}>
                     <label>
                       Full Name <span className="req">*</span>
                     </label>
@@ -1044,7 +1150,7 @@ export default function OwnerApplication() {
                     {errors.fullName && <p className="oa-err-msg">{errors.fullName}</p>}
                   </div>
 
-                  <div className={`oa-field ${errors.contactNumber ? "has-error" : ""}`}>
+                  <div ref={contactRef} className={`oa-field ${errors.contactNumber ? "has-error" : ""}`}>
                     <label>
                       Contact Number <span className="req">*</span>
                     </label>
@@ -1058,7 +1164,7 @@ export default function OwnerApplication() {
                   </div>
                 </div>
 
-                <div className={`oa-field ${errors.email ? "has-error" : ""}`}>
+                <div ref={emailRef} className={`oa-field ${errors.email ? "has-error" : ""}`}>
                   <label>
                     Email Address <span className="req">*</span>
                   </label>
@@ -1071,7 +1177,7 @@ export default function OwnerApplication() {
                   {errors.email && <p className="oa-err-msg">{errors.email}</p>}
                 </div>
 
-                <div className={`oa-field ${errors.businessName ? "has-error" : ""}`}>
+                <div ref={businessNameRef} className={`oa-field ${errors.businessName ? "has-error" : ""}`}>
                   <label>
                     Business Name <span className="req">*</span>
                   </label>
@@ -1088,7 +1194,7 @@ export default function OwnerApplication() {
 
             {step === 1 && (
               <div className="oa-fields">
-                <div className={`oa-field ${errors.gymName ? "has-error" : ""}`}>
+                <div ref={gymNameRef} className={`oa-field ${errors.gymName ? "has-error" : ""}`}>
                   <label>
                     Gym Name <span className="req">*</span>
                   </label>
@@ -1101,7 +1207,7 @@ export default function OwnerApplication() {
                   {errors.gymName && <p className="oa-err-msg">{errors.gymName}</p>}
                 </div>
 
-                <div className={`oa-field ${errors.description ? "has-error" : ""}`}>
+                <div ref={descriptionRef} className={`oa-field ${errors.description ? "has-error" : ""}`}>
                   <label>
                     Description <span className="req">*</span>
                   </label>
@@ -1149,7 +1255,7 @@ export default function OwnerApplication() {
                   )}
                 </div>
 
-                <div className="oa-field">
+                <div ref={pricingRef} className="oa-field">
                   <label>
                     Pricing <span className="label-hint">in Philippine Peso (₱)</span>
                   </label>
@@ -1215,7 +1321,7 @@ export default function OwnerApplication() {
 
             {step === 2 && (
               <div className="oa-fields">
-                <div className={`oa-field ${errors.address ? "has-error" : ""}`}>
+                <div ref={addressRef} className={`oa-field ${errors.address ? "has-error" : ""}`}>
                   <label>
                     Street Address <span className="req">*</span>
                   </label>
@@ -1229,7 +1335,7 @@ export default function OwnerApplication() {
                 </div>
 
                 <div className="oa-grid-2">
-                  <div className={`oa-field ${errors.city ? "has-error" : ""}`}>
+                  <div ref={cityRef} className={`oa-field ${errors.city ? "has-error" : ""}`}>
                     <label>
                       City <span className="req">*</span>
                     </label>
@@ -1253,7 +1359,7 @@ export default function OwnerApplication() {
                   </div>
                 </div>
 
-                <div className={`oa-field ${errors.map ? "has-error" : ""}`}>
+                <div ref={mapSectionRef} className={`oa-field ${errors.map ? "has-error" : ""}`}>
                   <label>
                     Search & Pin Location{" "}
                     <span className="label-hint">Click inside the red border — map click auto-fills the address</span>
@@ -1276,7 +1382,7 @@ export default function OwnerApplication() {
 
             {step === 3 && (
               <div className="oa-fields">
-                <div className={`oa-field ${errors.businessReg ? "has-error" : ""}`}>
+                <div ref={businessRegRef} className={`oa-field ${errors.businessReg ? "has-error" : ""}`}>
                   <label>
                     Business Registration <span className="req">*</span>
                   </label>
@@ -1316,7 +1422,7 @@ export default function OwnerApplication() {
                   {errors.businessReg && <p className="oa-err-msg">{errors.businessReg}</p>}
                 </div>
 
-                <div className={`oa-field ${errors.gymPhotos ? "has-error" : ""}`}>
+                <div ref={gymPhotosRef} className={`oa-field ${errors.gymPhotos ? "has-error" : ""}`}>
                   <label>
                     Gym Photos <span className="req">*</span>
                     <span className="label-hint">

@@ -17,10 +17,8 @@ Welcome to the ExerSearch API documentation.
 This documentation provides complete details on how to interact with the ExerSearch backend, including authentication, gym listings, recommendations, and admin endpoints.
 INTRO,
 
-    // Use Railway/production APP_URL automatically
     'base_url' => env('APP_URL', 'https://api.exersearch.online'),
 
-    // Only document api/v1 routes
     'routes' => [
         [
             'match' => [
@@ -30,11 +28,7 @@ INTRO,
         ],
     ],
 
-    /**
-     * Use external Stoplight Elements UI.
-     * /docs renders the UI, and it fetches the OpenAPI spec from /docs.openapi
-     */
-    'type' => 'external_laravel',
+    'type' => 'laravel',
 
     'theme' => 'elements',
 
@@ -47,14 +41,6 @@ INTRO,
         'docs_url' => '/docs',
         'assets_directory' => null,
         'middleware' => [],
-    ],
-
-    'external' => [
-        'html_attributes' => [
-            'apiDescriptionUrl' => '/docs.openapi',
-            'router' => 'hash',
-            'layout' => 'responsive',
-        ],
     ],
 
     'try_it_out' => [
@@ -139,7 +125,8 @@ INTRO,
         ],
     ],
 
-'database_connections_to_transact' => [],
+    'database_connections_to_transact' => [],
+
     'fractal' => [
         'serializer' => null,
     ],

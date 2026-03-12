@@ -107,11 +107,7 @@ function LeftPanel({ view }) {
       <div className="auth-left__photo" />
       <div className="auth-left__content">
         <div className="auth-logo">
-          <img
-            className="auth-logo__wordmark"
-src={logoWordmark}
-            alt="ExerSearch"
-          />
+          <img className="auth-logo__wordmark" src={logoWordmark} alt="ExerSearch" />
         </div>
 
         <div className="auth-left__copy">
@@ -358,8 +354,29 @@ function SignupView({ onSwitch, onSubmit, loading, error, googleNode }) {
   const [showPw, setShowPw] = useState(false);
   const [showCfm, setShowCfm] = useState(false);
 
+  const passwordRules = useMemo(() => {
+    const pw = f.password || "";
+    return {
+      minLength: pw.length >= 8,
+      uppercase: /[A-Z]/.test(pw),
+      lowercase: /[a-z]/.test(pw),
+      number: /\d/.test(pw),
+      special: /[^A-Za-z0-9]/.test(pw),
+    };
+  }, [f.password]);
+
+  const passwordValid = Object.values(passwordRules).every(Boolean);
   const match = f.password && f.confirm && f.password === f.confirm;
   const noMatch = f.confirm && f.password !== f.confirm;
+
+  function Rule({ ok, text }) {
+    return (
+      <div className={`auth-pw-rule${ok ? " ok" : ""}`}>
+        <span className="auth-pw-rule__icon">{ok ? "✓" : "•"}</span>
+        <span>{text}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-view--signup">
@@ -390,7 +407,7 @@ function SignupView({ onSwitch, onSubmit, loading, error, googleNode }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (!match) return;
+          if (!passwordValid || !match) return;
           onSubmit(f);
         }}
       >
@@ -446,7 +463,9 @@ function SignupView({ onSwitch, onSubmit, loading, error, googleNode }) {
           <label className="auth-field__label">Password</label>
           <div className="auth-field__row">
             <input
-              className="auth-input"
+              className={`auth-input${
+                f.password ? (passwordValid ? " auth-input--ok" : " auth-input--bad") : ""
+              }`}
               type={showPw ? "text" : "password"}
               placeholder="Create a strong password"
               value={f.password}
@@ -460,9 +479,18 @@ function SignupView({ onSwitch, onSubmit, loading, error, googleNode }) {
               className="auth-eye"
               onClick={() => setShowPw((v) => !v)}
               disabled={loading}
+              aria-label={showPw ? "Hide password" : "Show password"}
             >
               {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
+          </div>
+
+          <div className="auth-pw-checklist">
+            <Rule ok={passwordRules.minLength} text="At least 8 characters" />
+            <Rule ok={passwordRules.uppercase} text="At least 1 uppercase letter" />
+            <Rule ok={passwordRules.lowercase} text="At least 1 lowercase letter" />
+            <Rule ok={passwordRules.number} text="At least 1 number" />
+            <Rule ok={passwordRules.special} text="At least 1 special character" />
           </div>
         </div>
 
@@ -497,13 +525,20 @@ function SignupView({ onSwitch, onSubmit, loading, error, googleNode }) {
               className="auth-eye"
               onClick={() => setShowCfm((v) => !v)}
               disabled={loading}
+              aria-label={showCfm ? "Hide password" : "Show password"}
             >
               {showCfm ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
+
+          {noMatch && <div className="auth-inline-err">Passwords do not match.</div>}
         </div>
 
-        <button className="auth-submit" type="submit" disabled={loading || !match}>
+        <button
+          className="auth-submit"
+          type="submit"
+          disabled={loading || !passwordValid || !match}
+        >
           {loading ? (
             <>
               <span className="auth-spinner" />
@@ -608,7 +643,7 @@ export default function Auth() {
     return mode === "signup" ? "signup" : "login";
   };
 
-  const [view, setView] = useState(getViewFromQuery()); // login | signup | role | verify
+  const [view, setView] = useState(getViewFromQuery());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -747,10 +782,31 @@ export default function Auth() {
         data.lastName || ""
       ).trim()}`.trim();
 
+      const password = String(data.password || "");
+
+      const strongEnough =
+        password.length >= 8 &&
+        /[A-Z]/.test(password) &&
+        /[a-z]/.test(password) &&
+        /\d/.test(password) &&
+        /[^A-Za-z0-9]/.test(password);
+
+      if (!strongEnough) {
+        setError(
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+        );
+        return;
+      }
+
+      if (password !== data.confirm) {
+        setError("Passwords do not match.");
+        return;
+      }
+
       const res = await api.post("/auth/register", {
         name,
         email: data.email,
-        password: data.password,
+        password,
         password_confirmation: data.confirm,
       });
 
@@ -805,7 +861,6 @@ export default function Auth() {
       setAuthToken(null);
       go("login");
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const googleNode = (
