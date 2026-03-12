@@ -2429,7 +2429,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: amenities
+        example: owner_applications
         type: string
         enumValues:
           - equipments
@@ -2463,7 +2463,7 @@ endpoints:
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      type: amenities
+      type: owner_applications
       kind: b
     fileParameters:
       file: null
@@ -3861,7 +3861,7 @@ endpoints:
         name: workout_level
         description: ''
         required: false
-        example: beginner
+        example: advanced
         type: string
         enumValues:
           - beginner
@@ -3894,7 +3894,7 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       goal: build_muscle
-      workout_level: beginner
+      workout_level: advanced
       workout_days: 7
       session_minutes: 22
     fileParameters: []
@@ -4090,7 +4090,7 @@ endpoints:
         name: start_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4120,7 +4120,7 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       template_id: 16
-      start_date: '2026-03-12T22:11:21'
+      start_date: '2026-03-12T23:19:53'
       gym_id: 16
       status: ngzmiyvdljnikhwa
     fileParameters: []
@@ -4171,7 +4171,7 @@ endpoints:
         name: start_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4200,7 +4200,7 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      start_date: '2026-03-12T22:11:21'
+      start_date: '2026-03-12T23:19:53'
       gym_id: 16
       status: ngzmiyvdljnikhwa
     fileParameters: []
@@ -4439,7 +4439,7 @@ endpoints:
         name: is_rest
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -4452,7 +4452,7 @@ endpoints:
       weekday: 1
       weekday_name: zmiyvd
       focus: l
-      is_rest: true
+      is_rest: false
     fileParameters: []
     responses: []
     responseFields: []
@@ -4556,7 +4556,7 @@ endpoints:
         name: is_rest
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -4567,7 +4567,7 @@ endpoints:
         name: completed_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4590,8 +4590,8 @@ endpoints:
       weekday: 5
       weekday_name: gzmiyv
       focus: d
-      is_rest: false
-      completed_at: '2026-03-12T22:11:21'
+      is_rest: true
+      completed_at: '2026-03-12T23:19:53'
       mark_completed: false
     fileParameters: []
     responses: []
@@ -5071,7 +5071,7 @@ endpoints:
         name: is_modified
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -5096,7 +5096,7 @@ endpoints:
       reps_max: 16
       rest_seconds: 17
       order_index: 15
-      is_modified: true
+      is_modified: false
       original_exercise_id: 16
     fileParameters: []
     responses: []
@@ -5522,7 +5522,7 @@ endpoints:
         name: has_personal_trainers
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -5544,7 +5544,7 @@ endpoints:
         name: is_24_hours
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -5579,9 +5579,9 @@ endpoints:
       main_image_url: 'http://www.bailey.biz/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html'
       gallery_urls:
         - architecto
-      has_personal_trainers: true
+      has_personal_trainers: false
       has_classes: false
-      is_24_hours: false
+      is_24_hours: true
       is_airconditioned: false
     fileParameters: []
     responses: []
@@ -5830,7 +5830,7 @@ endpoints:
         name: has_personal_trainers
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -5841,7 +5841,7 @@ endpoints:
         name: has_classes
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -5863,7 +5863,7 @@ endpoints:
         name: is_airconditioned
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -5887,10 +5887,10 @@ endpoints:
       main_image_url: 'http://www.bailey.biz/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html'
       gallery_urls:
         - architecto
-      has_personal_trainers: false
-      has_classes: true
+      has_personal_trainers: true
+      has_classes: false
       is_24_hours: false
-      is_airconditioned: false
+      is_airconditioned: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -7282,7 +7282,7 @@ endpoints:
         name: start_date
         description: 'Must be a valid date.'
         required: true
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -7322,7 +7322,7 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      start_date: '2026-03-12T22:11:21'
+      start_date: '2026-03-12T23:19:53'
       end_date: '2052-04-04'
       plan_type: 'n'
       notes: g
@@ -7384,7 +7384,7 @@ endpoints:
         name: start_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -7395,7 +7395,7 @@ endpoints:
         name: end_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -7425,8 +7425,8 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       status: architecto
-      start_date: '2026-03-12T22:11:21'
-      end_date: '2026-03-12T22:11:21'
+      start_date: '2026-03-12T23:19:53'
+      end_date: '2026-03-12T23:19:53'
       plan_type: 'n'
       notes: g
     fileParameters: []
@@ -7759,7 +7759,7 @@ endpoints:
         name: 'rows[].start_date'
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -7770,7 +7770,7 @@ endpoints:
         name: 'rows[].end_date'
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -7804,8 +7804,8 @@ endpoints:
           full_name: b
           contact_number: 'n'
           email: ashly64@example.com
-          start_date: '2026-03-12T22:11:21'
-          end_date: '2026-03-12T22:11:21'
+          start_date: '2026-03-12T23:19:53'
+          end_date: '2026-03-12T23:19:53'
           plan_type: v
           notes: architecto
     fileParameters: []
@@ -7951,7 +7951,7 @@ endpoints:
         name: start_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -7994,7 +7994,7 @@ endpoints:
       full_name: b
       contact_number: 'n'
       email: ashly64@example.com
-      start_date: '2026-03-12T22:11:21'
+      start_date: '2026-03-12T23:19:53'
       end_date: '2052-04-04'
       plan_type: 'n'
       notes: architecto
@@ -8165,7 +8165,7 @@ endpoints:
         name: start_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -8176,7 +8176,7 @@ endpoints:
         name: end_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-03-12T22:11:21'
+        example: '2026-03-12T23:19:53'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -8208,8 +8208,8 @@ endpoints:
       full_name: b
       contact_number: 'n'
       email: ashly64@example.com
-      start_date: '2026-03-12T22:11:21'
-      end_date: '2026-03-12T22:11:21'
+      start_date: '2026-03-12T23:19:53'
+      end_date: '2026-03-12T23:19:53'
       plan_type: v
       notes: architecto
     fileParameters: []
@@ -8638,7 +8638,7 @@ endpoints:
         name: audience.saved
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -8649,7 +8649,7 @@ endpoints:
         name: audience.members
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -8659,8 +8659,8 @@ endpoints:
       title: b
       body: 'n'
       audience:
-        saved: true
-        members: false
+        saved: false
+        members: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -8783,7 +8783,7 @@ endpoints:
         name: is_active
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -8794,7 +8794,7 @@ endpoints:
       answer: architecto
       category: 'n'
       display_order: 16
-      is_active: false
+      is_active: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -8886,7 +8886,7 @@ endpoints:
         name: is_active
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -8897,7 +8897,7 @@ endpoints:
       answer: architecto
       category: 'n'
       display_order: 16
-      is_active: true
+      is_active: false
     fileParameters: []
     responses: []
     responseFields: []
@@ -9389,7 +9389,7 @@ endpoints:
         name: owner_application_enabled
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -9424,7 +9424,7 @@ endpoints:
       website_url: 'http://www.bailey.biz/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html'
       maintenance_mode: true
       signup_enabled: true
-      owner_application_enabled: false
+      owner_application_enabled: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -9551,7 +9551,7 @@ endpoints:
         name: permission_level
         description: ''
         required: false
-        example: full
+        example: readonly
         type: string
         enumValues:
           - full
@@ -9573,7 +9573,7 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       name: b
-      permission_level: full
+      permission_level: readonly
       notes: architecto
     fileParameters: []
     responses: []
@@ -10850,7 +10850,7 @@ endpoints:
         name: category
         description: 'EquipmentController.php (store + update).'
         required: false
-        example: machine
+        example: cardio
         type: string
         enumValues:
           - machine
@@ -10865,7 +10865,7 @@ endpoints:
         name: difficulty
         description: ''
         required: false
-        example: Advanced
+        example: Intermediate
         type: string
         enumValues:
           - Beginner
@@ -10899,8 +10899,8 @@ endpoints:
     cleanBodyParameters:
       name: b
       description: 'Eius et animi quos velit et.'
-      category: machine
-      difficulty: Advanced
+      category: cardio
+      difficulty: Intermediate
       image_url: 'http://www.bailey.biz/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html'
       target_muscle_group: i
     fileParameters: []
@@ -10988,7 +10988,7 @@ endpoints:
         name: difficulty
         description: ''
         required: false
-        example: Advanced
+        example: Intermediate
         type: string
         enumValues:
           - Beginner
@@ -11023,7 +11023,7 @@ endpoints:
       name: b
       description: 'Eius et animi quos velit et.'
       category: free_weight
-      difficulty: Advanced
+      difficulty: Intermediate
       image_url: 'http://www.bailey.biz/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html'
       target_muscle_group: i
     fileParameters: []
@@ -11959,7 +11959,7 @@ endpoints:
         name: force
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -11970,7 +11970,7 @@ endpoints:
         name: upgrade_user_to_owner
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -11978,8 +11978,8 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       owner_id: 16
-      force: true
-      upgrade_user_to_owner: false
+      force: false
+      upgrade_user_to_owner: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -12552,7 +12552,7 @@ endpoints:
         name: difficulty
         description: ''
         required: false
-        example: advanced
+        example: beginner
         type: string
         enumValues:
           - beginner
@@ -12623,7 +12623,7 @@ endpoints:
       secondary_muscles:
         - g
       equipment: z
-      difficulty: advanced
+      difficulty: beginner
       instructions:
         - m
       external_source: i
@@ -12723,7 +12723,7 @@ endpoints:
         name: difficulty
         description: ''
         required: false
-        example: advanced
+        example: intermediate
         type: string
         enumValues:
           - beginner
@@ -12794,7 +12794,7 @@ endpoints:
       secondary_muscles:
         - g
       equipment: z
-      difficulty: advanced
+      difficulty: intermediate
       instructions:
         - m
       external_source: i
@@ -12907,7 +12907,7 @@ endpoints:
         name: level
         description: ''
         required: false
-        example: intermediate
+        example: advanced
         type: string
         enumValues:
           - beginner
@@ -12954,7 +12954,7 @@ endpoints:
         name: split_type
         description: ''
         required: false
-        example: upper_lower
+        example: ppl
         type: string
         enumValues:
           - full_body
@@ -12989,11 +12989,11 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       goal: strength
-      level: intermediate
+      level: advanced
       days_per_week: 7
       session_minutes_min: 22
       session_minutes_max: 7
-      split_type: upper_lower
+      split_type: ppl
       duration_weeks: 4
       notes: architecto
     fileParameters: []
@@ -13074,7 +13074,7 @@ endpoints:
         name: goal
         description: ''
         required: true
-        example: strength
+        example: lose_fat
         type: string
         enumValues:
           - lose_fat
@@ -13089,7 +13089,7 @@ endpoints:
         name: level
         description: ''
         required: true
-        example: intermediate
+        example: advanced
         type: string
         enumValues:
           - beginner
@@ -13136,7 +13136,7 @@ endpoints:
         name: split_type
         description: ''
         required: true
-        example: ppl
+        example: upper_lower
         type: string
         enumValues:
           - full_body
@@ -13170,12 +13170,12 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      goal: strength
-      level: intermediate
+      goal: lose_fat
+      level: advanced
       days_per_week: 7
       session_minutes_min: 22
       session_minutes_max: 7
-      split_type: ppl
+      split_type: upper_lower
       duration_weeks: 4
       notes: architecto
     fileParameters: []
