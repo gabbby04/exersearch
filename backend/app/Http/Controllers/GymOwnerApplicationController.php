@@ -377,16 +377,29 @@ class GymOwnerApplicationController extends Controller
         }
 
         if ($mailTo) {
-            DB::afterCommit(function () use ($mailTo, $mailName, $mailGym) {
-                try {
-                    Mail::to($mailTo)->send(new OwnerApplicationApproved(
-                        name: $mailName,
-                        gymName: $mailGym
-                    ));
-                } catch (\Throwable $e) {
-                    Log::warning('Approval email failed: ' . $e->getMessage());
-                }
-            });
+            try {
+                Log::info('Sending owner approval email', [
+                    'to' => $mailTo,
+                    'name' => $mailName,
+                    'gym' => $mailGym,
+                    'mailer' => config('mail.default'),
+                ]);
+
+                Mail::to($mailTo)->send(new OwnerApplicationApproved(
+                    name: $mailName,
+                    gymName: $mailGym
+                ));
+
+                Log::info('Owner approval email sent', [
+                    'to' => $mailTo,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Approval email failed', [
+                    'to' => $mailTo,
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
         }
 
         return response()->json([
@@ -433,12 +446,27 @@ class GymOwnerApplicationController extends Controller
 
         if ($mailTo) {
             try {
+                Log::info('Sending owner rejection email', [
+                    'to' => $mailTo,
+                    'name' => $mailName,
+                    'reason' => $reason,
+                    'mailer' => config('mail.default'),
+                ]);
+
                 Mail::to($mailTo)->send(new OwnerApplicationRejected(
                     name: $mailName,
                     reason: $reason
                 ));
+
+                Log::info('Owner rejection email sent', [
+                    'to' => $mailTo,
+                ]);
             } catch (\Throwable $e) {
-                Log::warning('Rejection email failed: ' . $e->getMessage());
+                Log::error('Rejection email failed', [
+                    'to' => $mailTo,
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
         }
 
