@@ -10,9 +10,6 @@ use App\Models\Gym;
 
 class ChatController extends Controller
 {
-    /**
-     * Send chat message
-     */
     public function sendMessage(Request $request)
     {
         $key = 'chat:' . ($request->user() ? $request->user()->id : $request->ip());
@@ -159,11 +156,11 @@ class ChatController extends Controller
         $prompt .= "EXERSEARCH PLATFORM:\n";
         $prompt .= "- Total Gyms: {$gymCount}+ verified partner gyms\n";
         $prompt .= "- Cost: 100% FREE FOREVER - no hidden fees, no premium tiers\n";
-        $prompt .= "- Features: Gym finder, AI workout plans, meal planner, macro tracker, progress tracking\n\n";
+        $prompt .= "- Features: Gym finder, Personalized workout plans, meal planner, macro tracker, progress tracking\n\n";
 
         $prompt .= "AVAILABLE FEATURES:\n";
         $prompt .= "1. GYM FINDER: Browse {$gymCount}+ verified gyms with real photos, honest reviews, transparent pricing\n";
-        $prompt .= "2. WORKOUT PLANNER: AI-generated personalized workout plans based on goals and experience\n";
+        $prompt .= "2. WORKOUT PLANNER: Personalized workout plans based on goals and experience\n";
         $prompt .= "3. MEAL PLANNER: Custom meal plans with macro tracking and Filipino recipes\n";
         $prompt .= "4. NUTRITION TRACKER: Track calories, protein, carbs, fats with searchable food database\n";
         $prompt .= "5. PROGRESS TRACKING: Log workouts, track weight, monitor improvements\n\n";
@@ -172,12 +169,14 @@ class ChatController extends Controller
         $prompt .= "- Friendly, motivating, and encouraging\n";
         $prompt .= "- Use Filipino context (pesos ₱, local areas, Filipino fitness culture)\n";
         $prompt .= "- Be honest and realistic - no false promises\n";
+        $prompt .= "- Format your responses properly so it's easily readable\n";
+        $prompt .= "- If the response is consisting of a list, present it in a listed way\n";
         $prompt .= "- Keep responses concise (2-4 sentences) unless details are requested\n";
         $prompt .= "- Use emojis sparingly for motivation (💪, 🔥, ⚡)\n\n";
 
         $prompt .= "WHEN USERS ASK ABOUT:\n";
         $prompt .= "- Gyms: Mention our {$gymCount}+ verified gyms and suggest browsing the Gym Finder\n";
-        $prompt .= "- Workouts: Offer to help create a plan or direct them to our AI Workout Planner\n";
+        $prompt .= "- Workouts: Offer to help create a plan or direct them to our Workout Planner\n";
         $prompt .= "- Nutrition: Reference our Meal Planner and macro tracking features\n";
         $prompt .= "- Pricing: Emphasize that EVERYTHING is 100% free, no credit card needed\n\n";
 

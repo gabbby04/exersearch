@@ -7,7 +7,7 @@ import ScrollThemeWidget from "../../utils/ScrollThemeWidget";
 import { Home, ArrowRight, Dumbbell, Search, RotateCcw } from "lucide-react";
 import "./NotFound.css";
 
-const ORNAMENTS = ["🏋️", "💪", "🔥", "⚡", "🎯", "🏆", "💥", "⚙️"];
+    
 
 export default function NotFound() {
   const { isDark } = useTheme();
@@ -25,13 +25,6 @@ export default function NotFound() {
 
         {/* Orange ambient glow */}
         <div className="nf-glow" />
-
-        {/* Floating fitness ornaments */}
-        <div className="nf-ornaments">
-          {ORNAMENTS.map((o, i) => (
-            <span key={i} className="nf-orn">{o}</span>
-          ))}
-        </div>
 
         {/* Main content */}
         <div className="nf-inner">
