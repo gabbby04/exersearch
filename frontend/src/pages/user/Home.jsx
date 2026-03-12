@@ -178,6 +178,13 @@ function activityColor(ev) {
   return "#64748b";
 }
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 0 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 function membershipCountFromUser(u) {
   if (!u) return 0;
 
@@ -1137,7 +1144,7 @@ export default function Home() {
       <section className="uhv-hero">
         <div className="uhv-hero__inner">
           <div className="uhv-hero__left">
-            <p className="uhv-hero__greet">Good morning, {userName} 👋</p>
+            <p className="uhv-hero__greet">{getGreeting()}, {userName} <Dumbbell size={14} style={{ color: 'var(--red)', verticalAlign: 'middle' }} /></p>
             <h1 className="uhv-hero__h1">
               Find Your
               <br />

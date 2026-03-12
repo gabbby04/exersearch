@@ -109,9 +109,10 @@ export default function WorkoutWeek() {
   const [equipmentOptions, setEquipmentOptions] = useState([]);
   const [preferredEquipmentIds, setPreferredEquipmentIds] = useState([]);
 
-  const [showLanding, setShowLanding] = useState(true);
+  const [showLanding, setShowLanding] = useState(!loadLastPlanId());
+  const [contentReady, setContentReady] = useState(!!loadLastPlanId());
   const [landingAction, setLandingAction] = useState(null);
-  const [contentReady, setContentReady] = useState(false);
+
   const [transitioningToContent, setTransitioningToContent] = useState(false);
 
   const mountRef = useRef(null);
@@ -916,13 +917,7 @@ export default function WorkoutWeek() {
                 </section>
 
                 <footer className="ww-footer">
-                  <button
-                    className="ww-footer-btn"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    type="button"
-                  >
-                    Exersearch
-                  </button>
+      
                 </footer>
               </div>
             </>
