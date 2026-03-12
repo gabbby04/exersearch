@@ -79,6 +79,7 @@ import AdminMacroPresets from "./pages/admin/AdminMacroPresets";
 import AdminMeals from "./pages/admin/AdminMeals";
 
 import { getUserRole } from "./utils/auth";
+import Trial from "./trial";
 
 import "leaflet/dist/leaflet.css";
 
@@ -103,6 +104,8 @@ function App() {
   return (
     <ThemeProvider>
       <Routes>
+                <Route path="/trial" element={<Trial />} />
+
         {/* ─── PUBLIC ROUTES (with theme support) ─── */}
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/faqs" element={<UserFaq />} />

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Memberships.css";
 import exersearchLogo from "../../assets/exersearchlogo.png";
-
 import {
   CheckCircle2,
   Clock,
@@ -17,7 +16,9 @@ import {
   History,
 } from "lucide-react";
 import Swal from "sweetalert2";
+import { gsap } from "gsap";
 import { getMyMemberships } from "../../utils/membershipApi";
+import { api } from "../../utils/apiClient";
 
 function safeArr(v) {
   if (Array.isArray(v)) return v;
@@ -120,9 +121,15 @@ export default function Memberships() {
   const [countdown, setCountdown] = useState(null);
   const [sideTab, setSideTab] = useState("memberships");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [publicSettings, setPublicSettings] = useState(null);
 
   const tickRef = useRef(null);
 
+  const logoObjectRef = useRef(null);
+  const logoPulseTweenRef = useRef(null);
+  const logoSpinningRef = useRef(false);
+
+  const depthLayers = useMemo(() => Array.from({ length: 14 }, (_, i) => i), []);
   const memberships = useMemo(() => safeArr(rows), [rows]);
 
   const activeList = useMemo(() => {
@@ -161,6 +168,110 @@ export default function Memberships() {
   const historyCount = historyList.length;
   const totalCount = pageMeta.total;
 
+  const resolveMediaUrl = (url, fallback = "") => {
+    const raw = String(url || "").trim();
+    if (!raw) return fallback;
+
+    if (/^https?:\/\//i.test(raw)) return raw;
+
+    const apiBase = String(import.meta.env.VITE_API_BASE_URL || "").trim();
+    const origin = apiBase
+      ? apiBase.replace(/\/api\/v\d+\/?$/i, "").replace(/\/$/, "")
+      : window.location.origin;
+
+    return `${origin}/${raw.replace(/^\/+/, "")}`;
+  };
+
+  const brandLogoSrc = resolveMediaUrl(
+    publicSettings?.user_logo_url || publicSettings?.logo_url,
+    exersearchLogo
+  );
+
+  const letterLogoSrc = resolveMediaUrl(publicSettings?.letter_logo, "/letterlogo.png");
+
+  const fetchPublicSettings = async () => {
+    try {
+      const res = await api.get("/settings/public");
+      setPublicSettings(res?.data?.data || null);
+    } catch (e) {
+      console.error("Failed to load public app settings:", e);
+      setPublicSettings(null);
+    }
+  };
+
+  const startLogoPulse = () => {
+    if (!logoObjectRef.current) return;
+
+    if (logoPulseTweenRef.current) {
+      logoPulseTweenRef.current.kill();
+      logoPulseTweenRef.current = null;
+    }
+
+    gsap.set(logoObjectRef.current, {
+      rotateX: -10,
+      rotateY: 0,
+      scale: 1,
+      transformPerspective: 1600,
+      transformOrigin: "50% 50%",
+      force3D: true,
+    });
+
+    logoPulseTweenRef.current = gsap.to(logoObjectRef.current, {
+      scale: 1.035,
+      duration: 1.2,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+      force3D: true,
+    });
+  };
+
+  const stopLogoPulse = () => {
+    if (logoPulseTweenRef.current) {
+      logoPulseTweenRef.current.kill();
+      logoPulseTweenRef.current = null;
+    }
+  };
+
+  const triggerLogoSpin = () => {
+    if (!logoObjectRef.current || logoSpinningRef.current) return;
+
+    logoSpinningRef.current = true;
+    stopLogoPulse();
+
+    gsap.killTweensOf(logoObjectRef.current);
+
+    gsap.fromTo(
+      logoObjectRef.current,
+      {
+        rotateX: -10,
+        rotateY: 0,
+        scale: 1,
+        transformPerspective: 1600,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      },
+      {
+        rotateX: -10,
+        rotateY: 360,
+        scale: 1,
+        duration: 0.9,
+        ease: "power2.inOut",
+        force3D: true,
+        onComplete: () => {
+          gsap.set(logoObjectRef.current, {
+            rotateX: -10,
+            rotateY: 0,
+            scale: 1,
+            force3D: true,
+          });
+          logoSpinningRef.current = false;
+          startLogoPulse();
+        },
+      }
+    );
+  };
+
   const fetchMemberships = async (p = 1) => {
     setLoading(true);
 
@@ -196,6 +307,15 @@ export default function Memberships() {
 
   useEffect(() => {
     fetchMemberships(1);
+    fetchPublicSettings();
+  }, []);
+
+  useEffect(() => {
+    startLogoPulse();
+
+    return () => {
+      stopLogoPulse();
+    };
   }, []);
 
   useEffect(() => {
@@ -318,8 +438,6 @@ export default function Memberships() {
               </div>
             </div>
           </div>
-
-
         </div>
       </div>
     );
@@ -332,14 +450,86 @@ export default function Memberships() {
       <div className="um-panel um-panel--center">
         <div className="um-centerShell">
           <div className="um-centerTop">
-            <div className="um-centerBrand">EXERSEARCH</div>
+            <div className="um-centerBrand">
+              <img
+                src={brandLogoSrc}
+                alt={publicSettings?.app_name || "Exersearch"}
+                className="um-brandLogo"
+              />
+            </div>
             <div className="um-centerMode">Membership Control</div>
           </div>
 
           <div className="um-centerBody">
             <div className="um-centerLogoWrap">
               <div className="um-centerGlow" />
-              <div className="um-centerLogo">E</div>
+              <div
+                className="um-logo3dScene"
+                onClick={triggerLogoSpin}
+                title="Click logo"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    triggerLogoSpin();
+                  }
+                }}
+              >
+                <div ref={logoObjectRef} className="um-logo3dObject">
+                  <div className="um-logo3dGround" />
+
+                  {depthLayers.map((i) => {
+                    const z = -(depthLayers.length - i) * 1.4;
+                    const x = i * 0.28;
+                    const y = i * 0.12;
+                    const shade = 0.22 + i * 0.035;
+
+                    return (
+                      <React.Fragment key={i}>
+                        <img
+                          src={letterLogoSrc}
+                          alt=""
+                          aria-hidden="true"
+                          className="um-logo3dLayer"
+                          style={{
+                            transform: `translateZ(${z}px) translateX(${x}px) translateY(${y}px)`,
+                            opacity: 0.9,
+                            filter: `brightness(${shade})`,
+                          }}
+                        />
+
+                        <img
+                          src={letterLogoSrc}
+                          alt=""
+                          aria-hidden="true"
+                          className="um-logo3dLayer"
+                          style={{
+                            transform: `rotateY(180deg) translateZ(${z}px) translateX(${-x}px) translateY(${y}px)`,
+                            opacity: 0.25,
+                            filter: `brightness(${shade - 0.08})`,
+                          }}
+                        />
+                      </React.Fragment>
+                    );
+                  })}
+
+                  <img
+                    src={letterLogoSrc}
+                    alt="Exersearch letter logo"
+                    className="um-logo3dLayer um-logo3dLayer--front"
+                    style={{ transform: "translateZ(10px)" }}
+                  />
+
+                  <img
+                    src={letterLogoSrc}
+                    alt=""
+                    aria-hidden="true"
+                    className="um-logo3dLayer um-logo3dLayer--back"
+                    style={{ transform: "rotateY(180deg) translateZ(10px)" }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -520,115 +710,115 @@ export default function Memberships() {
 
   const renderSidebarPanel = () => {
     return (
-<div className={`um-panel um-panel--sidebar ${sidebarCollapsed ? "is-collapsed" : ""}`}>
-  <button
-    type="button"
-    className="um-sideCollapseBtn"
-    onClick={() => setSidebarCollapsed((v) => !v)}
-    title={sidebarCollapsed ? "Expand panel" : "Collapse panel"}
-    aria-label={sidebarCollapsed ? "Expand panel" : "Collapse panel"}
-    aria-expanded={!sidebarCollapsed}
-  >
-    <ChevronRight
-      size={18}
-      style={{
-        transform: sidebarCollapsed ? "rotate(0deg)" : "rotate(180deg)",
-        transition: "transform 0.2s ease",
-      }}
-    />
-  </button>
+      <div className={`um-panel um-panel--sidebar ${sidebarCollapsed ? "is-collapsed" : ""}`}>
+        <button
+          type="button"
+          className="um-sideCollapseBtn"
+          onClick={() => setSidebarCollapsed((v) => !v)}
+          title={sidebarCollapsed ? "Expand panel" : "Collapse panel"}
+          aria-label={sidebarCollapsed ? "Expand panel" : "Collapse panel"}
+          aria-expanded={!sidebarCollapsed}
+        >
+          <ChevronRight
+            size={18}
+            style={{
+              transform: sidebarCollapsed ? "rotate(0deg)" : "rotate(180deg)",
+              transition: "transform 0.2s ease",
+            }}
+          />
+        </button>
 
-  <div className="um-sideShell">
-    {!sidebarCollapsed && (
-      <>
-        <div className="um-sideTabs">
-          <button
-            type="button"
-            className={`um-sideTab ${sideTab === "memberships" ? "is-active" : ""}`}
-            onClick={() => setSideTab("memberships")}
-          >
-            Memberships
-          </button>
+        <div className="um-sideShell">
+          {!sidebarCollapsed && (
+            <>
+              <div className="um-sideTabs">
+                <button
+                  type="button"
+                  className={`um-sideTab ${sideTab === "memberships" ? "is-active" : ""}`}
+                  onClick={() => setSideTab("memberships")}
+                >
+                  Memberships
+                </button>
 
-          <button
-            type="button"
-            className={`um-sideTab ${sideTab === "history" ? "is-active" : ""}`}
-            onClick={() => setSideTab("history")}
-          >
-            History
-          </button>
-        </div>
+                <button
+                  type="button"
+                  className={`um-sideTab ${sideTab === "history" ? "is-active" : ""}`}
+                  onClick={() => setSideTab("history")}
+                >
+                  History
+                </button>
+              </div>
 
-        <div className="um-sideHeader">
-          <div>
-            <div className="um-sideHeader__title">
-              {sideTab === "memberships" ? "Membership Panel" : "History Panel"}
-            </div>
-            <div className="um-sideHeader__sub">
-              {sideTab === "memberships"
-                ? "Select an active membership to control the main display."
-                : "Inspect your previous records and past memberships."}
-            </div>
-          </div>
+              <div className="um-sideHeader">
+                <div>
+                  <div className="um-sideHeader__title">
+                    {sideTab === "memberships" ? "Membership Panel" : "History Panel"}
+                  </div>
+                  <div className="um-sideHeader__sub">
+                    {sideTab === "memberships"
+                      ? "Select an active membership to control the main display."
+                      : "Inspect your previous records and past memberships."}
+                  </div>
+                </div>
 
-          <button
-            className="um-btn um-btn--mini"
-            onClick={() => fetchMemberships(pageMeta.cur)}
-            disabled={loading}
-          >
-            <RefreshCw size={14} /> Refresh
-          </button>
-        </div>
+                <button
+                  className="um-btn um-btn--mini"
+                  onClick={() => fetchMemberships(pageMeta.cur)}
+                  disabled={loading}
+                >
+                  <RefreshCw size={14} /> Refresh
+                </button>
+              </div>
 
-        <div className="um-sideContent">
-          {loading ? (
-            <div className="um-skel um-skel--side">
-              <div className="um-skel__bar" />
-              <div className="um-skel__bar" />
-              <div className="um-skel__bar" />
-            </div>
-          ) : sideItems.length ? (
-            sideItems.map(renderSidebarItem)
-          ) : (
-            renderSidebarPlaceholder(sideTab)
+              <div className="um-sideContent">
+                {loading ? (
+                  <div className="um-skel um-skel--side">
+                    <div className="um-skel__bar" />
+                    <div className="um-skel__bar" />
+                    <div className="um-skel__bar" />
+                  </div>
+                ) : sideItems.length ? (
+                  sideItems.map(renderSidebarItem)
+                ) : (
+                  renderSidebarPlaceholder(sideTab)
+                )}
+              </div>
+
+              <div className="um-sideFooter">
+                <div className="um-pageInfo">
+                  Page <strong>{pageMeta.cur}</strong> of <strong>{pageMeta.last}</strong>
+                </div>
+
+                <div className="um-sidePager">
+                  <button
+                    className="um-btn um-btn--mini"
+                    disabled={pageMeta.cur <= 1 || loading}
+                    onClick={() => {
+                      const np = pageMeta.cur - 1;
+                      setPage(np);
+                      fetchMemberships(np);
+                    }}
+                  >
+                    Prev
+                  </button>
+
+                  <button
+                    className="um-btn um-btn--mini"
+                    disabled={pageMeta.cur >= pageMeta.last || loading}
+                    onClick={() => {
+                      const np = pageMeta.cur + 1;
+                      setPage(np);
+                      fetchMemberships(np);
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
-
-        <div className="um-sideFooter">
-          <div className="um-pageInfo">
-            Page <strong>{pageMeta.cur}</strong> of <strong>{pageMeta.last}</strong>
-          </div>
-
-          <div className="um-sidePager">
-            <button
-              className="um-btn um-btn--mini"
-              disabled={pageMeta.cur <= 1 || loading}
-              onClick={() => {
-                const np = pageMeta.cur - 1;
-                setPage(np);
-                fetchMemberships(np);
-              }}
-            >
-              Prev
-            </button>
-
-            <button
-              className="um-btn um-btn--mini"
-              disabled={pageMeta.cur >= pageMeta.last || loading}
-              onClick={() => {
-                const np = pageMeta.cur + 1;
-                setPage(np);
-                fetchMemberships(np);
-              }}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-</div>
+      </div>
     );
   };
 
