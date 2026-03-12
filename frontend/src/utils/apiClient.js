@@ -14,6 +14,7 @@ function authHeaders() {
 }
 
 let handlingMaintenance = false;
+let shownAdminMaintenanceNotice = false;
 
 export const api = axios.create({
   baseURL: `${RAW_API_BASE}/api/v1`,
@@ -43,29 +44,55 @@ api.interceptors.response.use(
     if (isMaintenance && !handlingMaintenance) {
       handlingMaintenance = true;
 
-      const role = localStorage.getItem(ROLE_KEY);
-      const isAdmin = role === "admin" || role === "superadmin";
+      try {
+        const token = localStorage.getItem(TOKEN_KEY);
+        const role = localStorage.getItem(ROLE_KEY);
+        const path = window.location.pathname;
 
-      if (!isAdmin) {
-        if (window.location.pathname !== "/maintenance") {
+        const isAdmin = role === "admin" || role === "superadmin";
+        const isAuthPage =
+          path.startsWith("/login") ||
+          path.startsWith("/register") ||
+          path.startsWith("/forgot-password");
+        const isMaintenancePage = path.startsWith("/maintenance");
+
+        // Not logged in: do nothing annoying
+        if (!token) {
+          return Promise.reject(error);
+        }
+
+        // Logged-in admin/superadmin: stay in app, no redirect
+        // Show notice only once, and never on auth/maintenance pages
+        if (isAdmin) {
+          if (
+            !shownAdminMaintenanceNotice &&
+            !isAuthPage &&
+            !isMaintenancePage
+          ) {
+            shownAdminMaintenanceNotice = true;
+
+            await Swal.fire({
+              title: "Maintenance Mode",
+              text: "Maintenance is enabled. Users/owners are blocked.",
+              icon: "warning",
+              confirmButtonText: "OK",
+            });
+          }
+
+          return Promise.reject(error);
+        }
+
+        // Non-admin logged-in users go to maintenance page
+        if (!isMaintenancePage) {
           window.location.replace("/maintenance");
         }
+
         return Promise.reject(error);
+      } finally {
+        handlingMaintenance = false;
       }
-
-      await Swal.fire({
-        title: "Maintenance Mode",
-        text: "Maintenance is enabled. Users/owners are blocked.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-      });
-
-      handlingMaintenance = false;
-      return Promise.reject(error);
     }
 
     return Promise.reject(error);
   }
-);  
+);

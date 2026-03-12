@@ -75,22 +75,29 @@ export default function AdminLayout() {
 
         if (role !== "admin" && role !== "superadmin") {
           localStorage.removeItem("token");
+          localStorage.removeItem("role");
           navigate("/login", { replace: true });
           return;
         }
 
         if (!alive) return;
+
         setMe(user);
+        localStorage.setItem("role", role);
         setReady(true);
       } catch (e) {
-        if (e?.response?.status === 503) {
-          navigate("/maintenance", { replace: true });
+        const status = e?.response?.status;
+
+        if (status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          if (!alive) return;
+          navigate("/login", { replace: true });
           return;
         }
 
-        localStorage.removeItem("token");
         if (!alive) return;
-        navigate("/login", { replace: true });
+        setReady(true);
       }
     }
 
@@ -118,6 +125,7 @@ export default function AdminLayout() {
     if (p.startsWith("/admin/users")) return "Users";
     if (p.startsWith("/admin/calendar")) return "Calendar";
     if (p.startsWith("/admin/docs")) return "Documentation";
+    if (p.startsWith("/admin/settings")) return "App Settings";
     return "Dashboard";
   })();
 

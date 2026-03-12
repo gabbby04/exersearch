@@ -1,17 +1,51 @@
-// ✅ WHOLE FILE: src/pages/Maintenance.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Maintenance.css";
 
 export default function Maintenance() {
+  const navigate = useNavigate();
+
+  const clearAuth = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("auth_user");
+    localStorage.removeItem("auth");
+    sessionStorage.clear();
+  };
+
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
+  const handleLogin = () => {
+    clearAuth();
+    navigate("/login");
+  };
+
+  const handleHome = () => {
+    clearAuth();
+    navigate("/");
+  };
+
   return (
     <div className="mx-page">
       <div className="mx-wrap">
-        {/* Top mini nav */}
         <div className="mx-topRow">
-          <Link to="/" className="mx-link">
+          <button
+            type="button"
+            className="mx-link"
+            onClick={handleHome}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          >
             ← Back to Home
-          </Link>
+          </button>
 
           <div className="mx-pills">
             <span className="mx-pill">Service Unavailable</span>
@@ -19,10 +53,8 @@ export default function Maintenance() {
           </div>
         </div>
 
-        {/* Card */}
         <div className="mx-panel">
           <div className="mx-panelTop">
-            {/* ✅ BIG Animated gears */}
             <div className="mx-anim" aria-hidden="true">
               <span className="mx-gear mx-gearOne mx-spinOne" />
               <span className="mx-gear mx-gearTwo mx-spinTwo" />
@@ -39,19 +71,28 @@ export default function Maintenance() {
 
               <div className="mx-actions mx-actionsTop">
                 <button
+                  type="button"
                   className="mx-btn mx-btnSecondary"
-                  onClick={() => window.location.reload()}
+                  onClick={handleRetry}
                 >
                   Retry
                 </button>
 
-                <Link to="/" className="mx-btn mx-btnPrimary mx-linkBtn">
+                <button
+                  type="button"
+                  className="mx-btn mx-btnPrimary"
+                  onClick={handleHome}
+                >
                   Go to Home
-                </Link>
+                </button>
 
-                <Link to="/login" className="mx-btn mx-btnSecondary mx-linkBtn">
-                  Login
-                </Link>
+                <button
+                  type="button"
+                  className="mx-btn mx-btnSecondary"
+                  onClick={handleLogin}
+                >
+                  Login with another account
+                </button>
               </div>
 
               <div className="mx-note">
