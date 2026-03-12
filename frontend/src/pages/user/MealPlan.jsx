@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { gsap } from "gsap";
 import "./MealPlan.css";
 import "./../owner/OwnerGymsPage.scss";
-import { api } from "../../utils/apiClient";
 import {
   Utensils,
   ShoppingCart,
@@ -26,6 +25,12 @@ import {
   Clock,
   UtensilsCrossed,
 } from "lucide-react";
+
+import {
+  getMealPlannerBootstrap,
+  generateMealPlan,
+} from "../../utils/mealPlannerApi";
+import { buildPlannerDefaults } from "../../utils/mealPlannerMapper";
 
 const DIETARY = [
   { id: "none", label: "No Restrictions" },
@@ -303,10 +308,22 @@ function DayView({ dayData, targets }) {
   const adherence = dayData.adherence || {};
   const breakdown = dayData.macro_breakdown || {};
 
-  const budgetPct = Math.min(150, Math.round((totals.cost / targets.budget) * 100));
-  const calPct = Math.min(150, Math.round((totals.calories / targets.calories) * 100));
-  const proteinPct = Math.min(150, Math.round((totals.protein / targets.protein) * 100));
-  const carbsPct = Math.min(150, Math.round((totals.carbs / targets.carbs) * 100));
+  const budgetPct = Math.min(
+    150,
+    Math.round((totals.cost / Math.max(targets.budget || 1, 1)) * 100)
+  );
+  const calPct = Math.min(
+    150,
+    Math.round((totals.calories / Math.max(targets.calories || 1, 1)) * 100)
+  );
+  const proteinPct = Math.min(
+    150,
+    Math.round((totals.protein / Math.max(targets.protein || 1, 1)) * 100)
+  );
+  const carbsPct = Math.min(
+    150,
+    Math.round((totals.carbs / Math.max(targets.carbs || 1, 1)) * 100)
+  );
 
   return (
     <div className="mp-day">
@@ -610,6 +627,10 @@ export default function MealPlanGenerator() {
   const [presets, setPresets] = useState([]);
   const [loadingPresets, setLoadingPresets] = useState(true);
 
+  const [plannerProfile, setPlannerProfile] = useState(null);
+  const [plannerPreference, setPlannerPreference] = useState(null);
+  const [plannerReady, setPlannerReady] = useState(false);
+
   const [plan, setPlan] = useState(null);
   const [activeDay, setActiveDay] = useState(0);
   const [form, setForm] = useState({
@@ -663,19 +684,51 @@ export default function MealPlanGenerator() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [statsRes, presetsRes] = await Promise.all([
-          api.get("/meals/stats"),
-          api.get("/macro-presets"),
-        ]);
-        if (statsRes.data.success) setMealStats(statsRes.data.data);
-        if (presetsRes.data.success) setPresets(presetsRes.data.data);
-      } catch {
-        setError("Could not connect to database.");
+        const data = await getMealPlannerBootstrap();
+
+        if (data.stats?.success) {
+          setMealStats(data.stats.data);
+        }
+
+        const presetRows = data.presets?.data || [];
+        if (data.presets?.success) {
+          setPresets(presetRows);
+        }
+
+        const resolvedProfile = data.profile?.user_profile || null;
+        const resolvedPreference = data.preference?.data || null;
+
+        setPlannerProfile(resolvedProfile);
+        setPlannerPreference(resolvedPreference);
+
+        const defaults = buildPlannerDefaults({
+          profileResponse: data.profile,
+          preferenceResponse: data.preference,
+          presets: presetRows,
+        });
+
+        setForm((prev) => ({
+          ...prev,
+          ...defaults,
+        }));
+
+        setSingleForm((prev) => ({
+          ...prev,
+          budget: Math.max(50, Math.round((defaults.budget || 300) / 2)),
+          calories: Math.max(300, Math.round((defaults.calories || 2000) / 4)),
+          dietary: defaults.dietary || "none",
+          preset_id: defaults.preset_id ?? null,
+        }));
+
+        setPlannerReady(true);
+      } catch (err) {
+        setError(err.message || "Could not load your meal planner data.");
       } finally {
         setLoadingMeals(false);
         setLoadingPresets(false);
       }
     };
+
     load();
   }, []);
 
@@ -710,6 +763,7 @@ export default function MealPlanGenerator() {
   async function handleGenerate() {
     setLoading(true);
     setError(null);
+
     try {
       const body = {
         days: form.days,
@@ -718,14 +772,20 @@ export default function MealPlanGenerator() {
         meal_types: ["breakfast", "lunch", "dinner", "snack"],
         diet_tags: form.dietary === "none" ? [] : [form.dietary],
       };
+
       if (form.preset_id) body.preset_id = form.preset_id;
-      const res = await api.post("/meal-plan/generate", body);
-      if (!res.data.success) throw new Error(res.data.message || "Generation failed");
-      setPlan(res.data.data);
+
+      const data = await generateMealPlan(body);
+
+      if (!data.success) {
+        throw new Error(data.message || "Generation failed");
+      }
+
+      setPlan(data.data);
       setActiveDay(0);
       setStep("result");
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to generate.");
+      setError(err.message || "Failed to generate.");
     } finally {
       setLoading(false);
     }
@@ -734,6 +794,7 @@ export default function MealPlanGenerator() {
   async function handleGenerateSingle() {
     setLoading(true);
     setError(null);
+
     try {
       const body = {
         days: 1,
@@ -742,17 +803,22 @@ export default function MealPlanGenerator() {
         meal_types: [singleForm.meal_type],
         diet_tags: singleForm.dietary === "none" ? [] : [singleForm.dietary],
       };
+
       if (singleForm.preset_id) body.preset_id = singleForm.preset_id;
 
-      const res = await api.post("/meal-plan/generate", body);
-      if (!res.data.success) throw new Error(res.data.message || "Generation failed");
+      const data = await generateMealPlan(body);
 
-      const meals = res.data.data?.days?.[0]?.meals;
+      if (!data.success) {
+        throw new Error(data.message || "Generation failed");
+      }
+
+      const meals = data.data?.days?.[0]?.meals;
       if (!meals?.length) throw new Error("No meal returned.");
+
       setSingleMeal(meals[0]);
       setStep("single-result");
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to generate meal.");
+      setError(err.message || "Failed to generate meal.");
     } finally {
       setLoading(false);
     }
@@ -1128,6 +1194,36 @@ export default function MealPlanGenerator() {
     });
   };
 
+  const SavedProfileBanner = () => {
+    if (!plannerReady) return null;
+
+    const goal = plannerPreference?.goal || "Not set";
+    const activity = plannerPreference?.activity_level || "Not set";
+    const budget = plannerPreference?.food_budget || plannerPreference?.budget || form.budget;
+    const diet =
+      Array.isArray(plannerPreference?.dietary_restrictions) &&
+      plannerPreference.dietary_restrictions.length
+        ? plannerPreference.dietary_restrictions.join(", ")
+        : "None";
+
+    return (
+      <div className="mp-tips-banner" style={{ marginBottom: "1rem" }}>
+        <div className="mp-tips-banner__icon">
+          <Target size={14} />
+        </div>
+        <div className="mp-tips-banner__content">
+          <p className="mp-tips-banner__title">Using your saved profile and preferences</p>
+          <ul className="mp-tips-banner__list">
+            <li>Goal: {goal}</li>
+            <li>Activity Level: {activity}</li>
+            <li>Saved Food Budget: ₱{budget}</li>
+            <li>Dietary Restrictions: {diet}</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
   const PageHeader = () => (
     <div className="mp-page-header">
       <div className="mp-page-header__inner">
@@ -1149,10 +1245,10 @@ export default function MealPlanGenerator() {
         {!loadingMeals && mealStats && (
           <div className="mp-db-strip">
             {[
-              { label: "Breakfast", val: mealStats.by_type.breakfast },
-              { label: "Lunch", val: mealStats.by_type.lunch },
-              { label: "Dinner", val: mealStats.by_type.dinner },
-              { label: "Snacks", val: mealStats.by_type.snack },
+              { label: "Breakfast", val: mealStats.by_type?.breakfast || 0 },
+              { label: "Lunch", val: mealStats.by_type?.lunch || 0 },
+              { label: "Dinner", val: mealStats.by_type?.dinner || 0 },
+              { label: "Snacks", val: mealStats.by_type?.snack || 0 },
             ].map(({ label, val }) => (
               <div key={label} className="mp-db-strip__item">
                 <span className="mp-db-strip__val">{val}</span>
@@ -1280,6 +1376,8 @@ export default function MealPlanGenerator() {
         <div className="mp-app">
           <PageHeader />
           <div className="mp-form-body">
+            <SavedProfileBanner />
+
             <div className="mp-card">
               <div className="mp-card__head">
                 <div className="mp-card__head-left">
@@ -1522,6 +1620,8 @@ export default function MealPlanGenerator() {
       <div className="mp-app">
         <PageHeader />
         <div className="mp-form-body">
+          <SavedProfileBanner />
+
           <div className="mp-card">
             <div className="mp-card__head">
               <div className="mp-card__head-left">
