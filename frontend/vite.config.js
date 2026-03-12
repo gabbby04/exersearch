@@ -13,9 +13,9 @@ export default defineConfig({
     ],
     proxy: {
       "/api": {
-        target: "https://exersearch.test",
+        target: "https://api.exersearch.online",
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },

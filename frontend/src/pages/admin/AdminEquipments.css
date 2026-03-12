@@ -364,10 +364,7 @@
   z-index: 9999;
 }
 
-/* ✅ IMPORTANT:
-   Force modals to be SOLID (no translucency) regardless of theme variables.
-   Some themes accidentally set --soft as rgba(...) which makes it see-through.
-*/
+/* Force modals solid */
 .ae-modalContent,
 .ae-importModal,
 .ae-formModal,
@@ -381,7 +378,7 @@
   opacity: 1;
 }
 
-/* If --soft is translucent in DARK mode, hard-force a solid color */
+/* Dark modal shell */
 [data-theme="dark"] .ae-modalContent,
 [data-theme="dark"] .ae-importModal,
 [data-theme="dark"] .ae-formModal,
@@ -392,7 +389,7 @@
   opacity: 1;
 }
 
-/* And in LIGHT mode make sure it's clearly white-ish */
+/* Light modal shell */
 [data-theme="light"] .ae-modalContent,
 [data-theme="light"] .ae-importModal,
 [data-theme="light"] .ae-formModal,
@@ -490,6 +487,10 @@
 /* Form modal */
 .ae-formModal {
   width: min(780px, 92vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .ae-formGrid {
@@ -569,7 +570,6 @@
   font-size: 13px;
 }
 
-/* Keep danger alert border/background red, but text NORMAL */
 .ae-alertError {
   border: 1px solid rgba(220, 0, 0, 0.25);
   background: rgba(220, 0, 0, 0.06);
@@ -686,10 +686,7 @@
   }
 }
 
-/* ================================
-   AdminGyms – Location column fix
-   ================================ */
-
+/* AdminGyms – Location column fix */
 .ae-locCell {
   max-width: 320px;
   position: relative;
@@ -724,8 +721,6 @@
 }
 
 /* src/pages/admin/AdminOwnerApplications.css */
-
-/* Make view modal scrollable with sticky header/footer */
 .ao-formModalScroll {
   max-height: min(90vh, 900px);
   display: flex;
@@ -800,6 +795,7 @@
   font-weight: 900;
   text-decoration: none;
 }
+
 .ao-link:hover {
   text-decoration: underline;
 }
@@ -862,34 +858,19 @@
   background: var(--soft2);
 }
 
-/* if an image fails to load, make it obvious */
 .ao-photoBroken {
   outline: 2px dashed rgba(220, 0, 0, 0.35);
   filter: grayscale(1);
   opacity: 0.7;
 }
 
-/* ================================
-   AdminMeals additions (Bulk + Ingredient cards)
-   Add this at the VERY BOTTOM
-   ================================ */
-
-/* Make the meal form modal scroll nicely without inline styles */
-.ae-formModal {
-  max-height: 92vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* If you use the structure "top row + body + footer" */
+/* AdminMeals additions */
 .ae-modalBody {
   flex: 1;
   overflow-y: auto;
   padding-right: 4px;
 }
 
-/* Bulk area polish */
 .ae-bulkWrap {
   padding: 0 2px 14px 2px;
 }
@@ -912,7 +893,6 @@
   padding: 10px 12px;
 }
 
-/* Ingredient “cards” inside the modal (used by AdminMeals JSX) */
 .ae-ingCard {
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -945,24 +925,21 @@
   margin-top: 10px;
 }
 
-/* Responsive tweak for ingredient grids */
 @media (max-width: 880px) {
   .ae-ingTop {
     grid-template-columns: 1fr;
   }
+
   .ae-ingGrid3 {
     grid-template-columns: 1fr;
   }
+
   .ae-ingGrid5 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* =========================================
-   FORCE SELECT COLORS TO MATCH THEME
-   Keep ONLY this block at the very bottom
-========================================= */
-
+/* Force select colors to match theme */
 .ae-select,
 select.ae-select,
 select.ae-fieldInput {
@@ -979,7 +956,7 @@ select.ae-fieldInput {
   box-sizing: border-box;
 }
 
-/* LIGHT MODE — force white */
+/* Light mode selects */
 [data-theme="light"] .ae-select,
 [data-theme="light"] select.ae-select,
 [data-theme="light"] select.ae-fieldInput {
@@ -990,7 +967,6 @@ select.ae-fieldInput {
   color-scheme: light !important;
 }
 
-/* LIGHT MODE dropdown items */
 [data-theme="light"] .ae-select option,
 [data-theme="light"] select.ae-select option,
 [data-theme="light"] select.ae-fieldInput option,
@@ -1001,7 +977,7 @@ select.ae-fieldInput {
   color: #141414 !important;
 }
 
-/* DARK MODE — force dark */
+/* Dark mode selects */
 [data-theme="dark"] .ae-select,
 [data-theme="dark"] select.ae-select,
 [data-theme="dark"] select.ae-fieldInput {
@@ -1012,7 +988,6 @@ select.ae-fieldInput {
   color-scheme: dark !important;
 }
 
-/* DARK MODE dropdown items */
 [data-theme="dark"] .ae-select option,
 [data-theme="dark"] select.ae-select option,
 [data-theme="dark"] select.ae-fieldInput option,
@@ -1021,11 +996,26 @@ select.ae-fieldInput {
 [data-theme="dark"] select.ae-fieldInput optgroup {
   background: #1b1d22 !important;
   color: #f6f8fa !important;
-}/* ================================
-   Assign Owner modal dark fix
-   Put at the very bottom
-================================ */
+}
 
+/* Assign Owner modal shared box */
+.ae-ownerListBox {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+[data-theme="light"] .ae-ownerListBox {
+  background: #f8fafc;
+}
+
+[data-theme="dark"] .ae-ownerListBox {
+  background: #111318;
+}
+
+/* Assign Owner modal dark fix */
 [data-theme="dark"] .ae-confirmModalFancy {
   background: #141414 !important;
   background-color: #141414 !important;
@@ -1071,4 +1061,103 @@ select.ae-fieldInput {
   background: #1b1d22 !important;
   color: #f6f8fa !important;
   border: 1px solid #2f3540 !important;
+}
+
+/* Assign Owner modal light fix */
+[data-theme="light"] .ae-confirmModalFancy {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #141414 !important;
+  border: 1px solid #dcdfe4 !important;
+}
+
+[data-theme="light"] .ae-confirmHeader,
+[data-theme="light"] .ae-confirmHeaderText,
+[data-theme="light"] .ae-confirmTitle {
+  color: #141414 !important;
+}
+
+[data-theme="light"] .ae-confirmIconWrap {
+  background: #f7f8fb !important;
+  border: 1px solid #dcdfe4 !important;
+  color: #141414 !important;
+}
+
+[data-theme="light"] .ae-confirmModalFancy .ae-fieldLabel,
+[data-theme="light"] .ae-confirmModalFancy .ae-mutedTiny {
+  color: #667085 !important;
+}
+
+[data-theme="light"] .ae-confirmModalFancy .ae-fieldInput {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #141414 !important;
+  border: 1px solid #d0d5dd !important;
+}
+
+[data-theme="light"] .ae-confirmModalFancy .ae-fieldInput::placeholder {
+  color: #98a2b3 !important;
+}
+
+[data-theme="light"] .ae-confirmModalFancy .ae-alert {
+  background: #f8fafc !important;
+  color: #141414 !important;
+  border: 1px solid #dcdfe4 !important;
+}
+
+[data-theme="light"] .ae-confirmModalFancy .ae-btnSecondary {
+  background: #f7f8fb !important;
+  color: #141414 !important;
+  border: 1px solid #d0d5dd !important;
+}/* =========================================
+   FILTER SELECTS - FINAL FIX
+   Put this at the very bottom
+========================================= */
+
+.ae-page[data-theme="light"] .ae-select,
+.ae-page[data-theme="light"] select.ae-select,
+.ae-page[data-theme="light"] select.ae-fieldInput {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #141414 !important;
+  border: 1px solid #d0d5dd !important;
+  box-shadow: none !important;
+  color-scheme: light !important;
+}
+
+.ae-page[data-theme="light"] .ae-select option,
+.ae-page[data-theme="light"] select.ae-select option,
+.ae-page[data-theme="light"] select.ae-fieldInput option,
+.ae-page[data-theme="light"] .ae-select optgroup,
+.ae-page[data-theme="light"] select.ae-select optgroup,
+.ae-page[data-theme="light"] select.ae-fieldInput optgroup {
+  background: #ffffff !important;
+  color: #141414 !important;
+}
+
+.ae-page[data-theme="dark"] .ae-select,
+.ae-page[data-theme="dark"] select.ae-select,
+.ae-page[data-theme="dark"] select.ae-fieldInput {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background: #1b1d22 !important;
+  background-color: #1b1d22 !important;
+  color: #f6f8fa !important;
+  border: 1px solid #2f3540 !important;
+  box-shadow: none !important;
+  color-scheme: dark !important;
+}
+
+.ae-page[data-theme="dark"] .ae-select option,
+.ae-page[data-theme="dark"] select.ae-select option,
+.ae-page[data-theme="dark"] select.ae-fieldInput option,
+.ae-page[data-theme="dark"] .ae-select optgroup,
+.ae-page[data-theme="dark"] select.ae-select optgroup,
+.ae-page[data-theme="dark"] select.ae-fieldInput optgroup {
+  background: #1b1d22 !important;
+  color: #f6f8fa !important;
 }
