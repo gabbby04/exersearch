@@ -5,8 +5,6 @@ import fallbackLogo from "../../assets/exersearchlogo.png";
 import { useAuth } from "../../authcon";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  Search,
-  X,
   Flame,
   Utensils,
   Bell,
@@ -20,8 +18,10 @@ import {
   Settings,
   Sun,
   Moon,
+  X
 } from "lucide-react";
 import { api } from "../../utils/apiClient";
+import { useTheme } from "../../pages/user/ThemeContext";
 
 import {
   listNotifications,
@@ -32,7 +32,6 @@ import {
 
 const FALLBACK_AVATAR = "/defaulticon.png";
 const UI_MODE_KEY = "ui_mode";
-const THEME_KEY = "theme_mode";
 
 const ROLE_LEVEL = { user: 1, owner: 2, superadmin: 3 };
 
@@ -85,31 +84,11 @@ function iconForNotifType(type) {
   return Bell;
 }
 
-function getStoredTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  if (saved === "light" || saved === "dark") return saved;
-
-  if (typeof window !== "undefined" && window.matchMedia) {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-
-  return "dark";
-}
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  root.setAttribute("data-theme", theme);
-  document.body.setAttribute("data-theme", theme);
-  localStorage.setItem(THEME_KEY, theme);
-}
-
 export default function HeaderUser() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [themeMode, setThemeMode] = useState(getStoredTheme);
   const [isMobileView, setIsMobileView] = useState(false);
 
   const notifRef = useRef(null);
@@ -118,6 +97,9 @@ export default function HeaderUser() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // USE THEME CONTEXT
+  const { isDark, toggleTheme } = useTheme();
 
   const [me, setMe] = useState(null);
   const [meLoading, setMeLoading] = useState(false);
@@ -137,10 +119,6 @@ export default function HeaderUser() {
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifErr, setNotifErr] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    applyTheme(themeMode);
-  }, [themeMode]);
 
   useEffect(() => {
     const handleResize = () => setIsMobileView(window.innerWidth <= 700);
@@ -276,12 +254,8 @@ export default function HeaderUser() {
     [logout, navigate]
   );
 
-  const toggleTheme = useCallback(() => {
-    setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
-  }, []);
-
-  const themeLabel = themeMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode";
-  const ThemeIcon = themeMode === "dark" ? Sun : Moon;
+  const themeLabel = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
+  const ThemeIcon = isDark ? Sun : Moon;
 
   useEffect(() => {
     function onDocClick(e) {
@@ -376,21 +350,6 @@ export default function HeaderUser() {
           />
         </div>
 
-        <div className="uhd-header__search-wrap">
-          <Search size={14} className="uhd-header__search-icon" />
-          <input
-            className="uhd-header__search-input"
-            type="text"
-            placeholder="Search gyms, areas, tags..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button className="uhd-header__search-clear" type="button" onClick={() => setSearchQuery("")}>
-              <X size={12} />
-            </button>
-          )}
-        </div>
 
         <div className="uhd-header__actions">
           <Link to="/home/workout" className="uhd-chip uhd-chip--fire" onClick={() => setMobileMenuOpen(false)}>
@@ -703,7 +662,7 @@ export default function HeaderUser() {
             setMobileMenuOpen(false);
           }}
         >
-          {themeMode === "dark" ? "SWITCH TO LIGHT MODE" : "SWITCH TO DARK MODE"}
+          {isDark ? "SWITCH TO LIGHT MODE" : "SWITCH TO DARK MODE"}
         </button>
 
         {isOwnerPlus &&
