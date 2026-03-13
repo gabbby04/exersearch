@@ -473,6 +473,7 @@ export default function Memberships() {
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
+              
               triggerLogoSpin();
             }
           }}
