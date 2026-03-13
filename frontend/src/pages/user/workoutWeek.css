@@ -819,9 +819,9 @@
 }
 
 .ww-modal-error {
-  background: rgba(255, 70, 70, 0.12);
-  border: 1px solid rgba(255, 70, 70, 0.24);
-  color: #ffd8d8;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
   padding: 10px 12px;
   border-radius: 12px;
   margin-bottom: 12px;
@@ -1001,7 +1001,7 @@
   gap: 8px;
   padding: 8px 11px;
   border-radius: 14px;
-  background: var(--surface-2);
+  background: var(--brand-soft);
   border: 1px solid var(--border);
   font-size: 13px;
   font-weight: 800;
@@ -1016,7 +1016,6 @@
   opacity: 0.76;
   font-weight: 900;
 }
-
 .ww-tag button:hover { opacity: 1; }
 
 .ww-tag-row {

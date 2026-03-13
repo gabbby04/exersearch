@@ -1231,7 +1231,7 @@ function PreferencesModal({
                   </button>
                 </div>
 
-                <div className="ww-muted" style={{ color: "#6b7280", marginTop: 8 }}>
+                <div className="ww-muted" style={{ marginTop: 8 }}>
                   Example: If you add “Back”, exercises with primary muscle “back” will be
                   filtered out during generation.
                 </div>
