@@ -1246,17 +1246,28 @@ function PreferencesModal({
                 </div>
 
                 <div className="ww-tag-row">
-                  <select
-                    value={injuryPick}
-                    onChange={(e) => setInjuryPick(e.target.value)}
-                  >
-                    <option value="">Select a muscle…</option>
-                    {MUSCLE_OPTIONS.map((m) => (
-                      <option key={m} value={m}>
-                        {prettyLabel(m)}
-                      </option>
-                    ))}
-                  </select>
+                                  <select
+                  className="ww-select-native"
+                  value={injuryPick}
+                  onChange={(e) => setInjuryPick(e.target.value)}
+                  style={{
+                    color: "var(--lnd-text-primary)",
+                    background: "var(--lnd-bg-secondary)",
+                  }}
+                >
+                  <option value="" style={{ color: "var(--lnd-text-primary)", background: "var(--lnd-bg-secondary)" }}>
+                    Select a muscle…
+                  </option>
+                  {MUSCLE_OPTIONS.map((m) => (
+                    <option
+                      key={m}
+                      value={m}
+                      style={{ color: "var(--lnd-text-primary)", background: "var(--lnd-bg-secondary)" }}
+                    >
+                      {prettyLabel(m)}
+                    </option>
+                  ))}
+                </select>
 
                   <button
                     className="ww-btn ww-btn-ghost"

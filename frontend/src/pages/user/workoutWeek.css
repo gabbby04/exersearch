@@ -884,7 +884,9 @@
 
 .ww-field input::placeholder,
 .ww-tag-row input::placeholder {
-  color: var(--text-dim);
+  color: var(--lnd-text-secondary, rgba(180,180,180,0.6));
+  font-weight: 600;
+  opacity: 1;
 }
 
 .ww-field input:focus,
@@ -946,9 +948,9 @@
   font-weight: 900;
   margin-bottom: 12px;
   letter-spacing: 0.2px;
-  color: var(--text);
+  color: var(--lnd-text-primary);
+  opacity: 1;
 }
-
 .ww-eq-grid {
   display: flex;
   flex-wrap: wrap;
@@ -1036,7 +1038,8 @@
 .ww-modal .ww-muted,
 .ww-modal p,
 .ww-modal small {
-  color: var(--text-muted);
+  color: var(--lnd-text-secondary, rgba(180,180,180,0.75));
+  font-weight: 600;
 }
 
 .ww-modal .ww-btn,
@@ -1134,3 +1137,16 @@
   }
 }
 
+.ww-field select option,
+.ww-tag-row select option {
+  background: var(--lnd-bg-primary, #1a1a1a);
+  color: var(--lnd-text-primary, #ffffff);
+  font-weight: 700;
+  padding: 8px 12px;
+}
+
+.ww-field select:focus option:checked,
+.ww-tag-row select:focus option:checked {
+  background: var(--lnd-or, #ff6a2a);
+  color: #fff;
+}
