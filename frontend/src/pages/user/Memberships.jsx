@@ -464,18 +464,20 @@ export default function Memberships() {
             <div className="um-centerLogoWrap">
               <div className="um-centerGlow" />
               <div
-                className="um-logo3dScene"
-                onClick={triggerLogoSpin}
-                title="Click logo"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    triggerLogoSpin();
-                  }
-                }}
-              >
+          className="um-logo3dScene"
+          onClick={triggerLogoSpin}
+          title="Click logo"
+          role="button"
+          tabIndex={-1}
+          onMouseDown={(e) => e.preventDefault()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              
+              triggerLogoSpin();
+            }
+          }}
+>
                 <div ref={logoObjectRef} className="um-logo3dObject">
                   <div className="um-logo3dGround" />
 

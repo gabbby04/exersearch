@@ -2071,7 +2071,9 @@ body[data-theme="light"] .um-app .um-panel--sidebar:not(.is-collapsed) .um-sideC
       -6px 8px 18px rgba(16, 24, 32, 0.08),
       inset 0 1px 0 rgba(255,255,255,0.8) !important;
   }
-}.um-logo3dScene {
+}
+
+.um-logo3dScene {
   perspective: 1600px;
   perspective-origin: 50% 50%;
   display: flex;
@@ -2081,6 +2083,9 @@ body[data-theme="light"] .um-app .um-panel--sidebar:not(.is-collapsed) .um-sideC
   height: 340px;
   cursor: pointer;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-focus-ring-color: transparent;
+  user-select: none;
 }
 
 .um-logo3dObject {
