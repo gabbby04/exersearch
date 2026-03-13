@@ -1,0 +1,1080 @@
+/* ════════════════════════════════════════════════
+   GYM DETAILS — ThemeContext aligned
+   Uses --lnd-* tokens exclusively for
+   automatic dark / light mode support.
+════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap');
+
+/* ── Local tokens (map lnd vars) ── */
+.ugd-page {
+  --brand:        var(--lnd-or,       #ff6a2a);
+  --brand-md:     var(--lnd-or-md,    #fc4a00);
+  --brand-dk:     var(--lnd-or-dk,    #ab3200);
+  --brand-dim:    var(--lnd-or-dim,   rgba(255,106,42,0.12));
+  --brand-glow:   var(--lnd-or-glow,  rgba(255,106,42,0.26));
+
+  --bg-1:         var(--lnd-bg-primary);
+  --bg-2:         var(--lnd-bg-secondary);
+  --bg-3:         var(--lnd-bg-tertiary);
+  --bg-accent:    var(--lnd-bg-accent);
+
+  --txt:          var(--lnd-text-primary);
+  --txt-soft:     var(--lnd-text-secondary);
+  --txt-muted:    var(--lnd-text-tertiary);
+  --txt-dim:      var(--lnd-text-muted);
+
+  --border:       var(--lnd-border);
+  --border-or:    rgba(255,106,42,0.22);
+  --shadow:       var(--lnd-shadow);
+  --overlay:      var(--lnd-overlay);
+
+  --radius-sm:  10px;
+  --radius-md:  16px;
+  --radius-lg:  22px;
+  --radius-xl:  28px;
+
+  font-family: "Montserrat", sans-serif;
+  background: var(--bg-2);
+  color: var(--txt);
+  min-height: 100vh;
+}
+
+.ugd-page *, .ugd-page *::before, .ugd-page *::after {
+  box-sizing: border-box;
+}
+
+/* ════════════════════════════════════════════════
+   LOADING / ERROR STATES
+════════════════════════════════════════════════ */
+.ugd-loading-state,
+.ugd-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 60vh;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--txt-muted);
+}
+
+.ugd-error-msg {
+  font-weight: 900;
+  color: #dc2626;
+  font-size: 15px;
+}
+
+@keyframes ugd-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ugd-spinner-icon {
+  animation: ugd-spin 0.75s linear infinite;
+}
+
+/* ════════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════════ */
+.ugd-hero {
+  position: relative;
+  width: 100%;
+  height: clamp(340px, 52vw, 560px);
+  overflow: hidden;
+  background: var(--bg-3);
+}
+
+/* Gradient overlay so text is always readable */
+.ugd-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.32) 50%, rgba(0,0,0,0.10) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Gallery ── */
+.ugd-gallery {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.ugd-gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.ugd-gallery-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.38);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.2s ease;
+}
+
+.ugd-gallery-btn:hover {
+  background: rgba(255,106,42,0.75);
+  border-color: transparent;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.ugd-gallery-prev { left: 14px; }
+.ugd-gallery-next { right: 14px; }
+
+.ugd-gallery-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+}
+
+.ugd-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.45);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, width 0.2s ease, border-radius 0.2s ease;
+}
+
+.ugd-dot.active {
+  background: var(--brand);
+  width: 18px;
+  border-radius: 3px;
+}
+
+/* ── Hero content ── */
+.ugd-hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(14px, 3vw, 28px);
+}
+
+.ugd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(0,0,0,0.38);
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  align-self: flex-start;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.ugd-back-btn:hover {
+  background: rgba(255,106,42,0.65);
+  border-color: transparent;
+  transform: translateX(-3px);
+}
+
+.ugd-hero-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ugd-gym-type-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 6px;
+}
+
+.ugd-gym-name {
+  font-size: clamp(1.4rem, 4.5vw, 2.4rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+  margin: 0 0 10px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.ugd-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ugd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.40);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.90);
+  font-size: 11px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ugd-badge-loc { max-width: 240px; }
+
+.ugd-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ugd-price-tag {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--brand-dk), var(--brand));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px var(--brand-glow);
+}
+
+.ugd-like-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.28);
+  background: rgba(0,0,0,0.38);
+  color: rgba(255,255,255,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.ugd-like-btn:hover,
+.ugd-like-btn.liked {
+  background: rgba(220, 38, 38, 0.7);
+  color: #fff;
+  border-color: transparent;
+  transform: scale(1.1);
+}
+
+/* ════════════════════════════════════════════════
+   BODY / GRID
+════════════════════════════════════════════════ */
+.ugd-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 28px);
+}
+
+.ugd-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: clamp(14px, 2.5vw, 24px);
+  align-items: start;
+}
+
+/* ════════════════════════════════════════════════
+   CARD
+════════════════════════════════════════════════ */
+.ugd-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(16px, 3vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.ugd-card + .ugd-card { margin-top: clamp(10px, 2vw, 16px); }
+
+.ugd-section-title {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ugd-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-or), transparent);
+}
+
+.ugd-description {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--txt-soft);
+}
+
+.ugd-empty {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--txt-dim);
+  padding: 10px 0;
+}
+
+/* ── Hours ── */
+.ugd-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ugd-hours-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-dim);
+  border: 1px solid var(--border-or);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ugd-hours-time {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--txt);
+  letter-spacing: -0.3px;
+}
+
+.ugd-hours-status {
+  font-size: 11px;
+  font-weight: 700;
+  color: #22c55e;
+  margin-top: 3px;
+  display: block;
+}
+
+/* ── Pricing ── */
+.ugd-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ugd-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+}
+
+.ugd-price-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ugd-price-daily   { background: rgba(255,106,42,0.12); color: var(--brand); }
+.ugd-price-monthly { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.ugd-price-annual  { background: rgba(234,179,8,0.12);  color: #ca8a04; }
+
+.ugd-price-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--txt-muted);
+}
+
+.ugd-price-value {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--txt);
+  letter-spacing: -0.3px;
+  margin-top: 2px;
+}
+
+/* ── Stats ── */
+.ugd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ugd-stat-card {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ugd-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ugd-stat-orange .ugd-stat-icon { background: rgba(255,106,42,0.12); color: var(--brand); }
+.ugd-stat-green  .ugd-stat-icon { background: rgba(34,197,94,0.12);  color: #22c55e; }
+.ugd-stat-blue   .ugd-stat-icon { background: rgba(59,130,246,0.12); color: #3b82f6; }
+
+.ugd-stat-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--txt);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.ugd-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--txt-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.ugd-stat-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.ugd-stat-subtxt {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--txt-dim);
+}
+
+/* Star row */
+.ugd-starrow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ugd-starrow-compact { gap: 1px; }
+
+.ugd-star {
+  color: var(--txt-dim);
+  transition: color 0.15s ease;
+}
+
+.ugd-star.filled { color: #f59e0b; }
+
+/* ── Amenities ── */
+.ugd-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.ugd-amenity-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.ugd-amenity-item:hover {
+  border-color: var(--border-or);
+  background: var(--brand-dim);
+}
+
+.ugd-amenity-item.ugd-unavailable {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.ugd-amenity-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--brand-dim);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ugd-amenity-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ugd-amenity-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--txt);
+  line-height: 1.3;
+}
+
+.ugd-amenity-unavail {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--txt-dim);
+}
+
+/* ── Equipment list ── */
+.ugd-equip-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px;
+}
+
+.ugd-equip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--txt-soft);
+  transition: border-color 0.16s, background 0.16s;
+}
+
+.ugd-equip-item:hover {
+  border-color: var(--border-or);
+  background: var(--brand-dim);
+}
+
+.ugd-equip-check {
+  color: var(--brand);
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════════════ */
+.ugd-sidebar .ugd-card + .ugd-card { margin-top: clamp(10px, 2vw, 16px); }
+
+/* ── Map ── */
+.ugd-map-wrap {
+  width: 100%;
+  height: 200px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.ugd-map-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.ugd-map-address {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--txt-muted);
+}
+
+.ugd-map-address svg { color: var(--brand); flex-shrink: 0; }
+
+/* ── Contact ── */
+.ugd-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ugd-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt-soft);
+}
+
+.ugd-contact-icon { color: var(--brand); flex-shrink: 0; }
+
+.ugd-link {
+  color: var(--brand);
+  font-weight: 700;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity 0.16s;
+}
+
+.ugd-link:hover { opacity: 0.75; }
+
+.ugd-social-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ugd-social-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--txt-muted);
+  background: var(--bg-2);
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.ugd-social-btn:hover { transform: translateY(-2px); }
+.ugd-fb:hover  { background: rgba(59,89,152,0.15); color: #3b5998; border-color: rgba(59,89,152,0.3); }
+.ugd-ig:hover  { background: rgba(228,64,95,0.12);  color: #e4405f; border-color: rgba(228,64,95,0.28); }
+
+/* Owner row */
+.ugd-owner-row {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+}
+
+.ugd-owner-label {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--txt-dim);
+  margin-bottom: 8px;
+}
+
+.ugd-owner-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ugd-owner-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.ugd-owner-avatar-placeholder {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--txt-muted);
+  flex-shrink: 0;
+}
+
+.ugd-owner-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--txt);
+  line-height: 1.2;
+}
+
+.ugd-owner-email {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt-muted);
+  margin-top: 2px;
+}
+
+/* ── Quick actions ── */
+.ugd-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Reviews ── */
+.ugd-reviews-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ugd-show-all-btn {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--brand);
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.16s;
+}
+
+.ugd-show-all-btn:hover { background: var(--brand-dim); }
+
+.ugd-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ugd-reviews-empty {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--txt-dim);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 0;
+}
+
+.ugd-review-item {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.16s;
+  position: relative;
+  overflow: hidden;
+}
+
+.ugd-review-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--brand);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.2s ease;
+}
+
+.ugd-review-item:hover { border-color: var(--border-or); }
+.ugd-review-item:hover::before { width: 3px; }
+
+.ugd-review-item.mine {
+  border-color: var(--border-or);
+  background: var(--brand-dim);
+}
+
+.ugd-review-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ugd-review-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.ugd-review-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--txt);
+}
+
+.ugd-review-you-badge {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+}
+
+.ugd-review-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.ugd-tag-member    { background: rgba(34,197,94,0.12);  color: #16a34a; }
+.ugd-tag-visited   { background: rgba(59,130,246,0.12); color: #2563eb; }
+.ugd-tag-unverified{ background: var(--bg-2);           color: var(--txt-dim); border: 1px solid var(--border); }
+
+.ugd-review-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--txt-soft);
+  position: relative;
+  z-index: 1;
+}
+
+.ugd-review-text.empty { color: var(--txt-dim); font-style: italic; }
+
+/* ════════════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════════════ */
+.ugd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 18px;
+  border-radius: var(--radius-md);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.18s ease,
+    box-shadow 0.2s ease,
+    opacity 0.18s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ugd-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.ugd-btn-full { width: 100%; }
+
+/* Primary — brand fill */
+.ugd-btn-primary {
+  background: linear-gradient(135deg, var(--brand-dk) 0%, var(--brand-md) 55%, var(--brand) 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px var(--brand-glow);
+}
+
+.ugd-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--brand-glow);
+  filter: brightness(1.06);
+}
+
+/* Secondary — soft brand */
+.ugd-btn-secondary {
+  background: var(--brand-dim);
+  color: var(--brand);
+  border-color: var(--border-or);
+}
+
+.ugd-btn-secondary:hover:not(:disabled) {
+  background: var(--brand);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px var(--brand-glow);
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — Tablet
+════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .ugd-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ugd-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(10px, 2vw, 16px);
+  }
+
+  .ugd-sidebar .ugd-card + .ugd-card { margin-top: 0; }
+
+  /* Make map card and contact card span full width on their own row */
+  .ugd-sidebar .ugd-map-card {
+    grid-column: 1 / -1;
+  }
+
+  .ugd-pricing-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — Mobile
+════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .ugd-hero {
+    height: 300px;
+  }
+
+  .ugd-hero-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .ugd-gym-name {
+    font-size: 1.4rem;
+  }
+
+  .ugd-hero-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .ugd-price-tag {
+    font-size: 13px;
+    padding: 7px 13px;
+  }
+
+  .ugd-body {
+    padding: 12px;
+  }
+
+  .ugd-pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ugd-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* 3rd stat card spans full width on mobile */
+  .ugd-stats-grid .ugd-stat-card:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .ugd-amenities-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ugd-equip-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ugd-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .ugd-sidebar .ugd-map-card {
+    grid-column: auto;
+  }
+
+  .ugd-card {
+    padding: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .ugd-gallery-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ugd-gallery-prev { left: 8px; }
+  .ugd-gallery-next { right: 8px; }
+
+  .ugd-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ugd-amenities-grid,
+  .ugd-equip-list {
+    grid-template-columns: 1fr;
+  }
+
+  .ugd-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ugd-stats-grid .ugd-stat-card:nth-child(3) {
+    grid-column: auto;
+  }
+}

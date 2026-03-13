@@ -1286,3 +1286,13 @@
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+
+.fg-location-btn svg,
+.fg-selections-toggle svg,
+.fg-modal-close svg,
+.fg-remove-btn svg,
+.equip-viewBtn svg,
+.fg-equip-preview-close svg {
+  vertical-align: middle;
+  display: inline-block;
+}

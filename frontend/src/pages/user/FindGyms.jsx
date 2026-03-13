@@ -32,6 +32,13 @@ import {
   saveUserProfileLocation,
 } from "../../utils/findGymsApi";
 
+import { 
+  MapPin,          
+  Menu,            
+  X,                
+  MoreHorizontal    
+} from "lucide-react";
+
 const RESULTS_ROUTE = "/home/gym-results";
 const MAIN_ORANGE = "#ff8c00";
 const RESULTS_CACHE_KEY = "exersearch_results_cache_v1";
@@ -928,7 +935,7 @@ export default function OwnerGymsPage() {
                           openEquipPreview(e);
                         }}
                       >
-                        ⋯
+                        <MoreHorizontal size={18} />
                       </button>
                     </div>
 
@@ -999,13 +1006,13 @@ export default function OwnerGymsPage() {
             )}
           </div>
 
-          <button
-            className="fg-location-btn fg-location-btn--full"
-            onClick={getCurrentLocation}
-            disabled={savingPhase || rankingPhase}
-          >
-            📍 Use My Current Location
-          </button>
+         <button
+              className="fg-location-btn fg-location-btn--full"
+              onClick={getCurrentLocation}
+              disabled={savingPhase || rankingPhase}
+            >
+              <MapPin size={16} /> Use My Current Location
+            </button>
 
           <div className={`fg-map-wrap ${savingPhase || rankingPhase ? "is-disabled" : ""}`}>
             <MapContainer key={mapKey} center={mapCenter} zoom={16} className="fg-map-container">
@@ -1170,20 +1177,20 @@ export default function OwnerGymsPage() {
                   <h2>{sections[currentStep]}</h2>
                   <span className="fg-step-badge">{currentStep + 1} of {sections.length}</span>
                   <button
-                    className="fg-selections-toggle"
-                    onClick={() => setShowMobileSelections(v => !v)}
-                  >
-                    ☰
-                    {Object.keys(selectedItems).length > 0 && (
-                      <span className="fg-selections-badge">
-                        {Object.keys(selectedItems).length}
-                      </span>
-                    )}
-                  </button>
+                      className="fg-selections-toggle"
+                      onClick={() => setShowMobileSelections(v => !v)}
+                    >
+                      <Menu size={18} />
+                      {Object.keys(selectedItems).length > 0 && (
+                        <span className="fg-selections-badge">
+                          {Object.keys(selectedItems).length}
+                        </span>
+                      )}
+                    </button>
                 </div>
                 <button className="fg-modal-close" onClick={closeModal} disabled={showOverlay}>
-                  ✖
-                </button>
+                <X size={20} />
+              </button>
               </div>
 
               <div className="fg-modal-nav">
@@ -1237,7 +1244,9 @@ export default function OwnerGymsPage() {
             {Object.keys(selectedItems).map((key, index) => (
               <div key={index} className="fg-selected-item">
                 <span>{prettySelectedLabel(key)}</span>
-                <button className="fg-remove-btn" onClick={() => !(savingPhase || rankingPhase) && removeSelected(key)} disabled={showOverlay}>✖</button>
+                <button className="fg-remove-btn" onClick={() => !(savingPhase || rankingPhase) && removeSelected(key)} disabled={showOverlay}>
+  <X size={14} />
+</button>
               </div>
             ))}
           </div>
@@ -1255,13 +1264,13 @@ export default function OwnerGymsPage() {
         Object.keys(selectedItems).map((key, index) => (
           <div key={index} className="fg-selected-item">
             <span>{prettySelectedLabel(key)}</span>
-            <button
-              className="fg-remove-btn"
-              onClick={() => !(savingPhase || rankingPhase) && removeSelected(key)}
-              disabled={showOverlay}
-            >
-              ✖
-            </button>
+           <button
+          className="fg-remove-btn"
+          onClick={() => !(savingPhase || rankingPhase) && removeSelected(key)}
+          disabled={showOverlay}
+        >
+          <X size={14} />
+        </button>
           </div>
         ))
       )}
@@ -1273,9 +1282,9 @@ export default function OwnerGymsPage() {
                 <div className="fg-equip-preview" onClick={(e) => e.stopPropagation()}>
                   <div className="fg-equip-preview-head">
                     <div className="fg-equip-preview-title">{previewEquip.name}</div>
-                    <button className="fg-equip-preview-close" onClick={closeEquipPreview}>
-                      ✖
-                    </button>
+                   <button className="fg-equip-preview-close" onClick={closeEquipPreview}>
+              <X size={20} />
+            </button>
                   </div>
 
                   {previewEquip.image_url ? (

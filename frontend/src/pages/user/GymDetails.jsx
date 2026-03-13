@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import "./Homestyles.css";
+import "./GymDetails.css";
 import Swal from "sweetalert2";
 import { api } from "../../utils/apiClient";
 import { absoluteUrl } from "../../utils/findGymsData";
@@ -20,6 +20,39 @@ import {
   normalizeGymRatingsResponse,
 } from "../../utils/gymRatingApi";
 import ReviewsModal from "./ReviewsModal";
+
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  Star,
+  Dumbbell,
+  Users,
+  CreditCard,
+  Ticket,
+  Gift,
+  Phone,
+  Mail,
+  Globe,
+  Navigation,
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Target,
+  CalendarDays,
+  Timer,
+  Check,
+  Pencil,
+  Loader2,
+  Zap,
+  Trophy,
+  ShieldCheck,
+  Sparkles,
+  Facebook,
+  Instagram,
+  UserCircle,
+} from "lucide-react";
 
 const GYM_SHOW_ENDPOINT = (id) => `/gyms/${id}`;
 
@@ -57,17 +90,15 @@ function clamp(n, a, b) {
 function StarRow({ value = 0, compact = false }) {
   const v = clamp(value, 0, 5);
   const full = Math.round(v);
-
   return (
     <div className={`ugd-starrow ${compact ? "ugd-starrow-compact" : ""}`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <span
+        <Star
           key={i}
+          size={compact ? 11 : 15}
           className={`ugd-star ${i <= full ? "filled" : ""}`}
-          aria-hidden="true"
-        >
-          ★
-        </span>
+          fill={i <= full ? "currentColor" : "none"}
+        />
       ))}
     </div>
   );
@@ -87,10 +118,9 @@ function StatCard({ icon, value, label, color }) {
 
 function RatingStatCard({ rating, label, color, verifiedCount }) {
   const val = typeof rating === "number" ? rating : null;
-
   return (
     <div className={`ugd-stat-card ugd-stat-${color}`}>
-      <div className="ugd-stat-icon">⭐</div>
+      <div className="ugd-stat-icon"><Star size={20} /></div>
       <div className="ugd-stat-content">
         <div className="ugd-stat-value">{val == null ? "—" : val.toFixed(1)}</div>
         <div className="ugd-stat-label">{label}</div>
@@ -124,16 +154,13 @@ export default function GymDetails() {
         text: "Your inquiry was successfully sent to the gym.",
         icon: "success",
         confirmButtonText: "Great!",
-        confirmButtonColor: "#ed8936",
-        iconColor: "#ed8936",
+        confirmButtonColor: "#ff6a2a",
+        iconColor: "#ff6a2a",
       });
     } catch (e) {
       await Swal.fire({
         title: "Failed",
-        text:
-          e?.response?.data?.message ||
-          e?.message ||
-          "Failed to send inquiry.",
+        text: e?.response?.data?.message || e?.message || "Failed to send inquiry.",
         icon: "error",
         confirmButtonColor: "#dc2626",
       });
@@ -144,10 +171,8 @@ export default function GymDetails() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [gym, setGym] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
   const [isLiked, setIsLiked] = useState(false);
 
   const statsRef = useRef(null);
@@ -164,10 +189,8 @@ export default function GymDetails() {
   const [showGiftModal, setShowGiftModal] = useState(false);
 
   const [myUserId, setMyUserId] = useState(null);
-
   const [myGymMembership, setMyGymMembership] = useState(null);
   const [membershipLoading, setMembershipLoading] = useState(false);
-
   const [myRatings, setMyRatings] = useState([]);
   const [myRatingsLoading, setMyRatingsLoading] = useState(false);
 
@@ -205,17 +228,12 @@ export default function GymDetails() {
 
   const displayPrice = useMemo(() => {
     if (!gym) return "—";
-
     const daily = safeNum(gym?.daily_price);
     const monthly = safeNum(gym?.monthly_price);
     const annual = safeNum(gym?.annual_price);
-
     if (preferredPlan === "daily" && daily > 0) return `${fmtPeso(daily)}/day`;
-    if (preferredPlan === "monthly" && monthly > 0)
-      return `${fmtPeso(monthly)}/month`;
-    if (preferredPlan === "annual" && annual > 0)
-      return `${fmtPeso(annual)}/year`;
-
+    if (preferredPlan === "monthly" && monthly > 0) return `${fmtPeso(monthly)}/month`;
+    if (preferredPlan === "annual" && annual > 0) return `${fmtPeso(annual)}/year`;
     if (monthly > 0) return `${fmtPeso(monthly)}/month`;
     if (daily > 0) return `${fmtPeso(daily)}/day`;
     if (annual > 0) return `${fmtPeso(annual)}/year`;
@@ -230,14 +248,8 @@ export default function GymDetails() {
     return `${open} – ${close}`;
   }, [gym]);
 
-  const publicAvg = useMemo(
-    () => ratingsState?.summary?.public_avg_stars,
-    [ratingsState]
-  );
-  const ratingValue = useMemo(
-    () => (typeof publicAvg === "number" ? publicAvg : null),
-    [publicAvg]
-  );
+  const publicAvg = useMemo(() => ratingsState?.summary?.public_avg_stars, [ratingsState]);
+  const ratingValue = useMemo(() => (typeof publicAvg === "number" ? publicAvg : null), [publicAvg]);
 
   const myGymRating = useMemo(() => {
     if (!gymIdNum) return null;
@@ -260,19 +272,11 @@ export default function GymDetails() {
     return ["pending", "processing", "under_review"].includes(membershipStatus);
   }, [myGymMembership, membershipStatus]);
 
-  const amenities = useMemo(() => {
-    const list = Array.isArray(gym?.amenities) ? gym.amenities : [];
-    return list;
-  }, [gym]);
-
-  const equipments = useMemo(() => {
-    const list = Array.isArray(gym?.equipments) ? gym.equipments : [];
-    return list;
-  }, [gym]);
+  const amenities = useMemo(() => (Array.isArray(gym?.amenities) ? gym.amenities : []), [gym]);
+  const equipments = useMemo(() => (Array.isArray(gym?.equipments) ? gym.equipments : []), [gym]);
 
   useEffect(() => {
     let cancelled = false;
-
     async function loadMe() {
       try {
         const res = await api.get("/me");
@@ -283,116 +287,69 @@ export default function GymDetails() {
         if (!cancelled) setMyUserId(null);
       }
     }
-
     loadMe();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-
     async function load() {
       setLoading(true);
       setError(null);
       try {
         const res = await api.get(GYM_SHOW_ENDPOINT(id));
         const data = res.data?.data || res.data?.gym || res.data || null;
-        if (!cancelled) {
-          setGym(data);
-          setCurrentImageIndex(0);
-        }
+        if (!cancelled) { setGym(data); setCurrentImageIndex(0); }
       } catch (e) {
         console.error(e);
-        if (!cancelled) {
-          setError(
-            e?.response?.data?.message ||
-              e?.message ||
-              "Failed to load gym details"
-          );
-        }
+        if (!cancelled) setError(e?.response?.data?.message || e?.message || "Failed to load gym details");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-
     if (id != null) load();
-    else {
-      setLoading(false);
-      setError("Missing gym id");
-    }
-
-    return () => {
-      cancelled = true;
-    };
+    else { setLoading(false); setError("Missing gym id"); }
+    return () => { cancelled = true; };
   }, [id]);
 
-  useEffect(() => {
-    if (!gymIdNum) return;
-    refreshRatings(gymIdNum);
-  }, [gymIdNum]);
+  useEffect(() => { if (!gymIdNum) return; refreshRatings(gymIdNum); }, [gymIdNum]);
 
   useEffect(() => {
     let cancelled = false;
-
     async function loadMyRatings() {
       try {
         setMyRatingsLoading(true);
-        const res = await api.get(`/me/ratings?page=1`, {
-          headers: { "Cache-Control": "no-cache" },
-        });
+        const res = await api.get(`/me/ratings?page=1`, { headers: { "Cache-Control": "no-cache" } });
         const data = res?.data?.data;
-        const list = Array.isArray(data) ? data : [];
-        if (!cancelled) setMyRatings(list);
+        if (!cancelled) setMyRatings(Array.isArray(data) ? data : []);
       } catch (e) {
-        console.error(e);
         if (!cancelled) setMyRatings([]);
       } finally {
         if (!cancelled) setMyRatingsLoading(false);
       }
     }
-
     loadMyRatings();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-
     async function loadMyMembershipForGym(gymId) {
       if (!gymId) return;
-
       try {
         setMembershipLoading(true);
-
-        const res = await api.get(`/me/memberships?per_page=200&page=1`, {
-          headers: { "Cache-Control": "no-cache" },
-        });
-
-        const list = Array.isArray(res?.data?.data)
-          ? res.data.data
-          : Array.isArray(res?.data)
-          ? res.data
-          : [];
-
+        const res = await api.get(`/me/memberships?per_page=200&page=1`, { headers: { "Cache-Control": "no-cache" } });
+        const list = Array.isArray(res?.data?.data) ? res.data.data : Array.isArray(res?.data) ? res.data : [];
         const row = list.find((m) => Number(m?.gym_id) === Number(gymId));
         if (!cancelled) setMyGymMembership(row || null);
       } catch (e) {
-        console.error(e);
         if (!cancelled) setMyGymMembership(null);
       } finally {
         if (!cancelled) setMembershipLoading(false);
       }
     }
-
     loadMyMembershipForGym(gymIdNum);
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [gymIdNum]);
 
   useEffect(() => {
@@ -407,161 +364,100 @@ export default function GymDetails() {
   const toggleLike = () => {
     const saved = localStorage.getItem("likedGyms");
     let set = new Set();
-    try {
-      if (saved) set = new Set(JSON.parse(saved));
-    } catch {}
-
+    try { if (saved) set = new Set(JSON.parse(saved)); } catch {}
     if (set.has(gymIdNum)) set.delete(gymIdNum);
     else set.add(gymIdNum);
-
     localStorage.setItem("likedGyms", JSON.stringify([...set]));
     setIsLiked(set.has(gymIdNum));
   };
 
-  const nextImage = () => {
-    if (!images.length) return;
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    if (!images.length) return;
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+  const nextImage = () => { if (!images.length) return; setCurrentImageIndex((prev) => (prev + 1) % images.length); };
+  const prevImage = () => { if (!images.length) return; setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length); };
 
   const openDirection = () => {
     const gLat = gym?.latitude;
     const gLng = gym?.longitude;
     if (gLat == null || gLng == null) return;
-
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        window.open(
-          `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${gLat},${gLng}&travelmode=driving`,
-          "_blank"
-        );
-      },
-      () => {
-        window.open(
-          `https://www.google.com/maps/search/?api=1&query=${gLat},${gLng}`,
-          "_blank"
-        );
-      }
+      (pos) => { const { latitude, longitude } = pos.coords; window.open(`https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${gLat},${gLng}&travelmode=driving`, "_blank"); },
+      () => { window.open(`https://www.google.com/maps/search/?api=1&query=${gLat},${gLng}`, "_blank"); }
     );
   };
 
   useEffect(() => {
     if (!gym) return;
-
-    const target = {
-      machines: Array.isArray(gym?.equipments) ? gym.equipments.length : 0,
-      members: 0,
-      trainers: gym?.has_personal_trainers ? 1 : 0,
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated) {
-            Object.keys(target).forEach((k) => {
-              let i = 0;
-              const t = target[k];
-              const inc = Math.max(1, Math.ceil(t / 25));
-              const interval = setInterval(() => {
-                i += inc;
-                if (i >= t) {
-                  setCount((p) => ({ ...p, [k]: t }));
-                  clearInterval(interval);
-                } else {
-                  setCount((p) => ({ ...p, [k]: i }));
-                }
-              }, 20);
-            });
-            setHasAnimated(true);
-          }
-        });
-      },
-      { threshold: 0.25 }
-    );
-
+    const target = { machines: Array.isArray(gym?.equipments) ? gym.equipments.length : 0, members: 0, trainers: gym?.has_personal_trainers ? 1 : 0 };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          Object.keys(target).forEach((k) => {
+            let i = 0;
+            const t = target[k];
+            const inc = Math.max(1, Math.ceil(t / 25));
+            const interval = setInterval(() => {
+              i += inc;
+              if (i >= t) { setCount((p) => ({ ...p, [k]: t })); clearInterval(interval); }
+              else { setCount((p) => ({ ...p, [k]: i })); }
+            }, 20);
+          });
+          setHasAnimated(true);
+        }
+      });
+    }, { threshold: 0.25 });
     if (statsRef.current) observer.observe(statsRef.current);
     return () => observer.disconnect();
   }, [gym, hasAnimated]);
 
   useEffect(() => {
     let cancelled = false;
-
     async function loadMyFreeVisits() {
-      if (!gym?.gym_id) return;
-      if (!gym?.free_first_visit_enabled) return;
-
+      if (!gym?.gym_id || !gym?.free_first_visit_enabled) return;
       try {
         const res = await getMyFreeVisits({ perPage: 50, page: 1 });
         if (!cancelled) setFreeVisitsRes(res);
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     }
-
     loadMyFreeVisits();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [gym?.gym_id, gym?.free_first_visit_enabled]);
 
-  const myFreeVisitRow = useMemo(() => {
-    return findMyFreeVisitForGym(freeVisitsRes, gym?.gym_id);
-  }, [freeVisitsRes, gym?.gym_id]);
-
+  const myFreeVisitRow = useMemo(() => findMyFreeVisitForGym(freeVisitsRes, gym?.gym_id), [freeVisitsRes, gym?.gym_id]);
   const freeVisitStatus = String(myFreeVisitRow?.status || "");
   const hasFreeVisit = !!myFreeVisitRow;
   const freeVisitUsed = freeVisitStatus === "used";
 
   async function onFreePassClick() {
     if (!gym?.free_first_visit_enabled) return;
-
-    if (hasFreeVisit) {
-      setShowGiftModal(true);
-      return;
-    }
-
+    if (hasFreeVisit) { setShowGiftModal(true); return; }
     try {
       setFreeVisitBusy(true);
       await claimFreeVisit(gym.gym_id);
-
       setShowGiftModal(true);
-
       const res = await getMyFreeVisits({ perPage: 50, page: 1 });
       setFreeVisitsRes(res);
-    } catch (e) {
-      console.error(e);
-      alert(e?.message || "Failed to claim free pass");
-    } finally {
-      setFreeVisitBusy(false);
-    }
+    } catch (e) { alert(e?.message || "Failed to claim free pass"); }
+    finally { setFreeVisitBusy(false); }
   }
 
   if (loading) {
     return (
-      <div className="ugd-gym-details-page">
-        <div style={{ padding: 24, fontWeight: 900 }}>Loading gym…</div>
+      <div className="ugd-page">
+        <div className="ugd-loading-state">
+          <Loader2 size={28} className="ugd-spinner-icon" />
+          <span>Loading gym…</span>
+        </div>
       </div>
     );
   }
 
   if (error || !gym) {
     return (
-      <div className="ugd-gym-details-page">
-        <div style={{ padding: 24 }}>
-          <div style={{ fontWeight: 950, color: "#dc2626" }}>
-            {error || "Gym not found"}
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <button className="ugd-favorite-btn-small" onClick={() => navigate(-1)}>
-              Go Back
-            </button>
-          </div>
+      <div className="ugd-page">
+        <div className="ugd-error-state">
+          <p className="ugd-error-msg">{error || "Gym not found"}</p>
+          <button className="ugd-btn ugd-btn-secondary" onClick={() => navigate(-1)}>
+            <ArrowLeft size={15} /> Go Back
+          </button>
         </div>
       </div>
     );
@@ -571,368 +467,261 @@ export default function GymDetails() {
   const gLng = gym?.longitude;
 
   return (
-    <div className="ugd-gym-details-page">
-      <section className="ugd-gym-hero">
+    <div className="ugd-page">
+
+      {/* ── HERO ── */}
+      <section className="ugd-hero">
         <div className="ugd-hero-overlay" />
+
+        {/* Gallery */}
+        <div className="ugd-gallery">
+          <img
+            src={images[currentImageIndex] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&h=700&fit=crop"}
+            alt={`${gym?.name} - Image ${currentImageIndex + 1}`}
+            className="ugd-gallery-img"
+          />
+          {images.length > 1 && (
+            <>
+              <button className="ugd-gallery-btn ugd-gallery-prev" onClick={prevImage}>
+                <ChevronLeft size={18} />
+              </button>
+              <button className="ugd-gallery-btn ugd-gallery-next" onClick={nextImage}>
+                <ChevronRight size={18} />
+              </button>
+              <div className="ugd-gallery-dots">
+                {images.map((_, i) => (
+                  <button key={i} className={`ugd-dot ${i === currentImageIndex ? "active" : ""}`} onClick={() => setCurrentImageIndex(i)} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Hero content layer */}
         <div className="ugd-hero-content">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="ugd-back-link-btn"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Results
+          <button type="button" className="ugd-back-btn" onClick={() => navigate(-1)}>
+            <ArrowLeft size={16} />
+            <span>Back</span>
           </button>
 
-          <div className="ugd-hero-info">
+          <div className="ugd-hero-bottom">
             <div className="ugd-hero-text">
+              <div className="ugd-gym-type-label">{gym?.gym_type || "Gym"}</div>
               <h1 className="ugd-gym-name">{gym?.name}</h1>
-              <p className="ugd-gym-tagline">
-                {gym?.gym_type ? `${gym.gym_type} Gym` : "Gym Details"}
-              </p>
 
-              <div className="ugd-hero-meta">
-                <span className="ugd-location-badge">📍 {gym?.address || "—"}</span>
-                {gym?.has_personal_trainers ? (
-                  <span className="ugd-rating-badge">🎯 Personal Trainers</span>
-                ) : null}
-                {gym?.has_classes ? (
-                  <span className="ugd-rating-badge">📅 Classes</span>
-                ) : null}
-                {gym?.is_24_hours ? (
-                  <span className="ugd-rating-badge">🕐 24 Hours</span>
-                ) : null}
+              <div className="ugd-hero-badges">
+                <span className="ugd-badge ugd-badge-loc">
+                  <MapPin size={11} />{gym?.address || "—"}
+                </span>
+                {gym?.has_personal_trainers && <span className="ugd-badge"><Target size={11} />Personal Trainers</span>}
+                {gym?.has_classes && <span className="ugd-badge"><CalendarDays size={11} />Classes</span>}
+                {gym?.is_24_hours && <span className="ugd-badge"><Timer size={11} />24 Hours</span>}
               </div>
             </div>
 
             <div className="ugd-hero-actions">
-              <span className="ugd-price-tag">{displayPrice}</span>
-
+              <div className="ugd-price-tag">{displayPrice}</div>
               <button
-                className={`ugd-favorite-btn-hero ${isLiked ? "liked" : ""}`}
+                className={`ugd-like-btn ${isLiked ? "liked" : ""}`}
                 onClick={toggleLike}
                 title={isLiked ? "Saved" : "Save"}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill={isLiked ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
+                <Heart size={17} fill={isLiked ? "currentColor" : "none"} />
               </button>
             </div>
           </div>
         </div>
-
-        <div className="ugd-image-gallery">
-          <button
-            className="ugd-gallery-nav ugd-prev"
-            onClick={prevImage}
-            disabled={!images.length}
-            title="Previous"
-          >
-            ‹
-          </button>
-
-          <img
-            src={
-              images[currentImageIndex] ||
-              "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&h=700&fit=crop"
-            }
-            alt={`${gym?.name} - Image ${currentImageIndex + 1}`}
-            className="ugd-gallery-image"
-          />
-
-          <button
-            className="ugd-gallery-nav ugd-next"
-            onClick={nextImage}
-            disabled={!images.length}
-            title="Next"
-          >
-            ›
-          </button>
-
-          <div className="ugd-gallery-dots">
-            {images.map((_, index) => (
-              <span
-                key={index}
-                className={`ugd-dot ${
-                  index === currentImageIndex ? "active" : ""
-                }`}
-                onClick={() => setCurrentImageIndex(index)}
-              />
-            ))}
-          </div>
-        </div>
       </section>
 
-      <div className="ugd-gym-details-container">
-        <div className="ugd-details-grid">
-          <div className="ugd-main-column">
-            <div className="ugd-detail-card ugd-about-section">
+      {/* ── BODY ── */}
+      <div className="ugd-body">
+        <div className="ugd-grid">
+
+          {/* ════ MAIN COLUMN ════ */}
+          <div className="ugd-main">
+
+            {/* About */}
+            <div className="ugd-card">
               <h2 className="ugd-section-title">About This Gym</h2>
-              <p className="ugd-gym-description">
-                {gym?.description || "No description provided."}
-              </p>
+              <p className="ugd-description">{gym?.description || "No description provided."}</p>
             </div>
 
-            <div className="ugd-detail-card ugd-hours-section">
+            {/* Hours */}
+            <div className="ugd-card ugd-hours-card">
               <h2 className="ugd-section-title">Operating Hours</h2>
-              <div className="ugd-hours-info">
-                <div className="ugd-hours-icon">🕐</div>
-                <div className="ugd-hours-text">
-                  <p className="ugd-hours-time">{hoursText}</p>
-                  <span className="ugd-hours-status open">
+              <div className="ugd-hours-row">
+                <div className="ugd-hours-icon-wrap">
+                  <Clock size={18} />
+                </div>
+                <div>
+                  <div className="ugd-hours-time">{hoursText}</div>
+                  <span className="ugd-hours-status">
                     {gym?.is_24_hours ? "Open 24 Hours" : "Hours Available"}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="ugd-detail-card ugd-hours-section">
+            {/* Pricing */}
+            <div className="ugd-card">
               <h2 className="ugd-section-title">Pricing</h2>
-              <div style={{ display: "grid", gap: 10 }}>
-                <div className="ugd-equipment-item" style={{ fontWeight: 800 }}>
-                  💰 Daily:{" "}
-                  {safeNum(gym?.daily_price) ? fmtPeso(gym.daily_price) : "—"}
+              <div className="ugd-pricing-grid">
+                <div className="ugd-price-row">
+                  <div className="ugd-price-icon-wrap ugd-price-daily"><Zap size={14} /></div>
+                  <div>
+                    <div className="ugd-price-label">Daily</div>
+                    <div className="ugd-price-value">{safeNum(gym?.daily_price) ? fmtPeso(gym.daily_price) : "—"}</div>
+                  </div>
                 </div>
-                <div className="ugd-equipment-item" style={{ fontWeight: 800 }}>
-                  💳 Monthly:{" "}
-                  {safeNum(gym?.monthly_price)
-                    ? fmtPeso(gym.monthly_price)
-                    : "—"}
+                <div className="ugd-price-row">
+                  <div className="ugd-price-icon-wrap ugd-price-monthly"><CreditCard size={14} /></div>
+                  <div>
+                    <div className="ugd-price-label">Monthly</div>
+                    <div className="ugd-price-value">{safeNum(gym?.monthly_price) ? fmtPeso(gym.monthly_price) : "—"}</div>
+                  </div>
                 </div>
-                <div className="ugd-equipment-item" style={{ fontWeight: 800 }}>
-                  🏆 Annual:{" "}
-                  {safeNum(gym?.annual_price) ? fmtPeso(gym.annual_price) : "—"}
+                <div className="ugd-price-row">
+                  <div className="ugd-price-icon-wrap ugd-price-annual"><Trophy size={14} /></div>
+                  <div>
+                    <div className="ugd-price-label">Annual</div>
+                    <div className="ugd-price-value">{safeNum(gym?.annual_price) ? fmtPeso(gym.annual_price) : "—"}</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="ugd-detail-card ugd-stats-section" ref={statsRef}>
+            {/* Stats */}
+            <div className="ugd-card" ref={statsRef}>
               <h2 className="ugd-section-title">Gym Statistics</h2>
               <div className="ugd-stats-grid">
-                <StatCard
-                  icon="🏋️"
-                  value={count.machines}
-                  label="Equipments"
-                  color="orange"
-                />
-                <StatCard
-                  icon="🎯"
-                  value={count.trainers}
-                  label="Trainers"
-                  color="green"
-                />
-                <RatingStatCard
-                  rating={ratingValue}
-                  label="Rating"
-                  color="blue"
-                  verifiedCount={ratingsState?.summary?.verified_count || 0}
-                />
+                <StatCard icon={<Dumbbell size={20} />} value={count.machines} label="Equipment" color="orange" />
+                <StatCard icon={<Users size={20} />} value={count.trainers} label="Trainers" color="green" />
+                <RatingStatCard rating={ratingValue} label="Rating" color="blue" verifiedCount={ratingsState?.summary?.verified_count || 0} />
               </div>
             </div>
 
-            <div className="ugd-detail-card ugd-amenities-section">
+            {/* Amenities */}
+            <div className="ugd-card">
               <h2 className="ugd-section-title">Amenities & Features</h2>
-
               <div className="ugd-amenities-grid">
                 {amenities.length === 0 ? (
-                  <div className="ugd-muted-empty">No amenities listed.</div>
-                ) : (
-                  amenities.map((a) => {
-                    const available = a?.pivot?.availability_status ?? true;
-                    const note = a?.pivot?.notes || a?.description || "";
-                    const img = a?.pivot?.image_url || a?.image_url || null;
-
-                    return (
-                      <div
-                        key={a?.amenity_id ?? a?.id ?? a?.name}
-                        className={`ugd-amenity-item ${
-                          available ? "" : "ugd-amenity-unavailable"
-                        }`}
-                        title={note || a?.name}
-                      >
-                        {img ? (
-                          <img
-                            className="ugd-amenity-img"
-                            src={absoluteUrl(img)}
-                            alt={a?.name || "Amenity"}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span className="ugd-amenity-icon">✨</span>
-                        )}
-
-                        <div className="ugd-amenity-text">
-                          <div className="ugd-amenity-name">
-                            {a?.name || "Amenity"}
-                          </div>
-                          {available ? null : (
-                            <div className="ugd-amenity-sub">(Unavailable)</div>
-                          )}
-                        </div>
+                  <p className="ugd-empty">No amenities listed.</p>
+                ) : amenities.map((a) => {
+                  const available = a?.pivot?.availability_status ?? true;
+                  const img = a?.pivot?.image_url || a?.image_url || null;
+                  return (
+                    <div key={a?.amenity_id ?? a?.id ?? a?.name} className={`ugd-amenity-item ${available ? "" : "ugd-unavailable"}`}>
+                      {img
+                        ? <img className="ugd-amenity-img" src={absoluteUrl(img)} alt={a?.name || "Amenity"} loading="lazy" />
+                        : <div className="ugd-amenity-icon-wrap"><Sparkles size={14} /></div>
+                      }
+                      <div className="ugd-amenity-text">
+                        <div className="ugd-amenity-name">{a?.name || "Amenity"}</div>
+                        {!available && <div className="ugd-amenity-unavail">Unavailable</div>}
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="ugd-detail-card ugd-equipment-section">
-              <h2 className="ugd-section-title">Available Equipment</h2>
-
-              <div className="ugd-equipment-list">
-                {equipments.length === 0 ? (
-                  <div className="ugd-muted-empty">No equipments listed.</div>
-                ) : (
-                  equipments.map((e) => (
-                    <div
-                      key={e?.equipment_id ?? e?.id ?? e?.name}
-                      className="ugd-equipment-item"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                      </svg>
-                      <span className="ugd-equipment-name">
-                        {String(e?.name || "").replaceAll("_", " ")}
-                      </span>
                     </div>
-                  ))
-                )}
+                  );
+                })}
               </div>
             </div>
+
+            {/* Equipment */}
+            <div className="ugd-card">
+              <h2 className="ugd-section-title">Available Equipment</h2>
+              <div className="ugd-equip-list">
+                {equipments.length === 0 ? (
+                  <p className="ugd-empty">No equipment listed.</p>
+                ) : equipments.map((e) => (
+                  <div key={e?.equipment_id ?? e?.id ?? e?.name} className="ugd-equip-item">
+                    <Check size={13} className="ugd-equip-check" />
+                    <span>{String(e?.name || "").replaceAll("_", " ")}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
 
-          <div className="ugd-sidebar-column">
-            <div className="ugd-detail-card ugd-map-card">
+          {/* ════ SIDEBAR ════ */}
+          <div className="ugd-sidebar">
+
+            {/* Map */}
+            <div className="ugd-card ugd-map-card">
               <h2 className="ugd-section-title">Location</h2>
-              <div className="ugd-map-container">
+              <div className="ugd-map-wrap">
                 <iframe
                   title="Gym Location Map"
-                  className="ugd-gym-map"
+                  className="ugd-map-frame"
                   src={`https://maps.google.com/maps?q=${gLat},${gLng}&z=15&output=embed`}
                   loading="lazy"
                 />
               </div>
-              <p className="ugd-map-address">📍 {gym?.address || "—"}</p>
-              <button className="ugd-direction-btn" onClick={openDirection}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
-                </svg>
-                Get Directions
+              <p className="ugd-map-address"><MapPin size={12} />{gym?.address || "—"}</p>
+              <button className="ugd-btn ugd-btn-secondary ugd-btn-full" onClick={openDirection}>
+                <Navigation size={14} />Get Directions
               </button>
             </div>
 
-            <div className="ugd-detail-card ugd-contact-card">
+            {/* Contact */}
+            <div className="ugd-card">
               <h2 className="ugd-section-title">Get in Touch</h2>
+              <div className="ugd-contact-list">
+                <div className="ugd-contact-row">
+                  <Phone size={13} className="ugd-contact-icon" />
+                  <span>{gym?.contact_number || "—"}</span>
+                </div>
+                <div className="ugd-contact-row">
+                  <Mail size={13} className="ugd-contact-icon" />
+                  <span>{gym?.email || "—"}</span>
+                </div>
+                <div className="ugd-contact-row">
+                  <Globe size={13} className="ugd-contact-icon" />
+                  {gym?.website
+                    ? <a href={gym.website} target="_blank" rel="noreferrer" className="ugd-link">{gym.website}</a>
+                    : <span>—</span>
+                  }
+                </div>
+              </div>
 
-              <div className="ugd-contact-info" style={{ display: "grid", gap: 8 }}>
-                <p>
-                  <strong>Phone:</strong> {gym?.contact_number || "—"}
-                </p>
-                <p>
-                  <strong>Email:</strong> {gym?.email || "—"}
-                </p>
-                <p>
-                  <strong>Website:</strong>{" "}
-                  {gym?.website ? (
-                    <a href={gym.website} target="_blank" rel="noreferrer">
-                      {gym.website}
+              {(gym?.facebook_page || gym?.instagram_page) && (
+                <div className="ugd-social-row">
+                  {gym?.facebook_page && (
+                    <a href={gym.facebook_page} className="ugd-social-btn ugd-fb" target="_blank" rel="noopener noreferrer">
+                      <Facebook size={14} />
                     </a>
-                  ) : (
-                    "—"
                   )}
-                </p>
-              </div>
+                  {gym?.instagram_page && (
+                    <a href={gym.instagram_page} className="ugd-social-btn ugd-ig" target="_blank" rel="noopener noreferrer">
+                      <Instagram size={14} />
+                    </a>
+                  )}
+                </div>
+              )}
 
-              <div className="ugd-social-links" style={{ marginTop: 12 }}>
-                {gym?.facebook_page ? (
-                  <a
-                    href={gym.facebook_page}
-                    className="ugd-social-link ugd-facebook"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Facebook"
-                  >
-                    f
-                  </a>
-                ) : null}
-
-                {gym?.instagram_page ? (
-                  <a
-                    href={gym.instagram_page}
-                    className="ugd-social-link ugd-instagram"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Instagram"
-                  >
-                    ig
-                  </a>
-                ) : null}
-              </div>
-
-              {gym?.owner ? (
-                <div style={{ marginTop: 14 }}>
-                  <div style={{ fontWeight: 900, marginBottom: 8 }}>Owner</div>
-
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    {gym?.owner?.profile_photo_url ? (
-                      <img
-                        src={gym.owner.profile_photo_url}
-                        alt={gym.owner.name}
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 999,
-                          objectFit: "cover",
-                          border: "2px solid rgba(0,0,0,0.06)",
-                        }}
-                      />
-                    ) : null}
-
-                    <div style={{ lineHeight: 1.15 }}>
-                      <div style={{ fontWeight: 900 }}>{gym.owner.name}</div>
-                      <div style={{ opacity: 0.8, fontWeight: 650 }}>
-                        {gym.owner.email}
-                      </div>
+              {gym?.owner && (
+                <div className="ugd-owner-row">
+                  <div className="ugd-owner-label">Owner</div>
+                  <div className="ugd-owner-info">
+                    {gym.owner.profile_photo_url
+                      ? <img src={gym.owner.profile_photo_url} alt={gym.owner.name} className="ugd-owner-avatar" />
+                      : <div className="ugd-owner-avatar-placeholder"><UserCircle size={22} /></div>
+                    }
+                    <div>
+                      <div className="ugd-owner-name">{gym.owner.name}</div>
+                      <div className="ugd-owner-email">{gym.owner.email}</div>
                     </div>
                   </div>
                 </div>
-              ) : null}
+              )}
 
-              <div style={{ marginTop: 16 }}>
-                <button
-                  type="button"
-                  className="ugd-action-btn ugd-primary"
-                  onClick={() => setGymInquiryOpen(true)}
-                  disabled={!gym?.id && !gym?.gym_id}
-                >
-                  Inquire Now
-                </button>
-              </div>
+              <button
+                type="button"
+                className="ugd-btn ugd-btn-primary ugd-btn-full"
+                onClick={() => setGymInquiryOpen(true)}
+                disabled={!gym?.id && !gym?.gym_id}
+              >
+                <MessageSquare size={14} />Inquire Now
+              </button>
 
               {gymInquiryOpen && (
                 <GymInquiryModal
@@ -944,226 +733,125 @@ export default function GymDetails() {
               )}
             </div>
 
-            <div className="ugd-detail-card ugd-actions-card">
+            {/* Quick Actions */}
+            <div className="ugd-card">
               <h2 className="ugd-section-title">Quick Actions</h2>
+              <div className="ugd-actions-list">
 
-              <div className="ugd-action-buttons">
                 {hasActiveMembershipHere ? (
-                  <button
-                    className="ugd-action-btn ugd-primary"
-                    type="button"
-                    onClick={() => navigate("/home/memberships")}
-                  >
-                    <span className="ugd-action-icon">🎫</span>
-                    View Membership
+                  <button className="ugd-btn ugd-btn-primary ugd-btn-full" type="button" onClick={() => navigate("/home/memberships")}>
+                    <Ticket size={14} />View Membership
                   </button>
                 ) : isPendingMembershipHere ? (
-                  <button
-                    className="ugd-action-btn ugd-secondary"
-                    type="button"
-                    onClick={() => navigate("/home/memberships")}
-                  >
-                    <span className="ugd-action-icon">⏳</span>
-                    Membership Pending
+                  <button className="ugd-btn ugd-btn-secondary ugd-btn-full" type="button" onClick={() => navigate("/home/memberships")}>
+                    <Loader2 size={14} className="ugd-spinner-icon" />Membership Pending
                   </button>
                 ) : (
-                  <button
-                    className="ugd-action-btn ugd-primary"
-                    type="button"
-                    onClick={() => setShowMembershipModal(true)}
-                    disabled={membershipLoading}
-                    title={
-                      membershipLoading
-                        ? "Checking membership…"
-                        : "Get Membership"
-                    }
-                  >
-                    <span className="ugd-action-icon">🎫</span>
-                    {membershipLoading ? "Checking…" : "Get Membership"}
+                  <button className="ugd-btn ugd-btn-primary ugd-btn-full" type="button" onClick={() => setShowMembershipModal(true)} disabled={membershipLoading}>
+                    <Ticket size={14} />{membershipLoading ? "Checking…" : "Get Membership"}
                   </button>
                 )}
 
                 <button
-                  className="ugd-action-btn ugd-secondary"
+                  className="ugd-btn ugd-btn-secondary ugd-btn-full"
                   type="button"
                   onClick={() => setShowRateModal(true)}
                   disabled={myRatingsLoading}
-                  title={myGymRating ? "Edit your rating" : "Rate this gym"}
                 >
-                  <span className="ugd-action-icon">⭐</span>
-                  {myRatingsLoading
-                    ? "Checking…"
-                    : myGymRating
-                    ? "Edit Rating"
-                    : "Rate this Gym"}
+                  {myGymRating ? <Pencil size={14} /> : <Star size={14} />}
+                  {myRatingsLoading ? "Checking…" : myGymRating ? "Edit Rating" : "Rate this Gym"}
                 </button>
 
-                {gym?.free_first_visit_enabled ? (
+                {gym?.free_first_visit_enabled && (
                   <button
-                    className="ugd-action-btn ugd-secondary"
+                    className="ugd-btn ugd-btn-secondary ugd-btn-full"
                     type="button"
                     onClick={onFreePassClick}
                     disabled={freeVisitBusy}
-                    title="Free First Visit"
                   >
-                    <span className="ugd-action-icon">🎁</span>
-                    {freeVisitBusy
-                      ? "Claiming…"
-                      : freeVisitUsed
-                      ? "Pass Used"
-                      : hasFreeVisit
-                      ? "View 1st Visit Free Pass"
-                      : "Free  1st Visit Free Pass"}
+                    <Gift size={14} />
+                    {freeVisitBusy ? "Claiming…" : freeVisitUsed ? "Pass Used" : hasFreeVisit ? "View Free Pass" : "Claim Free Visit"}
                   </button>
-                ) : null}
+                )}
               </div>
             </div>
 
-            <div className="ugd-detail-card ugd-reviews-card">
+            {/* Reviews */}
+            <div className="ugd-card">
               <div className="ugd-reviews-head">
-                <h2 className="ugd-section-title" style={{ marginBottom: 0 }}>
-                  Reviews
-                </h2>
-
-                <button
-                  className="ugd-reviews-showall"
-                  type="button"
-                  onClick={() => setShowReviewsModal(true)}
-                >
+                <h2 className="ugd-section-title" style={{ marginBottom: 0 }}>Reviews</h2>
+                <button className="ugd-show-all-btn" type="button" onClick={() => setShowReviewsModal(true)}>
                   Show all
                 </button>
               </div>
 
               <div className="ugd-reviews-list">
                 {ratingsLoading ? (
-                  <div className="ugd-reviews-empty">Loading…</div>
+                  <div className="ugd-reviews-empty"><Loader2 size={16} className="ugd-spinner-icon" /> Loading…</div>
                 ) : (ratingsState?.ratings || []).length === 0 ? (
                   <div className="ugd-reviews-empty">No reviews yet.</div>
-                ) : (
-                  (ratingsState.ratings || []).slice(0, 3).map((r) => {
-                    const name = r?.user?.name || "User";
-                    const tag = reviewTag(r);
+                ) : (ratingsState.ratings || []).slice(0, 3).map((r) => {
+                  const name = r?.user?.name || "User";
+                  const tag = reviewTag(r);
+                  const reviewerId = Number(r?.user_id ?? r?.user?.user_id ?? r?.user?.id ?? NaN);
+                  const isMine = myUserId != null && Number.isFinite(reviewerId) && reviewerId === myUserId;
 
-                    const reviewerId = Number(
-                      r?.user_id ?? r?.user?.user_id ?? r?.user?.id ?? NaN
-                    );
-                    const isMine =
-                      myUserId != null &&
-                      Number.isFinite(reviewerId) &&
-                      reviewerId === myUserId;
-
-                    return (
-                      <div
-                        key={r.rating_id}
-                        className={`ugd-review-item ${isMine ? "mine" : ""}`}
-                      >
-                        <div className="ugd-review-top">
-                          <div className="ugd-review-user">
-                            <div className="ugd-review-name-row">
-                              <div className="ugd-review-name">
-                                {isMine ? "You" : name}
-                              </div>
-                              {isMine ? (
-                                <span className="ugd-review-you">You</span>
-                              ) : null}
-                            </div>
-                            <div className={`ugd-review-tag ${tag.cls}`}>
-                              {tag.label}
-                            </div>
+                  return (
+                    <div key={r.rating_id} className={`ugd-review-item ${isMine ? "mine" : ""}`}>
+                      <div className="ugd-review-top">
+                        <div>
+                          <div className="ugd-review-name-row">
+                            <span className="ugd-review-name">{isMine ? "You" : name}</span>
+                            {isMine && <span className="ugd-review-you-badge">You</span>}
                           </div>
-
-                          <div className="ugd-review-stars">
-                            <StarRow value={Number(r?.stars || 0)} compact />
-                          </div>
+                          <span className={`ugd-review-tag ${tag.cls}`}>{tag.label}</span>
                         </div>
-
-                        {r?.review ? (
-                          <div className="ugd-review-text">
-                            {String(r.review).slice(0, 140)}
-                            {String(r.review).length > 140 ? "…" : ""}
-                          </div>
-                        ) : (
-                          <div className="ugd-review-text empty">No comment.</div>
-                        )}
+                        <StarRow value={Number(r?.stars || 0)} compact />
                       </div>
-                    );
-                  })
-                )}
+                      <div className={`ugd-review-text ${!r?.review ? "empty" : ""}`}>
+                        {r?.review ? String(r.review).slice(0, 140) + (String(r.review).length > 140 ? "…" : "") : "No comment."}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+
           </div>
         </div>
       </div>
 
-      {showReviewsModal ? (
-        <ReviewsModal
-          open={showReviewsModal}
-          onClose={() => setShowReviewsModal(false)}
-          gymId={gym?.gym_id ?? Number(id)}
-          gymName={gym?.name}
-          myUserId={myUserId}
-          onEditMine={() => {
-            setShowReviewsModal(false);
-            setShowRateModal(true);
-          }}
-        />
-      ) : null}
-
-      {showMembershipModal ? (
-        <RequestMembershipModal
-          gym={gym}
-          onClose={() => setShowMembershipModal(false)}
-          onSuccess={() => setShowMembershipModal(false)}
-        />
-      ) : null}
-
-      {showRateModal ? (
-        <RateGymModal
-          gym={gym}
-          onClose={() => setShowRateModal(false)}
-          onSuccess={() => {
-            setShowRateModal(false);
-
-            refreshRatings(gym?.gym_id ?? gymIdNum);
-
-            (async () => {
-              try {
-                const res = await api.get(`/me/ratings?page=1`, {
-                  headers: { "Cache-Control": "no-cache" },
-                });
-                const data = res?.data?.data;
-                setMyRatings(Array.isArray(data) ? data : []);
-              } catch {}
-            })();
-          }}
-        />
-      ) : null}
-
-      {showGiftModal ? (
-        <GiftRevealModal
-          open={showGiftModal}
-          onClose={() => setShowGiftModal(false)}
-          gymName={gym?.name}
-          status={freeVisitUsed ? "used" : "claimed"}
-          claimCode={myFreeVisitRow?.free_visit_id}
-        />
-      ) : null}
+      {/* ── MODALS ── */}
+      {showReviewsModal && (
+        <ReviewsModal open={showReviewsModal} onClose={() => setShowReviewsModal(false)} gymId={gym?.gym_id ?? Number(id)} gymName={gym?.name} myUserId={myUserId} onEditMine={() => { setShowReviewsModal(false); setShowRateModal(true); }} />
+      )}
+      {showMembershipModal && (
+        <RequestMembershipModal gym={gym} onClose={() => setShowMembershipModal(false)} onSuccess={() => setShowMembershipModal(false)} />
+      )}
+      {showRateModal && (
+        <RateGymModal gym={gym} onClose={() => setShowRateModal(false)} onSuccess={() => {
+          setShowRateModal(false);
+          refreshRatings(gym?.gym_id ?? gymIdNum);
+          (async () => {
+            try {
+              const res = await api.get(`/me/ratings?page=1`, { headers: { "Cache-Control": "no-cache" } });
+              const data = res?.data?.data;
+              setMyRatings(Array.isArray(data) ? data : []);
+            } catch {}
+          })();
+        }} />
+      )}
+      {showGiftModal && (
+        <GiftRevealModal open={showGiftModal} onClose={() => setShowGiftModal(false)} gymName={gym?.name} status={freeVisitUsed ? "used" : "claimed"} claimCode={myFreeVisitRow?.free_visit_id} />
+      )}
     </div>
   );
 }
 
 function reviewTag(r) {
   const verifiedBool = r?.verified === true;
-
-  if (verifiedBool) {
-    const via = String(r?.verified_via || "").toLowerCase();
-    if (via === "membership") return { label: "Member", cls: "ugd-tag-member" };
-    if (via === "free_visit_used") return { label: "Visited", cls: "ugd-tag-visited" };
-    return { label: "Verified", cls: "ugd-tag-member" };
-  }
-
   const via = String(r?.verified_via || "").toLowerCase();
-  if (via === "membership") return { label: "Member", cls: "ugd-tag-member" };
+  if (verifiedBool || via === "membership") return { label: "Member", cls: "ugd-tag-member" };
   if (via === "free_visit_used") return { label: "Visited", cls: "ugd-tag-visited" };
   return { label: "Unverified", cls: "ugd-tag-unverified" };
 }

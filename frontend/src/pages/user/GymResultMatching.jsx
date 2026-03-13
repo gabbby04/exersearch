@@ -3,6 +3,15 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./GymRes-Matching.css";
 import { api } from "../../utils/apiClient";
 import { absoluteUrl } from "../../utils/findGymsData";
+import { useTheme } from "../../pages/user/ThemeContext";
+import { 
+  MapPin, 
+  DollarSign, 
+  Star, 
+  Heart, 
+  X, 
+  Check 
+} from "lucide-react";
 
 const MAIN_ORANGE = "#ff8c00";
 const RECOMMEND_ENDPOINT = "/gyms/recommend";
@@ -118,6 +127,7 @@ function writeResultsCache({ user, gyms, mode }) {
 export default function GymResultsMatching() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isDark } = useTheme();
 
   // ✅ accept either old shape OR new shape
   const initialPayload = useMemo(() => {
@@ -372,7 +382,7 @@ export default function GymResultsMatching() {
   const rankedGyms = useMemo(() => gyms || [], [gyms]);
 
   return (
-    <div className="matching-results-page">
+    <div className="matching-results-page" data-theme={isDark ? "dark" : "light"}>
       <section className="matching-header">
         <div className="container">
           <h1>Your Best Matches</h1>
@@ -383,14 +393,9 @@ export default function GymResultsMatching() {
               <button
                 key={m}
                 className="favorite-btn-small"
-                aria-pressed={mode === m}
                 onClick={() => {
                   setMode(m);
                   fetchRecommend(m);
-                }}
-                style={{
-                  borderColor: mode === m ? MAIN_ORANGE : undefined,
-                  background: mode === m ? "#fff5e6" : "white",
                 }}
               >
                 {m.toUpperCase()}
@@ -472,7 +477,9 @@ export default function GymResultsMatching() {
                         <div className="match-header">
                           <div>
                             <h2>{gym.name}</h2>
-                            <p className="gym-location">📍 {addressText}</p>
+                            <p className="gym-location">
+                              <MapPin size={16} /> {addressText}
+                            </p>
                             <p className="gym-subline">
                               {distanceText} away{" "}
                               {gym?.travel_time_min ? `• ${gym.travel_time_min} min` : ""}
@@ -480,16 +487,18 @@ export default function GymResultsMatching() {
                           </div>
 
                           <div className="score-star" title="Derived from TOPSIS score (0–100)">
-                            <span className="star">★</span>
+                            <Star className="star" size={18} />
                             <span className="score-text">ExerSearch Score: {exerScore}</span>
                           </div>
                         </div>
 
                         <div className="quick-info">
-                          <div className="info-pill distance">📍 {distanceText} away</div>
+                          <div className="info-pill distance">
+                            <MapPin size={14} /> {distanceText} away
+                          </div>
 
                           <div className={`info-pill price ${isOverBudget ? "over-budget" : "in-budget"}`}>
-                            💰 {fmtPeso(gym?.price)} / {user?.plan_type || "plan"}{" "}
+                            <DollarSign size={14} /> {fmtPeso(gym?.price)} / {user?.plan_type || "plan"}{" "}
                             {isOverBudget ? "• Over" : "• Good"}
                           </div>
                         </div>
@@ -589,7 +598,11 @@ export default function GymResultsMatching() {
                             disabled={isSaving}
                             style={{ opacity: isSaving ? 0.7 : 1 }}
                           >
-                            <span className="heart">{isSaved ? "♥" : "♡"}</span>
+                            {isSaved ? (
+                              <Heart size={18} fill="currentColor" className="heart" />
+                            ) : (
+                              <Heart size={18} className="heart" />
+                            )}
                             {isSaving ? "Saving..." : isSaved ? "Saved" : "Save"}
                           </button>
                         </div>
@@ -642,7 +655,7 @@ function BreakdownModal({ gym, user, onClose }) {
         <div className="breakdown-top">
           <div className="breakdown-heading">Breakdown • {gym?.name}</div>
           <button className="breakdown-close" onClick={onClose} title="Close">
-            ✖
+            <X size={20} />
           </button>
         </div>
 
@@ -671,7 +684,11 @@ function BreakdownModal({ gym, user, onClose }) {
                     ) : (
                       <div className="breakdown-img-fallback" />
                     )}
-                    <span className="mark">{a.matched ? "✓" : "✖"}</span>
+                    {a.matched ? (
+                      <Check size={16} className="mark" />
+                    ) : (
+                      <X size={16} className="mark" />
+                    )}
                     <span className="txt">{a.name}</span>
                   </div>
                 ))
@@ -696,7 +713,11 @@ function BreakdownModal({ gym, user, onClose }) {
                     ) : (
                       <div className="breakdown-img-fallback" />
                     )}
-                    <span className="mark">{e.matched ? "✓" : "✖"}</span>
+                    {e.matched ? (
+                      <Check size={16} className="mark" />
+                    ) : (
+                      <X size={16} className="mark" />
+                    )}
                     <span className="txt" style={{ textTransform: "capitalize" }}>
                       {e.name}
                     </span>
@@ -747,4 +768,4 @@ function BreakdownModal({ gym, user, onClose }) {
       </div>
     </div>
   );
-}
+} 
