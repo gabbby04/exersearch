@@ -3,8 +3,23 @@ import { Link, useNavigate } from "react-router-dom";
 import "./SavedGyms.css";
 import { api } from "../../utils/apiClient";
 import { absoluteUrl } from "../../utils/findGymsData";
+import {
+  MapPin,
+  Clock,
+  Tag,
+  CalendarCheck,
+  CreditCard,
+  ArrowLeft,
+  RefreshCw,
+  Heart,
+  Dumbbell,
+  Search,
+  Trash2,
+  BookmarkX,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 
-const MAIN_ORANGE = "#ff8c00";
 const SAVED_ENDPOINT = "/user/saved-gyms";
 
 function safeNum(v) {
@@ -38,7 +53,6 @@ export default function SavedGyms() {
   const [loading, setLoading] = useState(true);
   const [busyGymId, setBusyGymId] = useState(null);
   const [error, setError] = useState(null);
-
   const [rows, setRows] = useState([]);
   const [planType] = useState("monthly");
 
@@ -51,33 +65,25 @@ export default function SavedGyms() {
       setRows(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
-      setError(
-        e?.response?.data?.message || e?.message || "Failed to load saved gyms"
-      );
+      setError(e?.response?.data?.message || e?.message || "Failed to load saved gyms");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchSaved();
-  }, [fetchSaved]);
+  useEffect(() => { fetchSaved(); }, [fetchSaved]);
 
   const unsave = async (gymId) => {
     if (!gymId) return;
     setBusyGymId(gymId);
-
     const prev = rows;
     setRows((cur) => cur.filter((x) => x.gym_id !== gymId));
-
     try {
       await api.delete(`${SAVED_ENDPOINT}/${gymId}`);
     } catch (e) {
       console.error(e);
       setRows(prev);
-      setError(
-        e?.response?.data?.message || e?.message || "Failed to unsave gym"
-      );
+      setError(e?.response?.data?.message || e?.message || "Failed to unsave gym");
     } finally {
       setBusyGymId(null);
     }
@@ -86,158 +92,154 @@ export default function SavedGyms() {
   const savedCount = rows.length;
 
   const normalized = useMemo(() => {
-    return rows.map((g) => {
-      const image =
-        g?.main_image_url
-          ? absoluteUrl(g.main_image_url)
-          : "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop";
-
-      const price = pickPlanPrice(g, planType);
-      const addr =
-        g?.address ||
-        (g?.latitude != null && g?.longitude != null
-          ? `${g.latitude}, ${g.longitude}`
-          : "—");
-
-      return {
-        ...g,
-        _image: image,
-        _addr: addr,
-        _price: price,
-      };
-    });
+    return rows.map((g) => ({
+      ...g,
+      _image: g?.main_image_url
+        ? absoluteUrl(g.main_image_url)
+        : "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop",
+      _addr: g?.address || (g?.latitude != null && g?.longitude != null
+        ? `${g.latitude}, ${g.longitude}` : "—"),
+      _price: pickPlanPrice(g, planType),
+    }));
   }, [rows, planType]);
 
   return (
-    <div className="saved-page">
-      <section className="saved-header">
-        <div className="container">
-          <div className="saved-header-top">
-            <div>
-              <h1>Saved Gyms</h1>
-              <p>Your bookmarked gyms — ready when you are.</p>
+    <div className="sg-page">
+
+      {/* ── HEADER ── */}
+      <section className="sg-header">
+        <div className="sg-container">
+          <div className="sg-header-top">
+            <div className="sg-header-text">
+              <div className="sg-header-eyebrow">Your Collection</div>
+              <h1 className="sg-header-title">Saved Gyms</h1>
+              <p className="sg-header-sub">Your bookmarked gyms — ready when you are.</p>
             </div>
 
-            <div className="saved-header-actions">
-              <button
-                className="btn-outline"
-                onClick={() => navigate("/home/gym-results")}
-                title="Back to results"
-              >
-                ← Results
+            <div className="sg-header-actions">
+              <button className="sg-btn sg-btn-ghost" onClick={() => navigate("/home/gym-results")}>
+                <ArrowLeft size={14} />Results
               </button>
-              <button className="btn-solid" onClick={fetchSaved} title="Refresh">
-                Refresh
+              <button className="sg-btn sg-btn-ghost" onClick={fetchSaved}>
+                <RefreshCw size={14} />Refresh
               </button>
             </div>
           </div>
 
-          <div className="saved-summary">
-            <span className="summary-pill">
-              ★ Saved: <b>{savedCount}</b>
+          <div className="sg-summary-row">
+            <span className="sg-summary-pill">
+              <Heart size={12} />Saved: <b>{savedCount}</b>
             </span>
-            <span className="summary-pill">
-              Plan: <b>{prettyPlan(planType)}</b>
+            <span className="sg-summary-pill">
+              <CreditCard size={12} />Plan: <b>{prettyPlan(planType)}</b>
             </span>
           </div>
         </div>
       </section>
 
-      <section className="saved-body">
-        <div className="container">
+      {/* ── BODY ── */}
+      <section className="sg-body">
+        <div className="sg-container">
+
           {loading ? (
-            <div className="state-box">
-              <div className="state-title">Loading your saved gyms…</div>
-              <div className="state-sub">Please wait.</div>
-            </div>
-          ) : error ? (
-            <div className="state-box error">
-              <div className="state-title">Oops.</div>
-              <div className="state-sub">{error}</div>
-              <div className="state-actions">
-                <button className="btn-solid" onClick={fetchSaved}>
-                  Retry
-                </button>
+            <div className="sg-state">
+              <div className="sg-state-icon">
+                <Loader2 size={30} className="sg-spinner" />
               </div>
+              <div className="sg-state-title">Loading your saved gyms…</div>
+              <div className="sg-state-sub">Fetching your bookmarked gym collection.</div>
             </div>
+
+          ) : error ? (
+            <div className="sg-state sg-state-error">
+              <div className="sg-state-icon">
+                <AlertCircle size={30} />
+              </div>
+              <div className="sg-state-title">Something went wrong</div>
+              <div className="sg-state-sub">{error}</div>
+              <button className="sg-btn sg-btn-primary" onClick={fetchSaved}>
+                <RefreshCw size={14} />Try Again
+              </button>
+            </div>
+
           ) : savedCount === 0 ? (
-            <div className="empty-wrap">
-              <div className="empty-card">
-                <div className="empty-icon">♡</div>
-                <div className="empty-title">No saved gyms yet</div>
-                <div className="empty-sub">
+            <div className="sg-empty-wrap">
+              <div className="sg-empty-card">
+                <div className="sg-empty-icon">
+                  <BookmarkX size={38} />
+                </div>
+                <div className="sg-empty-title">No saved gyms yet</div>
+                <div className="sg-empty-sub">
                   Start exploring and tap <b>Save</b> to keep gyms here.
                 </div>
-
-<div className="empty-actions">
-  <Link className="btn-solid" to="/home/gyms">
-     Gyms List
-  </Link>
-
-  <Link className="btn-outline" to="/home/find-gyms">
-    Find Gyms for You
-  </Link>
-</div>
+                <div className="sg-empty-actions">
+                  <Link className="sg-btn sg-btn-primary" to="/home/gyms">
+                    <Dumbbell size={14} />Gyms List
+                  </Link>
+                  <Link className="sg-btn sg-btn-ghost" to="/home/find-gyms">
+                    <Search size={14} />Find Gyms for You
+                  </Link>
+                </div>
               </div>
             </div>
+
           ) : (
-            <div className="saved-list">
+            <div className="sg-list">
               {normalized.map((gym) => {
                 const gymId = gym.gym_id;
                 const isBusy = busyGymId === gymId;
 
                 return (
-                  <div key={gym.saved_id || gymId} className="saved-card">
-                    <div className="saved-image">
-                      <img src={gym._image} alt={gym.name} />
+                  <div key={gym.saved_id || gymId} className="sg-card">
+                    <div className="sg-card-image">
+                      <img src={gym._image} alt={gym.name} loading="lazy" />
+                      <div className="sg-card-image-overlay" />
                     </div>
 
-                    <div className="saved-details">
-                      <div className="saved-toprow">
-                        <div>
-                          <h2 className="saved-title">{gym.name}</h2>
-                          <p className="saved-location">📍 {gym._addr}</p>
+                    <div className="sg-card-body">
+                      <div className="sg-card-top">
+                        <div className="sg-card-info">
+                          <h2 className="sg-gym-name">{gym.name}</h2>
+                          <p className="sg-gym-addr">
+                          <MapPin size={12} /><span>{gym._addr}</span>
+                        </p>
                         </div>
-
-                        <div className="saved-price">
-                          <span className="price-pill">
-                            💰 {fmtPeso(gym._price)} / {prettyPlan(planType)}
-                          </span>
+                        <div className="sg-price-pill">
+                          <CreditCard size={12} />
+                          {fmtPeso(gym._price)}<span>/ {prettyPlan(planType)}</span>
                         </div>
                       </div>
 
-                      <div className="saved-meta">
-                        <span className="meta-pill">
-                          🕒 {gym.opening_time || "—"} -{" "}
-                          {gym.closing_time || "—"}
+                      <div className="sg-meta-row">
+                        <span className="sg-meta-pill">
+                          <Clock size={11} />
+                          {gym.opening_time || "—"} – {gym.closing_time || "—"}
                         </span>
-                        <span className="meta-pill">
-                          🏷️ {gym.gym_type || "Gym"}
+                        <span className="sg-meta-pill">
+                          <Tag size={11} />
+                          {gym.gym_type || "Gym"}
                         </span>
-                        <span className="meta-pill">
-                          ✅ Saved{" "}
-                          {gym.saved_at
-                            ? new Date(gym.saved_at).toLocaleDateString()
-                            : "—"}
+                        <span className="sg-meta-pill">
+                          <CalendarCheck size={11} />
+                          Saved {gym.saved_at ? new Date(gym.saved_at).toLocaleDateString() : "—"}
                         </span>
                       </div>
 
-                      <div className="saved-actions">
-                        <Link
-                          to={`/home/gym/${gymId}`}
-                          className="btn-solid"
-                          title="Open gym details"
-                        >
+                      <div className="sg-card-divider" />
+
+                      <div className="sg-card-actions">
+                        <Link to={`/home/gym/${gymId}`} className="sg-btn sg-btn-primary">
                           View Full Details
                         </Link>
-
                         <button
-                          className="btn-outline danger"
+                          className="sg-btn sg-btn-danger"
                           onClick={() => unsave(gymId)}
                           disabled={isBusy}
-                          title="Remove from saved"
                         >
-                          {isBusy ? "Removing…" : "Unsave"}
+                          {isBusy
+                            ? <><Loader2 size={13} className="sg-spinner" />Removing…</>
+                            : <><Trash2 size={13} />Unsave</>
+                          }
                         </button>
                       </div>
                     </div>
@@ -246,6 +248,7 @@ export default function SavedGyms() {
               })}
             </div>
           )}
+
         </div>
       </section>
     </div>
