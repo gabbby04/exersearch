@@ -22,9 +22,6 @@ import {
   Cog,
   Target,
   ShieldAlert,
-  Sunrise,
-  Sun,
-  Moon,
   UtensilsCrossed,
   Leaf,
   Salad,
@@ -33,9 +30,6 @@ import {
   Navigation,
   Search,
   Clock,
-  Home,
-  Building2,
-  Layers,
 } from "lucide-react";
 import "./Onboardingstyle.css";
 
@@ -122,12 +116,7 @@ export default function Onboarding() {
     equipment: [],
 
     workoutDays: "",
-    workoutTime: "",
-
     sessionMinutes: "",
-    workoutPlace: "",
-    preferredStyle: "",
-    injuries: [],
 
     foodBudget: "",
     dietaryRestrictions: [],
@@ -324,7 +313,7 @@ export default function Onboarding() {
         { value: 31, icon: Droplets, label: "Shower" },
         { value: 30, icon: Lock, label: "Locker Room" },
         { value: 45, icon: Wifi, label: "Free Wi-Fi" },
-        { value: 41, icon: Sun, label: "Sauna / Steam" },
+        { value: 41, icon: Award, label: "Sauna / Steam" },
         { value: 47, icon: Car, label: "Parking" },
       ],
     },
@@ -362,50 +351,6 @@ export default function Onboarding() {
         { value: "45", icon: Activity, label: "45 min" },
         { value: "60", icon: Award, label: "60 min" },
         { value: "90", icon: Trophy, label: "90+ min" },
-      ],
-    },
-    {
-      id: "workoutPlace",
-      type: "single-choice",
-      question: "Where do you usually train?",
-      options: [
-        { value: "home", icon: Home, label: "Home" },
-        { value: "gym", icon: Building2, label: "Gym" },
-        { value: "both", icon: Layers, label: "Both" },
-      ],
-    },
-    {
-      id: "preferredStyle",
-      type: "single-choice",
-      question: "Preferred workout style?",
-      options: [
-        { value: "strength", icon: Dumbbell, label: "Strength" },
-        { value: "hypertrophy", icon: Award, label: "Muscle/Hypertrophy" },
-        { value: "endurance", icon: Activity, label: "Endurance" },
-        { value: "hiit", icon: Zap, label: "HIIT" },
-        { value: "mixed", icon: Layers, label: "Mixed" },
-      ],
-    },
-    {
-      id: "injuries",
-      type: "multi-choice",
-      question: "Any injuries or areas to be careful with?",
-      options: [
-        { value: "none", icon: ShieldAlert, label: "None" },
-        { value: "knee", icon: Activity, label: "Knee" },
-        { value: "lower_back", icon: Weight, label: "Lower back" },
-        { value: "shoulder", icon: Dumbbell, label: "Shoulder" },
-        { value: "wrist", icon: Cog, label: "Wrist" },
-      ],
-    },
-    {
-      id: "workoutTime",
-      type: "single-choice",
-      question: "Preferred workout time?",
-      options: [
-        { value: "morning", icon: Sunrise, label: "Morning" },
-        { value: "afternoon", icon: Sun, label: "Afternoon" },
-        { value: "evening", icon: Moon, label: "Evening" },
       ],
     },
     {
@@ -493,15 +438,6 @@ export default function Onboarding() {
   const handleMultiChoice = (questionId, value) => {
     setFormData((prev) => {
       const current = Array.isArray(prev[questionId]) ? prev[questionId] : [];
-
-      if (questionId === "injuries") {
-        if (value === "none") return { ...prev, injuries: ["none"] };
-        const filtered = current.filter((x) => x !== "none");
-        const next = filtered.includes(value)
-          ? filtered.filter((x) => x !== value)
-          : [...filtered, value];
-        return { ...prev, injuries: next };
-      }
 
       if (questionId === "dietaryRestrictions") {
         if (value === "None") {
@@ -592,45 +528,46 @@ export default function Onboarding() {
     setLocationSuggestions([]);
   };
 
-const reverseGeocode = async (lat, lon) => {
-  try {
-    const { data } = await api.get("/geo/reverse", {
-      params: { lat, lon },
-    });
+  const reverseGeocode = async (lat, lon) => {
+    try {
+      const { data } = await api.get("/geo/reverse", {
+        params: { lat, lon },
+      });
 
-    const place = data.features?.[0]?.properties;
-    if (!place) return null;
+      const place = data.features?.[0]?.properties;
+      if (!place) return null;
 
-    const locationName = `${place.name || ""}, ${
-      place.city || place.county || ""
-    }`.replace(/^, |, $/g, "");
+      const locationName = `${place.name || ""}, ${
+        place.city || place.county || ""
+      }`.replace(/^, |, $/g, "");
 
-    return locationName || null;
-  } catch {
-    return null;
-  }
-};
+      return locationName || null;
+    } catch {
+      return null;
+    }
+  };
 
   const requestCurrentLocation = async () => {
     if (!navigator.geolocation) {
-await Swal.fire({
-  icon: "warning",
-  title: "Location unavailable",
-  text: "Geolocation is not supported by your browser.",
-  confirmButtonColor: "#d97706",
-});      return;
+      await Swal.fire({
+        icon: "warning",
+        title: "Location unavailable",
+        text: "Geolocation is not supported by your browser.",
+        confirmButtonColor: "#d97706",
+      });
+      return;
     }
 
     try {
       if (navigator.permissions?.query) {
         const p = await navigator.permissions.query({ name: "geolocation" });
         if (p.state === "denied") {
-await Swal.fire({
-  icon: "warning",
-  title: "Permission blocked",
-  text: "Location permission is blocked in your browser settings. Please enable it and try again.",
-  confirmButtonColor: "#d97706",
-});
+          await Swal.fire({
+            icon: "warning",
+            title: "Permission blocked",
+            text: "Location permission is blocked in your browser settings. Please enable it and try again.",
+            confirmButtonColor: "#d97706",
+          });
           return;
         }
       }
@@ -650,17 +587,17 @@ await Swal.fire({
           longitude,
         }));
 
-if (!name) {
-  await Swal.fire({
-    icon: "info",
-    title: "Coordinates saved",
-    text: "We got your coordinates, but couldn't detect a readable address. You can still continue because the map pin was saved.",
-    confirmButtonText: "OK",
-    confirmButtonColor: "#d97706",
-    background: "#111827",
-    color: "#ffffff",
-  });
-}
+        if (!name) {
+          await Swal.fire({
+            icon: "info",
+            title: "Coordinates saved",
+            text: "We got your coordinates, but couldn't detect a readable address. You can still continue because the map pin was saved.",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#d97706",
+            background: "#111827",
+            color: "#ffffff",
+          });
+        }
 
         setShowSuggestions(false);
         setLocationSuggestions([]);
@@ -671,19 +608,20 @@ if (!name) {
         console.error("Geolocation error:", error);
 
         if (error.code === error.PERMISSION_DENIED) {
-Swal.fire({
-  icon: "warning",
-  title: "Location denied",
-  text: "Location access denied. Please allow location access when prompted, then try again.",
-  confirmButtonColor: "#d97706",
-});
+          Swal.fire({
+            icon: "warning",
+            title: "Location denied",
+            text: "Location access denied. Please allow location access when prompted, then try again.",
+            confirmButtonColor: "#d97706",
+          });
         } else {
-Swal.fire({
-  icon: "error",
-  title: "Location failed",
-  text: "Could not get your location. Please type it manually.",
-  confirmButtonColor: "#d97706",
-});        }
+          Swal.fire({
+            icon: "error",
+            title: "Location failed",
+            text: "Could not get your location. Please type it manually.",
+            confirmButtonColor: "#d97706",
+          });
+        }
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
@@ -879,26 +817,15 @@ Swal.fire({
       gender: formData.gender || null,
     };
 
-    const injuriesPayload =
-      Array.isArray(formData.injuries) && formData.injuries.length
-        ? formData.injuries.includes("none")
-          ? []
-          : formData.injuries
-        : [];
-
     const prefPayload = {
       goal: formData.fitnessGoal || null,
       activity_level: formData.fitnessLevel || null,
       workout_level: formData.fitnessLevel || null,
       budget: formData.gymBudget ? Number(formData.gymBudget) : null,
       workout_days: formData.workoutDays ? Number(formData.workoutDays) : null,
-      workout_time: formData.workoutTime || null,
       session_minutes: formData.sessionMinutes
         ? Number(formData.sessionMinutes)
         : null,
-      workout_place: formData.workoutPlace || null,
-      preferred_style: formData.preferredStyle || null,
-      injuries: injuriesPayload,
       food_budget: formData.foodBudget ? Number(formData.foodBudget) : null,
       dietary_restrictions: Array.isArray(formData.dietaryRestrictions)
         ? formData.dietaryRestrictions.includes("None")
