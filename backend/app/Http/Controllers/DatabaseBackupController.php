@@ -38,34 +38,24 @@ class DatabaseBackupController extends Controller
         ], 201);
     }
 
-    public function download(Request $request, string $name, DatabaseBackupService $svc)
-    {
-        // token fallback (optional)
-        if (!$request->user()) {
-            $token = (string) $request->query('token', '');
-            $token = trim($token);
-
-            if ($token !== '') {
-                $request->headers->set('Authorization', 'Bearer ' . $token);
-                $u = Auth::guard('sanctum')->user();
-                if ($u) {
-                    Auth::setUser($u);
-                    $request->setUserResolver(fn () => $u);
-                }
-            }
-        }
-
-        if (!$request->user()) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
-
-        $path = $svc->downloadPath($name);
-
-        return response()->download($path, $name, [
-            'Content-Type' => 'application/octet-stream',
-        ]);
+  public function download(Request $request, DatabaseBackupService $svc)
+{
+    if (!$request->user()) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
     }
 
+    $name = trim((string) $request->query('name', ''));
+
+    if ($name === '') {
+        return response()->json(['message' => 'Missing backup name.'], 422);
+    }
+
+    $path = $svc->downloadPath($name);
+
+    return response()->download($path, $name, [
+        'Content-Type' => 'application/octet-stream',
+    ]);
+}
     /**
      * ✅ NEW: Restore endpoint.
      * Accepts:

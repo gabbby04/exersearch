@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
 import "./OwnerApplication.css";
 import {
   FaArrowRight,
@@ -1574,7 +1573,6 @@ export default function OwnerApplication() {
         </main>
       </div>
 
-      <Footer />
     </div>
   );
 }

@@ -485,8 +485,7 @@ Route::get('/geo/reverse', [GeoController::class, 'reverse']);
                 Route::get('/admin/db/tables', [DatabaseBackupController::class, 'tables']);
                 Route::post('/admin/db/backup', [DatabaseBackupController::class, 'store']);
                 Route::post('/admin/db/restore', [DatabaseBackupController::class, 'restore']);
-                Route::get('/admin/db/backups/{name}/download', [DatabaseBackupController::class, 'download']);
-
+Route::get('/admin/db/backups/download', [DatabaseBackupController::class, 'download']);
                 Route::get('/admin/announcements', [GymAnnouncementController::class, 'adminList']);
                 Route::delete('/admin/announcements/{announcementId}', [GymAnnouncementController::class, 'adminDelete'])
                     ->whereNumber('announcementId');
