@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./OwnerHeaderStatic.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
 import { useAuth } from "../../authcon";
+import { useTheme } from "../../pages/user/ThemeContext";
 import {
   Home as HomeIcon,
   Inbox,
@@ -14,6 +15,8 @@ import {
   ChevronDown,
   LogOut,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import { api } from "../../utils/apiClient";
@@ -42,7 +45,6 @@ function hasAtLeastRole(role, required) {
 function getApiOrigin() {
   const base = String(api?.defaults?.baseURL || "").trim();
   if (!base) return window.location.origin;
-
   try {
     const url = new URL(base);
     return `${url.protocol}//${url.host}`;
@@ -56,7 +58,6 @@ function toAbsUrl(u) {
   const s = String(u).trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
-
   const base = getApiOrigin().replace(/\/$/, "");
   const path = s.startsWith("/") ? s : `/${s}`;
   return `${base}${path}`;
@@ -78,14 +79,15 @@ function labelForUiMode(mode) {
 export default function HeaderOwnerStatic() {
   const ROLE = "owner";
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -100,6 +102,9 @@ export default function HeaderOwnerStatic() {
   const displayEmail = effectiveUser?.email || "";
 
   const isOwnerPlus = hasAtLeastRole(effectiveUser?.role, "owner");
+
+  const themeLabel = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
+  const ThemeIcon = isDark ? Sun : Moon;
 
   const currentUi = useMemo(() => {
     const p = String(location.pathname || "");
@@ -120,6 +125,14 @@ export default function HeaderOwnerStatic() {
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifErr, setNotifErr] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Mobile detection
+  useEffect(() => {
+    const handleResize = () => setIsMobileView(window.innerWidth <= 700);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const refreshUnread = useCallback(async () => {
     if (!token) return;
@@ -161,11 +174,9 @@ export default function HeaderOwnerStatic() {
 
   useEffect(() => {
     let mounted = true;
-
     async function loadMe() {
       if (!token) return;
       setMeLoading(true);
-
       try {
         const res = await api.get("/me");
         if (!mounted) return;
@@ -176,43 +187,31 @@ export default function HeaderOwnerStatic() {
         if (mounted) setMeLoading(false);
       }
     }
-
     if (!user && !me && token) loadMe();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [user, me, token]);
 
   useEffect(() => {
     let mounted = true;
-
     async function loadUserLogo() {
       try {
         const res = await api.get("/settings/public");
         const data = res.data?.data ?? res.data;
         const url = data?.user_logo_url || "";
-
         if (!mounted) return;
         setUserLogoUrl(toAbsUrl(url));
       } catch {
         if (mounted) setUserLogoUrl("");
       }
     }
-
     loadUserLogo();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const avatarSrc = useMemo(() => {
     const u = effectiveUser;
     if (!u) return FALLBACK_AVATAR;
-
     let raw = "";
-
     if (currentUi === "owner") {
       raw =
         u?.owner_profile?.profile_photo_url ||
@@ -222,8 +221,7 @@ export default function HeaderOwnerStatic() {
         u?.profile_photo_url ||
         u?.avatar_url ||
         u?.photoURL ||
-        u?.avatar ||
-        "";
+        u?.avatar || "";
     } else if (currentUi === "superadmin") {
       raw =
         u?.admin_profile?.avatar_url ||
@@ -235,8 +233,7 @@ export default function HeaderOwnerStatic() {
         u?.profile_photo_url ||
         u?.avatar_url ||
         u?.photoURL ||
-        u?.avatar ||
-        "";
+        u?.avatar || "";
     } else {
       raw =
         u?.user_profile?.profile_photo_url ||
@@ -248,10 +245,8 @@ export default function HeaderOwnerStatic() {
         u?.profile_photo_url ||
         u?.avatar_url ||
         u?.photoURL ||
-        u?.avatar ||
-        "";
+        u?.avatar || "";
     }
-
     if (!raw) return FALLBACK_AVATAR;
     if (String(raw).startsWith("http")) return raw;
     return toAbsUrl(raw);
@@ -259,25 +254,17 @@ export default function HeaderOwnerStatic() {
 
   useEffect(() => {
     function onDocClick(e) {
-      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotifOpen(false);
-      }
-      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
-        setProfileOpen(false);
-      }
+      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
     }
-
     function onEsc(e) {
       if (e.key === "Escape") {
         setNotifOpen(false);
         setProfileOpen(false);
-        setMobileMenuOpen(false);
       }
     }
-
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
-
     return () => {
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);
@@ -289,7 +276,6 @@ export default function HeaderOwnerStatic() {
       localStorage.setItem(UI_MODE_KEY, mode);
       setProfileOpen(false);
       setNotifOpen(false);
-      setMobileMenuOpen(false);
       navigate(routeForUiMode(mode));
     },
     [navigate]
@@ -300,7 +286,6 @@ export default function HeaderOwnerStatic() {
       if (e?.preventDefault) e.preventDefault();
       setProfileOpen(false);
       setNotifOpen(false);
-      setMobileMenuOpen(false);
       logout();
       navigate("/login", { replace: true });
     },
@@ -324,7 +309,6 @@ export default function HeaderOwnerStatic() {
           src={appLogo}
           alt="ExerSearch Logo"
           onClick={() => {
-            setMobileMenuOpen(false);
             setNotifOpen(false);
             setProfileOpen(false);
             navigate("/owner/home");
@@ -337,12 +321,18 @@ export default function HeaderOwnerStatic() {
         <div className="oh-header__spacer" />
 
         <div className="oh-actions">
+          {/* Nav chips — hidden on mobile via CSS */}
           {TOP_LINKS.map(({ to, icon: Icon, label, chipClass }) => (
-            <Link key={to} to={to} className={`oh-chip ${chipClass}`} onClick={() => setMobileMenuOpen(false)}>
+            <Link
+              key={to}
+              to={to}
+              className={`oh-chip ${chipClass} ${location.pathname === to ? "oh-chip--active" : ""}`}
+            >
               <Icon size={14} /> {label}
             </Link>
           ))}
 
+          {/* Notification bell */}
           <div className="oh-notifWrap" ref={notifRef}>
             <button
               type="button"
@@ -400,21 +390,18 @@ export default function HeaderOwnerStatic() {
                         className={`oh-popItem ${!n.is_read ? "oh-popItem--unread" : ""}`}
                         onClick={async () => {
                           const id = n.notification_id ?? n.id;
-
                           setNotifications((prev) =>
                             (prev || []).map((x) =>
                               (x.notification_id ?? x.id) === id ? { ...x, is_read: true } : x
                             )
                           );
                           setUnreadCount((c) => Math.max(0, c - (!n.is_read ? 1 : 0)));
-
                           try {
                             await markNotificationRead(id, { role: ROLE });
                           } catch {
                             refreshUnread();
                             loadNotifs();
                           }
-
                           const href = getNotificationUrl(n) || n?.meta?.href || n?.meta?.url || "";
                           if (href) {
                             setNotifOpen(false);
@@ -434,6 +421,7 @@ export default function HeaderOwnerStatic() {
             )}
           </div>
 
+          {/* Profile dropdown */}
           <div className="oh-profileWrap" ref={profileRef}>
             <button
               type="button"
@@ -483,21 +471,40 @@ export default function HeaderOwnerStatic() {
                 </div>
 
                 <div className="oh-menu">
-                  <Link to="/owner/inbox" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
-                    <div className="oh-miIcon" style={{ background: "#ecfdf5", color: "#16a34a" }}>
-                      <Inbox size={16} />
+                  <Link to="/owner/home" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
+                    <div className="oh-miIcon" style={{ background: "#eff6ff", color: "#2563eb" }}>
+                      <HomeIcon size={16} />
                     </div>
-                    Inbox
+                    Home
                   </Link>
 
-                  <Link to="/owner/view-gyms" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
-                    <div className="oh-miIcon" style={{ background: "#fff7ed", color: "#d23f0b" }}>
-                      <Building2 size={16} />
-                    </div>
-                    View Gyms
-                  </Link>
+                  {/* Mobile-only nav links */}
+                  {isMobileView && (
+                    <>
+                      <Link to="/owner/inbox" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
+                        <div className="oh-miIcon" style={{ background: "#ecfdf5", color: "#16a34a" }}>
+                          <Inbox size={16} />
+                        </div>
+                        Inbox
+                      </Link>
 
-                  <Link to="/owner/gym-application" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
+                      <Link to="/owner/view-gyms" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
+                        <div className="oh-miIcon" style={{ background: "#fff7ed", color: "#d23f0b" }}>
+                          <Building2 size={16} />
+                        </div>
+                        View Gyms
+                      </Link>
+
+                      <Link to="/owner/gym-application" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
+                        <div className="oh-miIcon" style={{ background: "#fff7ed", color: "#f59e0b" }}>
+                          <FilePlus2 size={16} />
+                        </div>
+                        Gym Application
+                      </Link>
+                    </>
+                  )}
+
+                  <Link to="/owner/gym-application" className="oh-menuItem oh-menuItem--desktop-only" onClick={() => setProfileOpen(false)}>
                     <div className="oh-miIcon" style={{ background: "#fff7ed", color: "#f59e0b" }}>
                       <FilePlus2 size={16} />
                     </div>
@@ -505,11 +512,18 @@ export default function HeaderOwnerStatic() {
                   </Link>
 
                   <Link to="/owner/profile" className="oh-menuItem" onClick={() => setProfileOpen(false)}>
-                    <div className="oh-miIcon" style={{ background: "#eff6ff", color: "#2563eb" }}>
+                    <div className="oh-miIcon" style={{ background: "#eff6ff", color: "#3b82f6" }}>
                       <UserCircle size={16} />
                     </div>
                     Profile
                   </Link>
+
+                  <button type="button" className="oh-menuItem" onClick={toggleTheme}>
+                    <div className="oh-miIcon" style={{ background: "#ecfeff", color: "#0891b2" }}>
+                      <ThemeIcon size={16} />
+                    </div>
+                    {themeLabel}
+                  </button>
 
                   {switchModes.length > 0 && (
                     <>
@@ -536,43 +550,8 @@ export default function HeaderOwnerStatic() {
               </div>
             )}
           </div>
-
-          <div className="oh-hamburger" onClick={() => setMobileMenuOpen((p) => !p)} role="button" tabIndex={0}>
-            <span />
-            <span />
-            <span />
-          </div>
         </div>
       </header>
-
-      <div className={`oh-mobileMenu ${mobileMenuOpen ? "open" : ""}`}>
-        <Link className="oh-mobileLink" to="/owner/home" onClick={() => setMobileMenuOpen(false)}>
-          HOME
-        </Link>
-        <Link className="oh-mobileLink" to="/owner/inbox" onClick={() => setMobileMenuOpen(false)}>
-          INBOX
-        </Link>
-        <Link className="oh-mobileLink" to="/owner/view-gyms" onClick={() => setMobileMenuOpen(false)}>
-          VIEW GYMS
-        </Link>
-        <Link className="oh-mobileLink" to="/owner/gym-application" onClick={() => setMobileMenuOpen(false)}>
-          GYM APPLICATION
-        </Link>
-
-        <Link className="oh-mobileLink" to="/owner/profile" onClick={() => setMobileMenuOpen(false)}>
-          PROFILE
-        </Link>
-
-        {switchModes.map((m) => (
-          <button key={m} type="button" className="oh-mobileBtn" onClick={() => handleSwitchUi(m)}>
-            Switch to {labelForUiMode(m)}
-          </button>
-        ))}
-
-        <button type="button" className="oh-mobileBtn" onClick={handleLogout}>
-          LOGOUT
-        </button>
-      </div>
     </>
   );
 }

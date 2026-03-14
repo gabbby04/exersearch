@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./HeaderOwner.css";
 import fallbackLogo from "../../assets/exersearchlogo.png";
 import { useAuth } from "../../authcon";
+import { useTheme } from "../../pages/user/ThemeContext";
 import {
   Home as HomeIcon,
   Inbox,
@@ -14,6 +15,8 @@ import {
   ChevronDown,
   LogOut,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import { api } from "../../utils/apiClient";
@@ -42,7 +45,6 @@ function hasAtLeastRole(role, required) {
 function getApiOrigin() {
   const base = String(api?.defaults?.baseURL || "").trim();
   if (!base) return window.location.origin;
-
   try {
     return new URL(base).origin;
   } catch {
@@ -55,7 +57,6 @@ function toAbsUrl(u) {
   const s = String(u).trim();
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
-
   const base = getApiOrigin().replace(/\/$/, "");
   const path = s.startsWith("/") ? s : `/${s}`;
   return `${base}${path}`;
@@ -77,15 +78,16 @@ function labelForUiMode(mode) {
 export default function HeaderOwner() {
   const ROLE = "owner";
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -121,9 +123,19 @@ export default function HeaderOwner() {
   const [notifErr, setNotifErr] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const themeLabel = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
+  const ThemeIcon = isDark ? Sun : Moon;
+
+  // Mobile detection
+  useEffect(() => {
+    const handleResize = () => setIsMobileView(window.innerWidth <= 700);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const refreshUnread = useCallback(async () => {
     if (!token) return;
-
     try {
       const c = await getUnreadNotificationsCount({ role: ROLE });
       setUnreadCount(Number(c) || 0);
@@ -140,10 +152,8 @@ export default function HeaderOwner() {
 
   const loadNotifs = useCallback(async () => {
     if (!token) return;
-
     setNotifLoading(true);
     setNotifErr("");
-
     try {
       const paged = await listNotifications({ role: ROLE, page: 1, per_page: 20 });
       setNotifications(paged?.data || []);
@@ -164,17 +174,13 @@ export default function HeaderOwner() {
 
   useEffect(() => {
     let mounted = true;
-
     async function loadMe() {
       if (!token) return;
-
       setMeLoading(true);
-
       try {
         const res = await api.get("/me", {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-
         if (!mounted) return;
         setMe(res.data || null);
       } catch (err) {
@@ -183,43 +189,31 @@ export default function HeaderOwner() {
         if (mounted) setMeLoading(false);
       }
     }
-
     if (!user && !me && token) loadMe();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [user, me, token]);
 
   useEffect(() => {
     let mounted = true;
-
     async function loadUserLogo() {
       try {
         const res = await api.get("/settings/public");
         const data = res.data?.data ?? res.data;
         const url = data?.user_logo_url || "";
-
         if (!mounted) return;
         setUserLogoUrl(toAbsUrl(url));
       } catch {
         if (mounted) setUserLogoUrl("");
       }
     }
-
     loadUserLogo();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const avatarSrc = useMemo(() => {
     const u = effectiveUser;
     if (!u) return FALLBACK_AVATAR;
-
     let raw = "";
-
     if (currentUi === "owner") {
       raw =
         u?.owner_profile?.profile_photo_url ||
@@ -258,7 +252,6 @@ export default function HeaderOwner() {
         u?.avatar ||
         "";
     }
-
     if (!raw) return FALLBACK_AVATAR;
     if (String(raw).startsWith("http")) return raw;
     return toAbsUrl(raw);
@@ -273,7 +266,6 @@ export default function HeaderOwner() {
         setProfileOpen(false);
       }
     }
-
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [notifOpen, profileOpen]);
@@ -289,7 +281,6 @@ export default function HeaderOwner() {
       localStorage.setItem(UI_MODE_KEY, mode);
       setProfileOpen(false);
       setNotifOpen(false);
-      setMobileMenuOpen(false);
       navigate(routeForUiMode(mode));
     },
     [navigate]
@@ -300,7 +291,6 @@ export default function HeaderOwner() {
       if (e?.preventDefault) e.preventDefault();
       setProfileOpen(false);
       setNotifOpen(false);
-      setMobileMenuOpen(false);
       logout();
       navigate("/login", { replace: true });
     },
@@ -324,7 +314,6 @@ export default function HeaderOwner() {
           <div
             style={{ cursor: "pointer" }}
             onClick={() => {
-              setMobileMenuOpen(false);
               setNotifOpen(false);
               setProfileOpen(false);
               navigate("/owner/home");
@@ -333,9 +322,7 @@ export default function HeaderOwner() {
             <img
               src={appLogo}
               alt="ExerSearch Logo"
-              onError={(e) => {
-                e.currentTarget.src = fallbackLogo;
-              }}
+              onError={(e) => { e.currentTarget.src = fallbackLogo; }}
             />
           </div>
         </div>
@@ -345,7 +332,6 @@ export default function HeaderOwner() {
         <div
           className="logo"
           onClick={() => {
-            setMobileMenuOpen(false);
             setNotifOpen(false);
             setProfileOpen(false);
             navigate("/owner/home");
@@ -355,9 +341,7 @@ export default function HeaderOwner() {
           <img
             src={appLogo}
             alt="ExerSearch"
-            onError={(e) => {
-              e.currentTarget.src = fallbackLogo;
-            }}
+            onError={(e) => { e.currentTarget.src = fallbackLogo; }}
           />
         </div>
 
@@ -366,8 +350,11 @@ export default function HeaderOwner() {
             <Link
               key={to}
               to={to}
-              className={`uhv-chip ${chipClass}`}
-              onClick={() => setMobileMenuOpen(false)}
+              className={`uhv-chip ${chipClass} ${location.pathname === to ? "active" : ""}`}
+              onClick={() => {
+                setNotifOpen(false);
+                setProfileOpen(false);
+              }}
             >
               <Icon size={12} /> {label}
             </Link>
@@ -425,11 +412,9 @@ export default function HeaderOwner() {
                   {!notifLoading && notifErr && (
                     <div className="uhv-notif-empty">{notifErr}</div>
                   )}
-
                   {!notifLoading && !notifErr && notifications.length === 0 && (
                     <div className="uhv-notif-empty">All caught up!</div>
                   )}
-
                   {!notifLoading &&
                     !notifErr &&
                     notifications.map((n) => (
@@ -439,7 +424,6 @@ export default function HeaderOwner() {
                         className={"uhv-notif-item" + (!n.is_read ? " unread" : "")}
                         onClick={async () => {
                           const id = n.notification_id ?? n.id;
-
                           setNotifications((prev) =>
                             (prev || []).map((x) =>
                               (x.notification_id ?? x.id) === id
@@ -448,20 +432,17 @@ export default function HeaderOwner() {
                             )
                           );
                           setUnreadCount((c) => Math.max(0, c - (!n.is_read ? 1 : 0)));
-
                           try {
                             await markNotificationRead(id, { role: ROLE });
                           } catch {
                             refreshUnread();
                             loadNotifs();
                           }
-
                           const href =
                             getNotificationUrl(n) ||
                             n?.meta?.href ||
                             n?.meta?.url ||
                             "";
-
                           if (href) {
                             setNotifOpen(false);
                             navigate(String(href));
@@ -504,7 +485,10 @@ export default function HeaderOwner() {
                   {String(displayName || "O").trim().charAt(0).toUpperCase()}
                 </span>
               </div>
-              <ChevronDown size={13} className={"uhv-profile-chevron" + (profileOpen ? " open" : "")} />
+              <ChevronDown
+                size={13}
+                className={"uhv-profile-chevron" + (profileOpen ? " open" : "")}
+              />
             </button>
 
             {profileOpen && (
@@ -531,37 +515,53 @@ export default function HeaderOwner() {
 
                 <div className="uhv-profile-pop__menu">
                   <Link
-                    to="/owner/inbox"
+                    to="/owner/home"
                     className="uhv-profile-menu-item"
                     onClick={() => setProfileOpen(false)}
                   >
-                    <div className="uhv-pmi-icon" style={{ background: "#ecfdf5", color: "#10b981" }}>
-                      <Inbox size={15} />
+                    <div className="uhv-pmi-icon" style={{ background: "#eff6ff", color: "#2563eb" }}>
+                      <HomeIcon size={15} />
                     </div>
-                    Inbox
+                    Home
                   </Link>
 
-                  <Link
-                    to="/owner/view-gyms"
-                    className="uhv-profile-menu-item"
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#d23f0b" }}>
-                      <Building2 size={15} />
-                    </div>
-                    View Gyms
-                  </Link>
+                  {/* Mobile-only nav links injected into dropdown */}
+                  {isMobileView && (
+                    <>
+                      <Link
+                        to="/owner/inbox"
+                        className="uhv-profile-menu-item"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <div className="uhv-pmi-icon" style={{ background: "#ecfdf5", color: "#10b981" }}>
+                          <Inbox size={15} />
+                        </div>
+                        Inbox
+                      </Link>
 
-                  <Link
-                    to="/owner/gym-application"
-                    className="uhv-profile-menu-item"
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#f59e0b" }}>
-                      <FilePlus2 size={15} />
-                    </div>
-                    Gym Application
-                  </Link>
+                      <Link
+                        to="/owner/view-gyms"
+                        className="uhv-profile-menu-item"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#d23f0b" }}>
+                          <Building2 size={15} />
+                        </div>
+                        View Gyms
+                      </Link>
+
+                      <Link
+                        to="/owner/gym-application"
+                        className="uhv-profile-menu-item"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <div className="uhv-pmi-icon" style={{ background: "#fff7ed", color: "#f59e0b" }}>
+                          <FilePlus2 size={15} />
+                        </div>
+                        Gym Application
+                      </Link>
+                    </>
+                  )}
 
                   <Link
                     to="/owner/profile"
@@ -573,6 +573,13 @@ export default function HeaderOwner() {
                     </div>
                     Profile
                   </Link>
+
+                  <button type="button" className="uhv-profile-menu-item" onClick={toggleTheme}>
+                    <div className="uhv-pmi-icon" style={{ background: "#ecfeff", color: "#0891b2" }}>
+                      <ThemeIcon size={15} />
+                    </div>
+                    {themeLabel}
+                  </button>
 
                   {switchModes.length > 0 && (
                     <>
@@ -609,53 +616,7 @@ export default function HeaderOwner() {
             )}
           </div>
         </div>
-
-        <div className="hamburger" onClick={() => setMobileMenuOpen((p) => !p)}>
-          <span />
-          <span />
-          <span />
-        </div>
       </header>
-
-      <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
-        <Link to="/owner/home" onClick={() => setMobileMenuOpen(false)}>
-          HOME
-        </Link>
-        <Link to="/owner/inbox" onClick={() => setMobileMenuOpen(false)}>
-          INBOX
-        </Link>
-        <Link to="/owner/view-gyms" onClick={() => setMobileMenuOpen(false)}>
-          VIEW GYMS
-        </Link>
-        <Link to="/owner/gym-application" onClick={() => setMobileMenuOpen(false)}>
-          GYM APPLICATION
-        </Link>
-        <Link to="/owner/profile" onClick={() => setMobileMenuOpen(false)}>
-          PROFILE (SOON)
-        </Link>
-
-        {switchModes.map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => handleSwitchUi(m)}
-            style={{
-              background: "transparent",
-              border: "none",
-              textAlign: "left",
-              padding: "12px 16px",
-              cursor: "pointer",
-              width: "100%",
-            }}
-          >
-            Switch to {labelForUiMode(m)}
-          </button>
-        ))}
-
-        <Link to="/login" onClick={handleLogout}>
-          LOGOUT
-        </Link>
-      </div>
     </>
   );
 }

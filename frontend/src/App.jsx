@@ -116,6 +116,7 @@ function App() {
       {showChatbot && <Chatbot />}
 
       <Routes>
+    
 
         {/* ─── PUBLIC ROUTES (with theme support) ─── */}
         <Route path="/about-us" element={<AboutUs />} />

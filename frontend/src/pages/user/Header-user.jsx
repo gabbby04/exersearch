@@ -87,7 +87,7 @@ function iconForNotifType(type) {
 
 export default function HeaderUser() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -350,21 +350,7 @@ export default function HeaderUser() {
           />
         </div>
 
-        <div className="uhd-header__search-wrap">
-          <Search size={14} className="uhd-header__search-icon" />
-          <input
-            className="uhd-header__search-input"
-            type="text"
-            placeholder="Search gyms, areas, tags..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button className="uhd-header__search-clear" type="button" onClick={() => setSearchQuery("")}>
-              <X size={12} />
-            </button>
-          )}
-        </div>
+       
 
         <div className="uhd-header__actions">
           <Link 
