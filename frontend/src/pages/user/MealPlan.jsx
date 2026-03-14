@@ -24,6 +24,7 @@ import {
   Zap,
   Clock,
   UtensilsCrossed,
+  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -69,6 +70,7 @@ function normalizeDietaryValue(value) {
   if (v === "gluten") return "gluten-free";
   if (v === "gluten free") return "gluten-free";
   if (v === "low carb") return "low-carb";
+  if (v === "none") return null;
 
   return v;
 }
@@ -79,6 +81,31 @@ function normalizeDietaryArray(value) {
   const arr = Array.isArray(value) ? value : [value];
 
   return [...new Set(arr.map(normalizeDietaryValue).filter(Boolean))];
+}
+
+function isUnavailableMeal(meal) {
+  return Boolean(
+    meal?.unavailable ||
+      meal?.match_meta?.strategy === "placeholder" ||
+      (!meal?.id && Number(meal?.total_calories || 0) === 0)
+  );
+}
+
+function countRealMealsFromDays(days = []) {
+  return days.reduce((count, day) => {
+    const meals = Array.isArray(day?.meals) ? day.meals : [];
+    return count + meals.filter((meal) => !isUnavailableMeal(meal)).length;
+  }, 0);
+}
+
+function collectPlanWarnings(data) {
+  const warnings = Array.isArray(data?.data?.warnings)
+    ? data.data.warnings
+    : Array.isArray(data?.warnings)
+    ? data.warnings
+    : [];
+
+  return [...new Set(warnings.filter(Boolean))];
 }
 
 function Sunrise({ size = 18 }) {
@@ -138,6 +165,26 @@ function MacroBar({ protein, carbs, fats, size = "sm" }) {
   );
 }
 
+function PlanWarnings({ warnings = [] }) {
+  if (!warnings.length) return null;
+
+  return (
+    <div className="mp-tips-banner" style={{ marginBottom: "1rem", borderColor: "#f59e0b33", background: "#fff7ed" }}>
+      <div className="mp-tips-banner__icon" style={{ color: "#d97706" }}>
+        <AlertTriangle size={14} />
+      </div>
+      <div className="mp-tips-banner__content">
+        <p className="mp-tips-banner__title">Plan adjustments made</p>
+        <ul className="mp-tips-banner__list">
+          {warnings.map((warning, i) => (
+            <li key={i}>{warning}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 function MealCard({ meal, index = 0 }) {
   const [open, setOpen] = useState(false);
   const [ingOpen, setIngOpen] = useState(false);
@@ -146,11 +193,16 @@ function MealCard({ meal, index = 0 }) {
   const protein = meal.total_protein ?? meal.protein ?? 0;
   const carbs = meal.total_carbs ?? meal.carbs ?? 0;
   const fats = meal.total_fats ?? meal.fats ?? 0;
+  const unavailable = isUnavailableMeal(meal);
 
   return (
     <div
       className="mp-meal"
-      style={{ "--meal-accent": theme.color, animationDelay: `${index * 0.06}s` }}
+      style={{
+        "--meal-accent": theme.color,
+        animationDelay: `${index * 0.06}s`,
+        opacity: unavailable ? 0.78 : 1,
+      }}
     >
       <button className="mp-meal__top" onClick={() => setOpen((o) => !o)}>
         <div className="mp-meal__badge-wrap">
@@ -163,9 +215,14 @@ function MealCard({ meal, index = 0 }) {
         </div>
         <div className="mp-meal__center">
           <p className="mp-meal__name">{meal.name}</p>
+          {unavailable && (
+            <p style={{ margin: "0.2rem 0 0", fontSize: "0.78rem", color: "#b45309", fontWeight: 700 }}>
+              Unavailable placeholder
+            </p>
+          )}
         </div>
         <div className="mp-meal__right">
-          <p className="mp-meal__cost">₱{Number(meal.estimated_cost).toFixed(0)}</p>
+          <p className="mp-meal__cost">₱{Number(meal.estimated_cost || 0).toFixed(0)}</p>
           <p className="mp-meal__kcal">{Math.round(calories)} kcal</p>
         </div>
         <div className="mp-meal__toggle-icon">
@@ -193,6 +250,23 @@ function MealCard({ meal, index = 0 }) {
 
       {open && (
         <div className="mp-meal__body">
+          {meal.match_meta?.warning && (
+            <div
+              style={{
+                marginBottom: "0.85rem",
+                padding: "0.75rem 0.9rem",
+                borderRadius: "12px",
+                background: "#fff7ed",
+                border: "1px solid #fdba743d",
+                color: "#9a3412",
+                fontSize: "0.88rem",
+                fontWeight: 600,
+              }}
+            >
+              {meal.match_meta.warning}
+            </div>
+          )}
+
           {meal.diet_tags?.length > 0 && (
             <div className="mp-meal__tags">
               {meal.diet_tags.map((tag, i) => (
@@ -251,6 +325,17 @@ function MealCard({ meal, index = 0 }) {
 function ShoppingList({ data }) {
   const [open, setOpen] = useState(false);
   if (!data) return null;
+
+  const categoryEntries = Array.isArray(data.by_category)
+    ? []
+    : Object.entries(data.by_category || {});
+  const hasItems =
+    categoryEntries.length > 0 ||
+    (Array.isArray(data.all_items) && data.all_items.length > 0) ||
+    Number(data.total_items || 0) > 0;
+
+  if (!hasItems) return null;
+
   return (
     <div className="mp-shop">
       <button className="mp-shop__header" onClick={() => setOpen((o) => !o)}>
@@ -269,7 +354,7 @@ function ShoppingList({ data }) {
       </button>
       {open && (
         <div className="mp-shop__body">
-          {Object.entries(data.by_category || {}).map(([cat, items]) => (
+          {categoryEntries.map(([cat, items]) => (
             <div key={cat} className="mp-shop__cat">
               <p className="mp-shop__cat-label">{cat}</p>
               {items.map((item, i) => (
@@ -325,6 +410,8 @@ function DayView({ dayData, targets }) {
   const totals = dayData.totals || {};
   const adherence = dayData.adherence || {};
   const breakdown = dayData.macro_breakdown || {};
+  const meals = Array.isArray(dayData.meals) ? dayData.meals : [];
+  const realMeals = meals.filter((meal) => !isUnavailableMeal(meal));
 
   const budgetPct = Math.min(
     150,
@@ -342,6 +429,23 @@ function DayView({ dayData, targets }) {
     150,
     Math.round((totals.carbs / Math.max(targets.carbs || 1, 1)) * 100)
   );
+
+  if (meals.length === 0 || realMeals.length === 0) {
+    return (
+      <div className="mp-day">
+        <div className="mp-empty-state">
+          <div className="mp-empty-state__icon">
+            <UtensilsCrossed size={18} />
+          </div>
+          <h3 className="mp-empty-state__title">No usable meals found for this day</h3>
+          <p className="mp-empty-state__text">
+            Try increasing your budget, lowering your calorie target, or removing one
+            dietary restriction.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mp-day">
@@ -422,7 +526,7 @@ function DayView({ dayData, targets }) {
       </div>
 
       <div className="mp-day__meals">
-        {dayData.meals?.map((m, i) => (
+        {meals.map((m, i) => (
           <MealCard key={i} meal={m} index={i} />
         ))}
       </div>
@@ -510,6 +614,10 @@ function SingleMealResult({ meal, onBack, onRegenerate, loading, singleForm }) {
       </div>
 
       <div className="mp-result-body">
+        {meal.match_meta?.warning && (
+          <PlanWarnings warnings={[meal.match_meta.warning]} />
+        )}
+
         <div className="mp-solo-hero" style={{ "--solo-color": theme.color, "--solo-bg": theme.bg }}>
           <div className="mp-solo-hero__top">
             <div className="mp-solo-hero__icon" style={{ color: theme.color, background: theme.bg }}>
@@ -644,6 +752,7 @@ export default function MealPlanGenerator() {
   const [loadingMeals, setLoadingMeals] = useState(true);
   const [presets, setPresets] = useState([]);
   const [loadingPresets, setLoadingPresets] = useState(true);
+  const [planWarnings, setPlanWarnings] = useState([]);
 
   const [plannerProfile, setPlannerProfile] = useState(null);
   const [plannerPreference, setPlannerPreference] = useState(null);
@@ -808,6 +917,7 @@ export default function MealPlanGenerator() {
   async function handleGenerate() {
     setLoading(true);
     setError(null);
+    setPlanWarnings([]);
 
     try {
       const body = {
@@ -822,15 +932,30 @@ export default function MealPlanGenerator() {
 
       const data = await generateMealPlan(body);
 
-      if (!data.success) {
-        throw new Error(data.message || "Generation failed");
+      if (!data?.success) {
+        throw new Error(data?.message || "Generation failed");
       }
 
+      const days = Array.isArray(data?.data?.days) ? data.data.days : [];
+      const realMealCount = countRealMealsFromDays(days);
+      const warnings = collectPlanWarnings(data);
+
+      if (realMealCount === 0) {
+        throw new Error(
+          warnings[0] ||
+            "No usable meals matched your selected constraints. Try increasing your budget, lowering your calorie target, or removing one dietary restriction."
+        );
+      }
+
+      setPlanWarnings(warnings);
       setPlan(data.data);
       setActiveDay(0);
       setStep("result");
     } catch (err) {
       setError(err.message || "Failed to generate.");
+      setPlan(null);
+      setPlanWarnings([]);
+      setStep("form");
     } finally {
       setLoading(false);
     }
@@ -853,17 +978,29 @@ export default function MealPlanGenerator() {
 
       const data = await generateMealPlan(body);
 
-      if (!data.success) {
-        throw new Error(data.message || "Generation failed");
+      if (!data?.success) {
+        throw new Error(data?.message || "Generation failed");
       }
 
-      const meals = data.data?.days?.[0]?.meals;
-      if (!meals?.length) throw new Error("No meal returned.");
+      const meals = Array.isArray(data?.data?.days?.[0]?.meals)
+        ? data.data.days[0].meals
+        : [];
+      const realMeal = meals.find((meal) => !isUnavailableMeal(meal));
 
-      setSingleMeal(meals[0]);
+      if (!realMeal) {
+        const warnings = collectPlanWarnings(data);
+        throw new Error(
+          warnings[0] ||
+            "No usable meal matched your selected constraints. Try increasing your budget, lowering calories, or removing one dietary restriction."
+        );
+      }
+
+      setSingleMeal(realMeal);
       setStep("single-result");
     } catch (err) {
       setError(err.message || "Failed to generate meal.");
+      setSingleMeal(null);
+      setStep("form");
     } finally {
       setLoading(false);
     }
@@ -873,6 +1010,9 @@ export default function MealPlanGenerator() {
     setMode(m);
     setStep("form");
     setError(null);
+    setPlan(null);
+    setSingleMeal(null);
+    setPlanWarnings([]);
   }
 
   useEffect(() => {
@@ -1339,7 +1479,7 @@ export default function MealPlanGenerator() {
     }
 
     if (step === "result" && plan) {
-      const days = plan.days || [];
+      const days = Array.isArray(plan.days) ? plan.days : [];
       const shoppingList = plan.shopping_list;
       const targets = {
         budget: form.budget,
@@ -1349,6 +1489,20 @@ export default function MealPlanGenerator() {
         fats: macroTargets.fats,
       };
       const activePreset = form.preset_id ? presets.find((p) => p.id === form.preset_id) : null;
+      const realMealCount = countRealMealsFromDays(days);
+
+      if (realMealCount === 0) {
+        return (
+          <div className="mp-app">
+            <PageHeader />
+            <div className="mp-form-body">
+              <div className="mp-error">
+                No usable meals matched your selected constraints.
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       return (
         <div className="mp-app">
@@ -1378,6 +1532,8 @@ export default function MealPlanGenerator() {
           </div>
 
           <div className="mp-result-body">
+            <PlanWarnings warnings={planWarnings} />
+
             <div className="mp-tips-banner">
               <div className="mp-tips-banner__icon">
                 <Clock size={14} />

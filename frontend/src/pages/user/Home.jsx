@@ -276,7 +276,7 @@ export default function Home() {
   const userName = useMemo(() => {
     const n = safeStr(effectiveUser?.name).trim();
     if (n) return n.split(/\s+/)[0];
-    return "there";
+    return "gym buddy";
   }, [effectiveUser]);
 
   const exploredCount = useMemo(() => {
@@ -872,7 +872,9 @@ export default function Home() {
   }, [selectedView, allList, nearbyList, savedList, dealsList]);
 
   const filteredGyms = useMemo(() => {
-    let list = (baseList || []).filter((gym) => {
+    const { lat, lng } = userCoords || {};
+
+    let list = withDistances(baseList || [], lat, lng).filter((gym) => {
       if ((gym.price ?? 0) < priceRange[0] || (gym.price ?? 0) > priceRange[1]) return false;
 
       if (selectedAmenities.length > 0) {
@@ -890,11 +892,6 @@ export default function Home() {
 
       return true;
     });
-
-    if (sortBy === "distance") {
-      const { lat, lng } = userCoords || {};
-      list = withDistances(list, lat, lng);
-    }
 
     return sortGyms(list, sortBy).slice(0, 5);
   }, [baseList, priceRange, selectedAmenities, searchQuery, sortBy, userCoords]);
@@ -1468,21 +1465,14 @@ export default function Home() {
                         )}
 
                         <div className="uhv-card__meta-grid">
-                          {gym.distance != null && (
-                            <div className="uhv-card__meta-item">
-                              <Navigation size={12} />
-                              {gym.distance}km away
-                            </div>
-                          )}
-
                           <div className="uhv-card__meta-item">
                             <Star size={12} fill="#f59e0b" color="#f59e0b" />
                             {Number(gym.rating || 0).toFixed(1)} <em>({gym.reviews || 0})</em>
                           </div>
 
                           <div className="uhv-card__meta-item">
-                            <Award size={12} />
-                            {gym.matchScore || 0}% match
+                            <Navigation size={12} />
+                            {gym.distance != null ? `${gym.distance} km away` : "Distance unavailable"}
                           </div>
                         </div>
 
@@ -1567,12 +1557,13 @@ export default function Home() {
           </main>
         </div>
 
-<div className="uhv-view-all-wrap">
-  <Link to="/home/gyms" className="uhv-view-all-btn">
-    <span>View All Gyms</span>
-    <ChevronRight size={14} />
-  </Link>
-</div>
+        <div className="uhv-view-all-wrap">
+          <Link to="/home/gyms" className="uhv-view-all-btn">
+            <span>View All Gyms</span>
+            <ChevronRight size={14} />
+          </Link>
+        </div>
+
         <section className="uhv-section">
           <div className="uhv-section__hdr">
             <div>
