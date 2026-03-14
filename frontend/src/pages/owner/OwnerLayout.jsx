@@ -48,7 +48,10 @@ export default function OwnerLayout() {
       alive = false;
     };
   }, [navigate]);
-
+  
+    useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
   const pathname = String(location.pathname || "");
   const hideFooter = pathname.startsWith("/owner/view-gyms");
 

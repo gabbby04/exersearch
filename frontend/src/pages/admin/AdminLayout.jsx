@@ -111,7 +111,9 @@ export default function AdminLayout() {
   useEffect(() => {
     if (sidebarBroken) setSidebarToggled(false);
   }, [location.pathname, sidebarBroken]);
-
+  useEffect(() => {
+  document.querySelector(".admin-main-content")?.scrollTo({ top: 0, behavior: "smooth" });
+}, [location.pathname]);
   if (!ready) return <AdminLoading />;
 
   const t = adminThemes[theme].app;

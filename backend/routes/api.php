@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\NewsController;
 use App\Models\User;
 use App\Models\Meal;
 
@@ -127,6 +127,7 @@ Route::get('/geo/reverse', [GeoController::class, 'reverse']);
 
     Route::get('/settings/public', [AppSettingsPublicController::class, 'show']);
 
+    
     Route::get('/faqs', [FaqController::class, 'index']);
     Route::get('/faqs/active', [FaqController::class, 'active']);
     Route::get('/faqs/{faq}', [FaqController::class, 'show']);
@@ -188,6 +189,10 @@ Route::get('/geo/reverse', [GeoController::class, 'reverse']);
     });
 
     Route::post('/chat', [ChatController::class, 'sendMessage']);
+    Route::get('/news/fitness', [\App\Http\Controllers\NewsController::class, 'fitness']);
+    Route::get('/fitness-news', [NewsController::class, 'fitness']);
+    Route::get('/fitness-trends', [NewsController::class, 'trends']);
+    Route::get('/fitness-discussions', [NewsController::class, 'discussions']);
 
     Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
         if (!URL::hasValidSignature($request)) {

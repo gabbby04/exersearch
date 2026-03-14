@@ -122,3 +122,18 @@ export const __ownerDashboardApiInternals = {
   getMeta,
   getLastPage,
 };
+
+export async function getFitnessNews() {
+  const res = await api.get('/news/fitness');
+  return res.data?.data ?? [];
+}
+
+export async function getFitnessTrends() {
+  const res = await api.get("/fitness-trends");
+  return res.data.data;
+}
+
+export async function getFitnessDiscussions() {
+  const res = await api.get("/fitness-discussions");
+  return res.data.data;
+}
