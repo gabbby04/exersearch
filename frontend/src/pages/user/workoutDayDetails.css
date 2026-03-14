@@ -1052,16 +1052,22 @@
   inset: 0;
   background: rgba(6, 5, 7, 0.76);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 1rem;
+  padding: clamp(12px, 3vw, 24px);
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
   z-index: 9999;
   backdrop-filter: blur(6px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .wdp-modal {
   width: min(980px, 96vw);
-  max-height: 90vh;
+  max-height: calc(100dvh - 32px);
+  margin: 0 auto;
   background: linear-gradient(180deg, #1a1116 0%, #22161c 100%);
   border-radius: 20px;
   border: 1px solid var(--line-soft);
@@ -1070,6 +1076,7 @@
   display: flex;
   flex-direction: column;
   color: var(--text);
+  position: relative;
 }
 
 [data-theme="light"] .wdp-modal {
@@ -1213,15 +1220,16 @@
   font-size: 0.9rem;
   line-height: 1.6;
 }
-
 .wdp-modal-scroll {
   padding: 1.25rem 1.2rem 1.1rem;
   background: transparent;
-  overflow: auto;
-  max-height: calc(90vh - 86px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   color: var(--text);
 }
-
 .wdp-modal-note {
   font-weight: 700;
   color: var(--text-soft);
@@ -2307,7 +2315,76 @@
   justify-content: center;
   text-decoration: none;
 }
+.wdp-tut-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+}
 
+.wdp-tut-zoom-box {
+  position: relative;
+  max-width: 95vw;
+  max-height: 95vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wdp-tut-zoom-img {
+  max-width: 95vw;
+  max-height: 95vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 30px 120px rgba(0, 0, 0, 0.6);
+  background: #111;
+}
+
+.wdp-tut-zoom-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.wdp-tut-zoom-close:hover {
+  transform: scale(1.06);
+  background: rgba(20, 20, 20, 0.98);
+}
+
+.wdp-tut-zoom-close:active {
+  transform: scale(0.98);
+}
+
+.wdp-tut-zoom-close:focus-visible {
+  outline: 3px solid rgba(255, 152, 0, 0.28);
+  outline-offset: 2px;
+}
 @media (max-width: 1024px) {
   .wdp-exitem {
     grid-template-columns: 1fr;
@@ -2452,7 +2529,10 @@
   .wdp-complete-left {
     align-items: flex-start;
   }
-
+.wdp-modal-overlay {
+  align-items: flex-start;
+  padding: 10px;
+}
   .wdp-complete-icon {
     width: 44px;
     height: 44px;

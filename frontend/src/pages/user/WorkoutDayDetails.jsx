@@ -583,6 +583,18 @@ export default function WorkoutDayDetails() {
     swapModal.open,
   ]);
 
+  useEffect(() => {
+    if (tutorialZoom.open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [tutorialZoom.open]);
+
   const isRest = !!day?.is_rest || (day?.exercises?.length ?? 0) === 0;
   const isCompleted = !!day?.completed_at;
   const hasSavedGyms = savedGyms?.length > 0;

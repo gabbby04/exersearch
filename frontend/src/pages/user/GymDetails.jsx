@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./GymDetails.css";
 import Swal from "sweetalert2";
@@ -55,6 +55,22 @@ import {
 } from "lucide-react";
 
 const GYM_SHOW_ENDPOINT = (id) => `/gyms/${id}`;
+
+const SAVED_GYMS_INDEX = "/user/saved-gyms";
+const SAVED_GYMS_STORE = "/user/saved-gyms";
+const SAVED_GYMS_DELETE = (gymId) => `/user/saved-gyms/${gymId}`;
+
+const SESSION_KEY = "exersearch_session_id";
+function getSessionId() {
+  let sid = localStorage.getItem(SESSION_KEY);
+  if (!sid) {
+    sid =
+      (crypto?.randomUUID?.() ||
+        `sess_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+    localStorage.setItem(SESSION_KEY, sid);
+  }
+  return sid;
+}
 
 function safeNum(v) {
   const n = Number(v);
@@ -144,6 +160,8 @@ export default function GymDetails() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [likeBusy, setLikeBusy] = useState(false);
+
   const onSendGymInquiry = async (gymId, question) => {
     setGymInquirySending(true);
     try {
@@ -206,6 +224,32 @@ export default function GymDetails() {
     pagination: { current_page: 1, last_page: 1, total: 0, per_page: 0 },
   });
   const [ratingsLoading, setRatingsLoading] = useState(false);
+
+  const logInteraction = useCallback(async (event, extraMeta = {}) => {
+    try {
+      const gymId = gym?.gym_id ?? gymIdNum;
+      if (!gymId) return;
+
+      await api.post("/gym-interactions", {
+        gym_id: Number(gymId),
+        event: String(event),
+        source: "details",
+        session_id: getSessionId(),
+        meta: {
+          gym_name: gym?.name || null,
+          daily_price: safeNum(gym?.daily_price),
+          monthly_price: safeNum(gym?.monthly_price),
+          annual_price: safeNum(gym?.annual_price),
+          rating: typeof ratingsState?.summary?.public_avg_stars === "number"
+            ? ratingsState.summary.public_avg_stars
+            : null,
+          ...extraMeta,
+        },
+      });
+    } catch (e) {
+      console.warn("[logInteraction] failed:", e?.response?.status || e?.message);
+    }
+  }, [gym, gymIdNum, ratingsState]);
 
   async function refreshRatings(gymId) {
     if (!gymId) return;
@@ -299,7 +343,10 @@ export default function GymDetails() {
       try {
         const res = await api.get(GYM_SHOW_ENDPOINT(id));
         const data = res.data?.data || res.data?.gym || res.data || null;
-        if (!cancelled) { setGym(data); setCurrentImageIndex(0); }
+        if (!cancelled) {
+          setGym(data);
+          setCurrentImageIndex(0);
+        }
       } catch (e) {
         console.error(e);
         if (!cancelled) setError(e?.response?.data?.message || e?.message || "Failed to load gym details");
@@ -308,11 +355,17 @@ export default function GymDetails() {
       }
     }
     if (id != null) load();
-    else { setLoading(false); setError("Missing gym id"); }
+    else {
+      setLoading(false);
+      setError("Missing gym id");
+    }
     return () => { cancelled = true; };
   }, [id]);
 
-  useEffect(() => { if (!gymIdNum) return; refreshRatings(gymIdNum); }, [gymIdNum]);
+  useEffect(() => {
+    if (!gymIdNum) return;
+    refreshRatings(gymIdNum);
+  }, [gymIdNum]);
 
   useEffect(() => {
     let cancelled = false;
@@ -353,40 +406,123 @@ export default function GymDetails() {
   }, [gymIdNum]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("likedGyms");
-    if (!saved) return;
-    try {
-      const set = new Set(JSON.parse(saved));
-      setIsLiked(set.has(gymIdNum));
-    } catch {}
+    let cancelled = false;
+
+    async function loadSavedStatus() {
+      if (!gymIdNum) return;
+      try {
+        const res = await api.get(SAVED_GYMS_INDEX);
+        const rows = Array.isArray(res?.data?.data) ? res.data.data : [];
+        const found = rows.some((r) => Number(r?.gym_id) === Number(gymIdNum));
+        if (!cancelled) setIsLiked(found);
+
+        try {
+          const saved = localStorage.getItem("likedGyms");
+          let set = new Set();
+          if (saved) set = new Set(JSON.parse(saved));
+          if (found) set.add(Number(gymIdNum));
+          else set.delete(Number(gymIdNum));
+          localStorage.setItem("likedGyms", JSON.stringify([...set]));
+        } catch {}
+      } catch (e) {
+        try {
+          const saved = localStorage.getItem("likedGyms");
+          if (!saved) return;
+          const set = new Set(JSON.parse(saved));
+          if (!cancelled) setIsLiked(set.has(gymIdNum));
+        } catch {}
+      }
+    }
+
+    loadSavedStatus();
+    return () => { cancelled = true; };
   }, [gymIdNum]);
 
-  const toggleLike = () => {
-    const saved = localStorage.getItem("likedGyms");
-    let set = new Set();
-    try { if (saved) set = new Set(JSON.parse(saved)); } catch {}
-    if (set.has(gymIdNum)) set.delete(gymIdNum);
-    else set.add(gymIdNum);
-    localStorage.setItem("likedGyms", JSON.stringify([...set]));
-    setIsLiked(set.has(gymIdNum));
+  const toggleLike = useCallback(async () => {
+    const gymId = gym?.gym_id ?? gymIdNum;
+    if (!gymId || likeBusy) return;
+
+    const currentlySaved = isLiked;
+    setLikeBusy(true);
+    setIsLiked(!currentlySaved);
+
+    try {
+      if (!currentlySaved) {
+        await api.post(SAVED_GYMS_STORE, {
+          gym_id: Number(gymId),
+          source: "details",
+          session_id: getSessionId(),
+        });
+        await logInteraction("save", { action: "heart_button" });
+      } else {
+        await api.delete(SAVED_GYMS_DELETE(gymId), {
+          data: {
+            source: "details",
+            session_id: getSessionId(),
+          },
+        });
+        await logInteraction("unsave", { action: "heart_button" });
+      }
+
+      try {
+        const saved = localStorage.getItem("likedGyms");
+        let set = new Set();
+        if (saved) set = new Set(JSON.parse(saved));
+        if (currentlySaved) set.delete(Number(gymId));
+        else set.add(Number(gymId));
+        localStorage.setItem("likedGyms", JSON.stringify([...set]));
+      } catch {}
+    } catch (e) {
+      setIsLiked(currentlySaved);
+      console.warn("[saved-gyms] toggle failed:", e?.response?.status || e?.message);
+
+      await Swal.fire({
+        title: "Failed",
+        text: e?.response?.data?.message || e?.message || "Failed to update saved gym.",
+        icon: "error",
+        confirmButtonColor: "#dc2626",
+      });
+    } finally {
+      setLikeBusy(false);
+    }
+  }, [gym, gymIdNum, isLiked, likeBusy, logInteraction]);
+
+  const nextImage = () => {
+    if (!images.length) return;
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
-  const nextImage = () => { if (!images.length) return; setCurrentImageIndex((prev) => (prev + 1) % images.length); };
-  const prevImage = () => { if (!images.length) return; setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length); };
+  const prevImage = () => {
+    if (!images.length) return;
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
 
   const openDirection = () => {
     const gLat = gym?.latitude;
     const gLng = gym?.longitude;
     if (gLat == null || gLng == null) return;
     navigator.geolocation.getCurrentPosition(
-      (pos) => { const { latitude, longitude } = pos.coords; window.open(`https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${gLat},${gLng}&travelmode=driving`, "_blank"); },
-      () => { window.open(`https://www.google.com/maps/search/?api=1&query=${gLat},${gLng}`, "_blank"); }
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        window.open(
+          `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${gLat},${gLng}&travelmode=driving`,
+          "_blank"
+        );
+      },
+      () => {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${gLat},${gLng}`, "_blank");
+      }
     );
   };
 
   useEffect(() => {
     if (!gym) return;
-    const target = { machines: Array.isArray(gym?.equipments) ? gym.equipments.length : 0, members: 0, trainers: gym?.has_personal_trainers ? 1 : 0 };
+    const target = {
+      machines: Array.isArray(gym?.equipments) ? gym.equipments.length : 0,
+      members: 0,
+      trainers: gym?.has_personal_trainers ? 1 : 0
+    };
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && !hasAnimated) {
@@ -396,14 +532,19 @@ export default function GymDetails() {
             const inc = Math.max(1, Math.ceil(t / 25));
             const interval = setInterval(() => {
               i += inc;
-              if (i >= t) { setCount((p) => ({ ...p, [k]: t })); clearInterval(interval); }
-              else { setCount((p) => ({ ...p, [k]: i })); }
+              if (i >= t) {
+                setCount((p) => ({ ...p, [k]: t }));
+                clearInterval(interval);
+              } else {
+                setCount((p) => ({ ...p, [k]: i }));
+              }
             }, 20);
           });
           setHasAnimated(true);
         }
       });
     }, { threshold: 0.25 });
+
     if (statsRef.current) observer.observe(statsRef.current);
     return () => observer.disconnect();
   }, [gym, hasAnimated]);
@@ -415,28 +556,39 @@ export default function GymDetails() {
       try {
         const res = await getMyFreeVisits({ perPage: 50, page: 1 });
         if (!cancelled) setFreeVisitsRes(res);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     }
     loadMyFreeVisits();
     return () => { cancelled = true; };
   }, [gym?.gym_id, gym?.free_first_visit_enabled]);
 
-  const myFreeVisitRow = useMemo(() => findMyFreeVisitForGym(freeVisitsRes, gym?.gym_id), [freeVisitsRes, gym?.gym_id]);
+  const myFreeVisitRow = useMemo(
+    () => findMyFreeVisitForGym(freeVisitsRes, gym?.gym_id),
+    [freeVisitsRes, gym?.gym_id]
+  );
   const freeVisitStatus = String(myFreeVisitRow?.status || "");
   const hasFreeVisit = !!myFreeVisitRow;
   const freeVisitUsed = freeVisitStatus === "used";
 
   async function onFreePassClick() {
     if (!gym?.free_first_visit_enabled) return;
-    if (hasFreeVisit) { setShowGiftModal(true); return; }
+    if (hasFreeVisit) {
+      setShowGiftModal(true);
+      return;
+    }
     try {
       setFreeVisitBusy(true);
       await claimFreeVisit(gym.gym_id);
       setShowGiftModal(true);
       const res = await getMyFreeVisits({ perPage: 50, page: 1 });
       setFreeVisitsRes(res);
-    } catch (e) { alert(e?.message || "Failed to claim free pass"); }
-    finally { setFreeVisitBusy(false); }
+    } catch (e) {
+      alert(e?.message || "Failed to claim free pass");
+    } finally {
+      setFreeVisitBusy(false);
+    }
   }
 
   if (loading) {
@@ -468,12 +620,9 @@ export default function GymDetails() {
 
   return (
     <div className="ugd-page">
-
-      {/* ── HERO ── */}
       <section className="ugd-hero">
         <div className="ugd-hero-overlay" />
 
-        {/* Gallery */}
         <div className="ugd-gallery">
           <img
             src={images[currentImageIndex] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&h=700&fit=crop"}
@@ -490,14 +639,17 @@ export default function GymDetails() {
               </button>
               <div className="ugd-gallery-dots">
                 {images.map((_, i) => (
-                  <button key={i} className={`ugd-dot ${i === currentImageIndex ? "active" : ""}`} onClick={() => setCurrentImageIndex(i)} />
+                  <button
+                    key={i}
+                    className={`ugd-dot ${i === currentImageIndex ? "active" : ""}`}
+                    onClick={() => setCurrentImageIndex(i)}
+                  />
                 ))}
               </div>
             </>
           )}
         </div>
 
-        {/* Hero content layer */}
         <div className="ugd-hero-content">
           <button type="button" className="ugd-back-btn" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} />
@@ -525,28 +677,27 @@ export default function GymDetails() {
                 className={`ugd-like-btn ${isLiked ? "liked" : ""}`}
                 onClick={toggleLike}
                 title={isLiked ? "Saved" : "Save"}
+                disabled={likeBusy}
               >
-                <Heart size={17} fill={isLiked ? "currentColor" : "none"} />
+                {likeBusy ? (
+                  <Loader2 size={17} className="ugd-spinner-icon" />
+                ) : (
+                  <Heart size={17} fill={isLiked ? "currentColor" : "none"} />
+                )}
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── BODY ── */}
       <div className="ugd-body">
         <div className="ugd-grid">
-
-          {/* ════ MAIN COLUMN ════ */}
           <div className="ugd-main">
-
-            {/* About */}
             <div className="ugd-card">
               <h2 className="ugd-section-title">About This Gym</h2>
               <p className="ugd-description">{gym?.description || "No description provided."}</p>
             </div>
 
-            {/* Hours */}
             <div className="ugd-card ugd-hours-card">
               <h2 className="ugd-section-title">Operating Hours</h2>
               <div className="ugd-hours-row">
@@ -562,7 +713,6 @@ export default function GymDetails() {
               </div>
             </div>
 
-            {/* Pricing */}
             <div className="ugd-card">
               <h2 className="ugd-section-title">Pricing</h2>
               <div className="ugd-pricing-grid">
@@ -590,7 +740,6 @@ export default function GymDetails() {
               </div>
             </div>
 
-            {/* Stats */}
             <div className="ugd-card" ref={statsRef}>
               <h2 className="ugd-section-title">Gym Statistics</h2>
               <div className="ugd-stats-grid">
@@ -600,7 +749,6 @@ export default function GymDetails() {
               </div>
             </div>
 
-            {/* Amenities */}
             <div className="ugd-card">
               <h2 className="ugd-section-title">Amenities & Features</h2>
               <div className="ugd-amenities-grid">
@@ -625,7 +773,6 @@ export default function GymDetails() {
               </div>
             </div>
 
-            {/* Equipment */}
             <div className="ugd-card">
               <h2 className="ugd-section-title">Available Equipment</h2>
               <div className="ugd-equip-list">
@@ -639,13 +786,9 @@ export default function GymDetails() {
                 ))}
               </div>
             </div>
-
           </div>
 
-          {/* ════ SIDEBAR ════ */}
           <div className="ugd-sidebar">
-
-            {/* Map */}
             <div className="ugd-card ugd-map-card">
               <h2 className="ugd-section-title">Location</h2>
               <div className="ugd-map-wrap">
@@ -662,7 +805,6 @@ export default function GymDetails() {
               </button>
             </div>
 
-            {/* Contact */}
             <div className="ugd-card">
               <h2 className="ugd-section-title">Get in Touch</h2>
               <div className="ugd-contact-list">
@@ -733,11 +875,9 @@ export default function GymDetails() {
               )}
             </div>
 
-            {/* Quick Actions */}
             <div className="ugd-card">
               <h2 className="ugd-section-title">Quick Actions</h2>
               <div className="ugd-actions-list">
-
                 {hasActiveMembershipHere ? (
                   <button className="ugd-btn ugd-btn-primary ugd-btn-full" type="button" onClick={() => navigate("/home/memberships")}>
                     <Ticket size={14} />View Membership
@@ -776,7 +916,6 @@ export default function GymDetails() {
               </div>
             </div>
 
-            {/* Reviews */}
             <div className="ugd-card">
               <div className="ugd-reviews-head">
                 <h2 className="ugd-section-title" style={{ marginBottom: 0 }}>Reviews</h2>
@@ -816,33 +955,58 @@ export default function GymDetails() {
                 })}
               </div>
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* ── MODALS ── */}
       {showReviewsModal && (
-        <ReviewsModal open={showReviewsModal} onClose={() => setShowReviewsModal(false)} gymId={gym?.gym_id ?? Number(id)} gymName={gym?.name} myUserId={myUserId} onEditMine={() => { setShowReviewsModal(false); setShowRateModal(true); }} />
+        <ReviewsModal
+          open={showReviewsModal}
+          onClose={() => setShowReviewsModal(false)}
+          gymId={gym?.gym_id ?? Number(id)}
+          gymName={gym?.name}
+          myUserId={myUserId}
+          onEditMine={() => {
+            setShowReviewsModal(false);
+            setShowRateModal(true);
+          }}
+        />
       )}
+
       {showMembershipModal && (
-        <RequestMembershipModal gym={gym} onClose={() => setShowMembershipModal(false)} onSuccess={() => setShowMembershipModal(false)} />
+        <RequestMembershipModal
+          gym={gym}
+          onClose={() => setShowMembershipModal(false)}
+          onSuccess={() => setShowMembershipModal(false)}
+        />
       )}
+
       {showRateModal && (
-        <RateGymModal gym={gym} onClose={() => setShowRateModal(false)} onSuccess={() => {
-          setShowRateModal(false);
-          refreshRatings(gym?.gym_id ?? gymIdNum);
-          (async () => {
-            try {
-              const res = await api.get(`/me/ratings?page=1`, { headers: { "Cache-Control": "no-cache" } });
-              const data = res?.data?.data;
-              setMyRatings(Array.isArray(data) ? data : []);
-            } catch {}
-          })();
-        }} />
+        <RateGymModal
+          gym={gym}
+          onClose={() => setShowRateModal(false)}
+          onSuccess={() => {
+            setShowRateModal(false);
+            refreshRatings(gym?.gym_id ?? gymIdNum);
+            (async () => {
+              try {
+                const res = await api.get(`/me/ratings?page=1`, { headers: { "Cache-Control": "no-cache" } });
+                const data = res?.data?.data;
+                setMyRatings(Array.isArray(data) ? data : []);
+              } catch {}
+            })();
+          }}
+        />
       )}
+
       {showGiftModal && (
-        <GiftRevealModal open={showGiftModal} onClose={() => setShowGiftModal(false)} gymName={gym?.name} status={freeVisitUsed ? "used" : "claimed"} claimCode={myFreeVisitRow?.free_visit_id} />
+        <GiftRevealModal
+          open={showGiftModal}
+          onClose={() => setShowGiftModal(false)}
+          gymName={gym?.name}
+          status={freeVisitUsed ? "used" : "claimed"}
+          claimCode={myFreeVisitRow?.free_visit_id}
+        />
       )}
     </div>
   );
