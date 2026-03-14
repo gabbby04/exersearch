@@ -463,8 +463,8 @@
   height: 46px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text-muted);
+  background: var(--lnd-or);
+  color: var(--lnd-bg-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
