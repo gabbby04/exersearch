@@ -98,6 +98,7 @@ export default function UserLayout({ skipAuth = false }) {
   if (!ready && !skipAuth) return null;
 
   const hideHeader = location.pathname === "/home";
+   
 
   return (
     <div className="user-app">

@@ -553,3 +553,58 @@
   height: 44px;
 }
 }
+
+.ih-page ~ .eb-root .eb-toggle,
+.ih-page .eb-root .eb-toggle,
+.ih-page ~ .eb-toggle,
+.ih-page .eb-toggle {
+  display: none !important;
+}
+.stw-widget {
+  bottom: 5.5rem;
+}
+ 
+.eb-toggle {
+  bottom: 5.5rem;
+}
+ 
+/* ── On desktop they can go back to normal ── */
+@media (min-width: 780px) {
+  .stw-widget {
+    bottom: 2rem;
+  }
+ 
+  .eb-toggle {
+    bottom: 2rem;
+  }
+ 
+  .eb-panel {
+    bottom: 6.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .eb-toggle {
+    bottom: 5rem;
+    right: 1rem;
+  }
+
+  .eb-panel {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .eb-toggle {
+    bottom: 5rem;
+    right: 1.25rem;
+  }
+
+  .eb-panel {
+    bottom: 6rem;
+    right: 1.25rem;
+  }
+}

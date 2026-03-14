@@ -1716,3 +1716,67 @@ body[data-theme="light"] .ih-page {
     transition: none;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   INQUIRY PAGE — CLICK + BOTTOM FIX
+   Paste at the bottom of GymInquiryHistory.css
+═══════════════════════════════════════════════ */
+
+/* Backdrop only blocks clicks when a panel is actually open */
+.ih-mobile-backdrop {
+  display: none;
+  pointer-events: none;
+}
+
+.ih-page.show-list .ih-mobile-backdrop,
+.ih-page.show-detail .ih-mobile-backdrop {
+  display: block;
+  pointer-events: auto;
+}
+
+/* Overlay inside conversation-area must never block anything */
+.ih-page .overlay {
+  display: none;
+  height: 0;
+  pointer-events: none;
+}
+
+/* FAB always on top and clickable */
+.ih-page .add {
+  z-index: 100;
+  pointer-events: auto;
+}
+
+/* Chat footer always above everything */
+.ih-page .chat-area-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  pointer-events: auto;
+  margin-bottom: 0;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Send button explicitly clickable */
+.ih-page .ih-send-btn {
+  position: relative;
+  z-index: 11;
+  pointer-events: auto;
+}
+
+/* Mobile — remove any bottom offset that hides the footer */
+@media (max-width: 780px) {
+  .ih-page .chat-area {
+    height: 100%;
+    margin-top: 0;
+    border-radius: 0;
+  }
+
+  .ih-page .wrapper {
+    padding-bottom: 0;
+  }
+
+  .ih-page .chat-area-footer {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}

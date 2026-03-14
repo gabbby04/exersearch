@@ -1,5 +1,9 @@
 /* src/utils/Widget.css */
-
+.ih-page ~ .stw-widget,
+.ih-page .stw-widget {
+  display: none !important;
+}
+ 
 .stw-widget {
   position: fixed;
   bottom: 2rem;
@@ -65,5 +69,33 @@
   .stw-theme {
     width: 40px;
     height: 40px;
+  }
+}
+.stw-widget {
+  bottom: 5.5rem;
+}
+ 
+.eb-toggle {
+  bottom: 5.5rem;
+}
+ 
+/* ── On desktop they can go back to normal ── */
+@media (min-width: 780px) {
+  .stw-widget {
+    bottom: 2rem;
+  }
+ 
+  .eb-toggle {
+    bottom: 2rem;
+  }
+ 
+  .eb-panel {
+    bottom: 6.5rem;
+  }
+}
+@media (max-width: 768px) {
+  .stw-widget {
+    bottom: 5rem;
+    left: 1rem;
   }
 }
