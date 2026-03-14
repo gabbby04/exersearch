@@ -84,7 +84,11 @@ export default function AdminDatabaseBackup() {
 
   const doCreate = async () => {
     if (createScope === "table" && !selectedTable) {
-      Swal.fire({ title: "Select table", text: "Choose a table first.", icon: "warning" });
+      Swal.fire({
+        title: "Select table",
+        text: "Choose a table first.",
+        icon: "warning",
+      });
       return;
     }
 
@@ -117,13 +121,17 @@ export default function AdminDatabaseBackup() {
 
   const downloadBackup = async (name) => {
     if (!name) return;
+
     try {
       const res = await api.get(
-        `/admin/db/backups/${encodeURIComponent(name)}/download`,
+        `/admin/db/backups/download?name=${encodeURIComponent(name)}`,
         { responseType: "blob" }
       );
 
-      const blob = res.data;
+      const blob = new Blob([res.data], {
+        type: "application/octet-stream",
+      });
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -133,9 +141,21 @@ export default function AdminDatabaseBackup() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
+      let message = "Could not download backup.";
+
+      if (e?.response?.data instanceof Blob) {
+        try {
+          const text = await e.response.data.text();
+          const json = JSON.parse(text);
+          message = json?.message || message;
+        } catch {}
+      } else {
+        message = e?.response?.data?.message || message;
+      }
+
       Swal.fire({
         title: "Download failed",
-        text: e?.response?.data?.message || "Could not download backup.",
+        text: message,
         icon: "error",
       });
     }
@@ -149,9 +169,14 @@ export default function AdminDatabaseBackup() {
 
   const doRestore = async () => {
     if (!restoreFile) {
-      Swal.fire({ title: "Missing file", text: "Choose a backup file.", icon: "warning" });
+      Swal.fire({
+        title: "Missing file",
+        text: "Choose a backup file.",
+        icon: "warning",
+      });
       return;
     }
+
     if ((restoreConfirmText || "").trim() !== restorePhrase) {
       Swal.fire({
         title: "Confirmation required",
@@ -169,6 +194,7 @@ export default function AdminDatabaseBackup() {
       confirmButtonText: "Yes, Restore",
       cancelButtonText: "Cancel",
     });
+
     if (!ok.isConfirmed) return;
 
     setLoading(true);
@@ -267,15 +293,27 @@ export default function AdminDatabaseBackup() {
         </div>
 
         <div className="ae-topActions">
-          <button className="ae-btn ae-btnSecondary" onClick={fetchBackups} disabled={loading}>
+          <button
+            className="ae-btn ae-btnSecondary"
+            onClick={fetchBackups}
+            disabled={loading}
+          >
             Refresh
           </button>
 
-          <button className="ae-btn ae-btnPrimary" onClick={openCreate} disabled={loading}>
+          <button
+            className="ae-btn ae-btnPrimary"
+            onClick={openCreate}
+            disabled={loading}
+          >
             Create Backup
           </button>
 
-          <button className="ae-btn ae-btnDanger" onClick={openRestore} disabled={loading}>
+          <button
+            className="ae-btn ae-btnDanger"
+            onClick={openRestore}
+            disabled={loading}
+          >
             Restore
           </button>
         </div>
@@ -285,13 +323,21 @@ export default function AdminDatabaseBackup() {
         <div className="ae-panel">
           <div className="ae-panelTop">
             <div className="ae-leftActions">
-              <select className="ae-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <select
+                className="ae-select"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+              >
                 <option value="all">All Types</option>
                 <option value="dump">.dump</option>
                 <option value="sql">.sql</option>
               </select>
 
-              <select className="ae-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <select
+                className="ae-select"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="biggest">Biggest</option>
@@ -339,11 +385,15 @@ export default function AdminDatabaseBackup() {
               <tbody>
                 {loading && backups.length === 0 ? (
                   <tr>
-                    <td className="ae-td" colSpan={5}>Loading…</td>
+                    <td className="ae-td" colSpan={5}>
+                      Loading…
+                    </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="ae-td" colSpan={5}>No backups found.</td>
+                    <td className="ae-td" colSpan={5}>
+                      No backups found.
+                    </td>
                   </tr>
                 ) : (
                   filtered.map((b) => (
@@ -410,9 +460,9 @@ export default function AdminDatabaseBackup() {
                     onChange={(e) => setSelectedTable(e.target.value)}
                   >
                     <option value="">Select table…</option>
-                    {tables.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
+                    {tables.map((table) => (
+                      <option key={table} value={table}>
+                        {table}
                       </option>
                     ))}
                   </select>
@@ -421,10 +471,17 @@ export default function AdminDatabaseBackup() {
             </div>
 
             <div className="ae-modalFooter">
-              <button className="ae-btn ae-btnSecondary" onClick={() => setCreateOpen(false)}>
+              <button
+                className="ae-btn ae-btnSecondary"
+                onClick={() => setCreateOpen(false)}
+              >
                 Cancel
               </button>
-              <button className="ae-btn ae-btnPrimary" onClick={doCreate} disabled={loading}>
+              <button
+                className="ae-btn ae-btnPrimary"
+                onClick={doCreate}
+                disabled={loading}
+              >
                 Create
               </button>
             </div>
@@ -433,14 +490,25 @@ export default function AdminDatabaseBackup() {
       )}
 
       {restoreOpen && (
-        <div className="ae-backdrop ae-backdropTop" onClick={() => setRestoreOpen(false)}>
-          <div className="ae-confirmModalFancy" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="ae-backdrop ae-backdropTop"
+          onClick={() => setRestoreOpen(false)}
+        >
+          <div
+            className="ae-confirmModalFancy"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="ae-confirmHeader">
               <div className="ae-confirmIconWrap">⚠️</div>
               <div className="ae-confirmHeaderText">
                 <div className="ae-confirmTitle">Restore Database</div>
               </div>
-              <button className="ae-modalClose" onClick={() => setRestoreOpen(false)}>✕</button>
+              <button
+                className="ae-modalClose"
+                onClick={() => setRestoreOpen(false)}
+              >
+                ✕
+              </button>
             </div>
 
             <div className="ae-inlineTools" style={{ marginTop: 12 }}>
@@ -460,10 +528,17 @@ export default function AdminDatabaseBackup() {
             </div>
 
             <div className="ae-confirmActions">
-              <button className="ae-btn ae-btnSecondary" onClick={() => setRestoreOpen(false)}>
+              <button
+                className="ae-btn ae-btnSecondary"
+                onClick={() => setRestoreOpen(false)}
+              >
                 Cancel
               </button>
-              <button className="ae-btn ae-btnDanger" onClick={doRestore} disabled={loading}>
+              <button
+                className="ae-btn ae-btnDanger"
+                onClick={doRestore}
+                disabled={loading}
+              >
                 Restore
               </button>
             </div>
@@ -474,5 +549,4 @@ export default function AdminDatabaseBackup() {
       <div className="ae-spacer" />
     </div>
   );
-} 
-
+}
