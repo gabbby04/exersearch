@@ -1571,4 +1571,53 @@
   color: #1a1a1a !important;
   border: 1px solid var(--border) !important;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}.find-gyms-page .input-box,
+.find-gyms-page .input-box::placeholder,
+.find-gyms-page .fg-location-input,
+.find-gyms-page .fg-location-input::placeholder,
+.find-gyms-page .option strong,
+.find-gyms-page .equip-card .equip-title {
+  color: #111111 !important;
+} /* DARK MODE ONLY: selected cards readable */
+[data-theme="dark"] .find-gyms-page .option.fg-selected,
+[data-theme="dark"] .find-gyms-page .equip-card.fg-selected {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 106, 42, 0.22) 0%,
+    rgba(252, 74, 0, 0.18) 100%
+  ) !important;
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 1px var(--brand), 0 8px 24px var(--brand-glow) !important;
+}
+
+[data-theme="dark"] .find-gyms-page .option.fg-selected strong,
+[data-theme="dark"] .find-gyms-page .equip-card.fg-selected .equip-title,
+[data-theme="dark"] .find-gyms-page .option.fg-selected:hover strong,
+[data-theme="dark"] .find-gyms-page .equip-card.fg-selected:hover .equip-title {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .find-gyms-page .option.fg-selected .equip-viewBtn,
+[data-theme="dark"] .find-gyms-page .equip-card.fg-selected .equip-viewBtn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}/* Equipment preview modal text always black */
+.find-gyms-page .fg-equip-preview-title,
+.find-gyms-page .fg-equip-preview-meta,
+.find-gyms-page .fg-equip-preview-meta > div,
+.find-gyms-page .fg-equip-preview-desc {
+  color: #111111 !important;
+}
+
+/* keep orange section labels */
+.find-gyms-page .fg-equip-preview-meta strong,
+.find-gyms-page .fg-equip-preview-desc strong {
+  color: var(--brand) !important;
+}
+
+/* ensure buttons keep their own colors */
+.find-gyms-page .fg-equip-preview-select,
+.find-gyms-page .fg-equip-preview-close {
+  color: inherit;
 }
