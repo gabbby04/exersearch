@@ -1101,3 +1101,52 @@ body::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
 .qr--light .qr-role   { color: var(--lnd-text-secondary); }
 .qr--dark  .qr-weeks,
 .qr--light .qr-weeks  { color: var(--lnd-text-muted);     }
+@media (max-width: 680px) {
+  .qr-inner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 3rem 1.25rem;
+  }
+
+  .qr-inner--flip {
+    direction: ltr;
+  }
+
+  .qr-meta {
+    text-align: left;
+  }
+
+  .qr-result {
+    font-size: 1.6rem;
+  }
+
+  .qr-q {
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+  }
+
+  .qr-mark {
+    font-size: 1.8em;
+  }
+
+  .realtalk-head {
+    margin-bottom: 2.5rem;
+  }
+
+  .realtalk {
+    padding: 5rem 0 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .qr-inner {
+    padding: 2.5rem 1rem;
+  }
+
+  .qr-q {
+    font-size: 1.15rem;
+  }
+
+  .qr-result {
+    font-size: 1.4rem;
+  }
+}
