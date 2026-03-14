@@ -1140,32 +1140,29 @@ export default function OwnerGymsPage() {
       setCurrentStep(0);
       return;
     }
-
-    const result = await Swal.fire({
-      title: "Ready to find gyms?",
-      text: "Do you want to review and edit your preferences first, or use your current saved preferences now?",
-      icon: "question",
-      showDenyButton: true,
-      showCloseButton: true,
-      confirmButtonText: "Review & Edit",
-      denyButtonText: "Use Current Preferences",
-      reverseButtons: true,
-      allowOutsideClick: false,
-      allowEscapeKey: true,
-      background: "#ffffff",
-      color: "#1a1a1a",
-      customClass: {
-        popup: "fg-swal-popup",
-        title: "fg-swal-title",
-        htmlContainer: "fg-swal-text",
-        confirmButton: "fg-swal-confirm",
-        denyButton: "fg-swal-deny",
-        closeButton: "fg-swal-close",
-        icon: "fg-swal-icon",
-        actions: "fg-swal-actions",
-      },
-      buttonsStyling: false,
-    });
+const result = await Swal.fire({
+  title: "Ready to find gyms?",
+  text: "Do you want to review and edit your preferences first, or use your current saved preferences now?",
+  icon: "question",
+  showDenyButton: true,
+  showCloseButton: true,
+  confirmButtonText: "Review & Edit",
+  denyButtonText: "Use Current Preferences",
+  reverseButtons: true,
+  allowOutsideClick: false,
+  allowEscapeKey: true,
+  customClass: {
+    popup: "fg-swal-popup",
+    title: "fg-swal-title",
+    htmlContainer: "fg-swal-text",
+    confirmButton: "fg-swal-confirm",
+    denyButton: "fg-swal-deny",
+    closeButton: "fg-swal-close",
+    icon: "fg-swal-icon",
+    actions: "fg-swal-actions",
+  },
+  buttonsStyling: false,
+});
 
     if (result.isConfirmed) {
       setIsModalOpen(true);

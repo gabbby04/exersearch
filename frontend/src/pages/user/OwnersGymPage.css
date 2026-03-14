@@ -1294,13 +1294,12 @@
   width: min(640px, 92vw);
   border-radius: 24px;
   padding: 28px 28px 22px;
-  background: var(--surface-1);
+  background: var(--surface-2); /* changed from surface-1 */
   color: var(--text);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-xl);
   font-family: "Montserrat", sans-serif;
 }
-
 .swal2-title.fg-swal-title,
 .find-gyms-page .fg-swal-title {
   margin: 0;
@@ -1378,15 +1377,13 @@
   border-color: rgba(255,255,255,0.18) !important;
   box-shadow: 0 10px 22px var(--brand-glow);
 }
-
 .swal2-deny.fg-swal-deny,
 .find-gyms-page .fg-swal-deny {
   background: var(--surface-4) !important;
-  color: #ffffff !important;
+  color: var(--text) !important;
   border: 1px solid rgba(255,255,255,0.06) !important;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
 }
-
 .swal2-cancel.fg-swal-cancel,
 .find-gyms-page .fg-swal-cancel {
   background: var(--surface-2) !important;
@@ -1566,4 +1563,12 @@
 .fg-equip-preview-close svg {
   vertical-align: middle;
   display: inline-block;
+}.swal2-deny.fg-swal-deny {
+  color: var(--text) !important;
+}.swal2-deny.fg-swal-deny,
+.find-gyms-page .fg-swal-deny {
+  background: var(--surface-2) !important;
+  color: #1a1a1a !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
 }
